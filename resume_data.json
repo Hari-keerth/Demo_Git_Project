@@ -1,0 +1,26 @@
+{
+    "name": "Jim Ryan",
+    "email": "jimm_ryyn89@gmail.com",
+    "phone": "(917) 202-5269",
+    "technical_skills": [
+        "Programming",
+        "Software Logic",
+        "Software Troubleshooting",
+        "User Interface",
+        "User Experience"
+    ],
+    "soft_skills": [
+        "Advanced Analytical Thinking",
+        "Adaptability"
+    ],
+    "education": [
+        "Master of Science in Computer Science, The Massachusetts Institute of Technology.",
+        "Bachelor of Computer Science, Dartmouth"
+    ],
+    "experience": [
+        "Software Developer, Accrue Partners, New York (09/2013 - 09/2021)",
+        "Junior Software Developer, CyberCoders, New York (06/2011 - 08/2013)"
+    ],
+    "projects": [],
+    "years_of_experience": 10
+}
