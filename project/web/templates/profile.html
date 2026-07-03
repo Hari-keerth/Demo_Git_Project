@@ -1,0 +1,300 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>CareerGrowza | Profile</title>
+
+    <link rel="stylesheet"
+          href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+
+    <link rel="stylesheet"
+          href="{% static 'css/common.css' %}">
+
+    <link rel="stylesheet"
+          href="{% static 'css/layout.css' %}">
+
+    <link rel="stylesheet"
+          href="{% static 'css/sidebar.css' %}">
+
+    <link rel="stylesheet"
+          href="{% static 'css/profile.css' %}">
+
+</head>
+
+<body>
+
+<button
+class="menu-toggle"
+onclick="toggleSidebar()">
+
+    <i class='bx bx-menu'></i>
+
+</button>
+
+<div
+class="sidebar-overlay"
+onclick="closeSidebar()">
+</div>
+
+<div class="dashboard">
+
+    <!-- Sidebar -->
+
+    <aside class="sidebar">
+
+        <div class="sidebar-logo">
+
+            <a href="#" class="nav-logo">
+                Career<span>Growza</span>
+            </a>
+
+        </div>
+
+        <ul class="sidebar-links">
+
+            <li>
+                <a href="{% url 'dashboard' %}">
+                    <i class='bx bx-home'></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="#">
+                    <i class='bx bx-file'></i>
+                    <span>Resume Analyzer</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="#">
+                    <i class='bx bx-bar-chart-alt-2'></i>
+                    <span>ATS Score</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="{% url 'ai_email' %}">
+                    <i class='bx bx-envelope'></i>
+                    <span>AI Email</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="#">
+                    <i class='bx bx-edit'></i>
+                    <span>Cover Letter</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="#">
+                    <i class='bx bx-history'></i>
+                    <span>History</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="#" class="active">
+                    <i class='bx bx-user'></i>
+                    <span>Profile</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="#">
+                    <i class='bx bx-cog'></i>
+                    <span>Settings</span>
+                </a>
+            </li>
+
+        </ul>
+
+        <div class="sidebar-bottom">
+
+            <a href="#">
+
+                <i class='bx bx-log-out'></i>
+
+                <span>Logout</span>
+
+            </a>
+
+        </div>
+
+    </aside>
+
+    <!-- Main -->
+
+    <main class="main-content">
+
+        <div class="profile-wrapper">
+
+            <!-- Header -->
+
+            <div class="profile-header">
+
+                <div class="profile-image">
+
+                    <i class='bx bx-user'></i>
+
+                </div>
+
+                <h2>{{ user.name }}</h2>
+
+                <p class="profile-email">
+
+                    {{ user.email }}
+
+                </p>
+
+                <span class="status">
+
+                    Active Member
+
+                </span>
+
+            </div>
+
+            <!-- Information -->
+
+            <div class="profile-info">
+
+                <div class="profile-item">
+
+                    <label>
+
+                        Full Name
+
+                    </label>
+
+                    <p>
+
+                        {%for item in all %}
+
+                        {{ item }}
+
+                        {% endfor %}
+
+                    </p>
+
+                </div>
+
+                <div class="profile-item">
+
+                    <label>
+
+                        Age
+
+                    </label>
+
+                    <p>
+
+                        {%for item in all %}
+
+                        {{ item.age }}
+
+                        {% endfor %}
+
+                    </p>
+
+                </div>
+
+                <div class="profile-item">
+
+                    <label>
+
+                        Email
+
+                    </label>
+
+                    <p>
+
+                        {%for item in all %}
+
+                        {{ item.email }}
+
+                        {% endfor %}
+
+                    </p>
+
+                </div>
+
+                <div class="profile-item">
+
+                    <label>
+
+                        Password
+
+                    </label>
+
+                    <p>
+
+                        {%for item in all %}
+
+                        {{ item.password }}
+
+                        {% endfor %}
+
+                    </p>
+
+                </div>
+
+                <div class="profile-item">
+
+                    <label>
+
+                        Member Since
+
+                    </label>
+
+                    <p>
+
+                        {{ user.date_joined|date:"d M Y" }}
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <!-- Buttons -->
+
+            <div class="profile-buttons">
+
+                <button>
+
+                    <i class='bx bx-edit'></i>
+
+                    Edit Profile
+
+                </button>
+
+                <button>
+
+                    <i class='bx bx-lock-alt'></i>
+
+                    Change Password
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+<script src="{% static 'js/sidebar.js' %}"></script>
+
+</body>
+
+</html>

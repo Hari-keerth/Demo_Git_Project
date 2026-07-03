@@ -1,0 +1,153 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Page</title>
+
+    <link rel="stylesheet" href = "{% static 'css/common.css' %}">
+    <link rel="stylesheet" href = "{% static 'css/layout.css' %}">
+    <link rel="stylesheet" href = "{% static 'css/login.css' %}">
+    <link rel="stylesheet" href="{% static 'css/index.css' %}">
+
+    <!-- Boxicons -->
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+    <link rel="stylesheet" href="templatemo-622-clearwave.css" />
+</head>
+
+<body class="auth-body">
+
+
+  <!-- ============ NAV (TOP — unchanged structure) ============ -->
+  <header class="site-header" id="siteHeader">
+    <div class="container nav-inner">
+      <a href="#top" class="logo">
+        <span class="logo-dot"></span>
+        CareerGrowza
+      </a>
+
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <nav class="nav-links" id="navLinks">
+        <a href="#features">Product</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#stories">Stories</a>
+        <a href="{% url 'login' %}" class="nav-login">Log in</a>
+        <a href="{% url 'register' %}" class="btn btn-primary btn-small">Sign Up</a>
+      </nav>
+    </div>
+    <div class="nav-overlay" id="navOverlay"></div>
+  </header>
+
+
+
+
+    <div class="wrapper">
+
+        <form method = "POST" action="{% url 'register' %}">
+            {% csrf_token %}
+
+            <div class="login-header">
+
+            <div class="login-icon">
+                <i class="bx bx-user"></i>
+            </div>
+            <h2>Register</h2>
+
+            </div>
+
+
+
+            <!-- Name -->
+            <div class="input-field">
+                <input type="text" required name="fname">
+                <label>Enter your First Name</label>
+            </div>
+
+            <div class="input-field">
+                <input type="text" required name="lname">
+                <label>Enter your Last Name</label>
+            </div>
+
+            <!-- Phone Number -->
+            <div class="input-field">
+                <input type="number" min="0" max="120"required name="ph_no">
+                <label>Enter your Phone Number</label>
+            </div>
+
+            <!-- Email -->
+            <div class="input-field email-field" >
+
+                <input type="text" class="email" required name="email">
+                <label>Enter your Email</label>
+
+                <span class="error email-error">
+                    <i class="bx bx-error-circle error-icon"></i>
+                    <p class="error-text">Please enter a valid email</p>
+                </span>
+
+            </div>
+
+            <!-- Password -->
+            <div class="input-field create-password">
+
+                <input type="password" class="password" required name="password">
+
+                <i class="bx bx-hide show-hide"></i>
+
+                <label>Enter your Password</label>
+
+                <span class="error password-error">
+                    <i class="bx bx-error-circle error-icon"></i>
+                    <p class="error-text">
+                        Please enter at least 8 characters with number,
+                        symbol, small and capital letter.
+                    </p>
+                </span>
+
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="input-field confirm-password">
+
+                <input type="password" class="cPassword" required>
+
+                <i class="bx bx-hide show-hide"></i>
+
+                <label>Confirm your Password</label>
+
+                <span class="error cPassword-error">
+                    <i class="bx bx-error-circle error-icon"></i>
+                    <p class="error-text">
+                        Password don't match
+                    </p>
+                </span>
+
+            </div>
+
+            <button type="submit">
+                Sign Up
+            </button>
+
+            <div class="register">
+                <p>
+                    Already have an account?
+                    <a href="{% url 'login' %}">Login</a>
+                </p>
+            </div>
+
+        </form>
+
+    </div>
+
+    <script src="js/reg.js"></script>
+
+</body>
+
+</html>

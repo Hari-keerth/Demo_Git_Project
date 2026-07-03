@@ -1,0 +1,289 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CareerGrowza | Ai Email</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet"
+          href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+
+  <link rel="stylesheet" href="{% static 'css/common.css' %}">
+  <link rel="stylesheet" href="{% static 'css/layout.css' %}">
+  <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+  <link rel="stylesheet" href="{% static 'css/ai_mail.css' %}">
+
+</head>
+
+<body>
+
+<button
+    class="menu-toggle"
+    onclick="toggleSidebar()">
+
+    <i class='bx bx-menu'></i>
+
+</button>
+
+<div
+    class="sidebar-overlay"
+    onclick="closeSidebar()">
+
+</div>
+
+<div class="dashboard">
+
+    <aside class="sidebar">
+
+        <div class="sidebar-logo">
+            <a href="#" class="nav-logo">
+                Career<span>Growza</span>
+            </a>
+        </div>
+
+        <ul class="sidebar-links">
+
+            <li><a href="{% url 'dashboard' %}"><i class='bx bx-home'></i><span>Dashboard</span></a></li>
+
+            <li><a href="#"><i class='bx bx-file'></i>Resume Analyzer</a></li>
+
+            <li><a href="#"><i class='bx bx-bar-chart-alt-2'></i>ATS Score</a></li>
+
+            <li><a href="#" class="active"><i class='bx bx-envelope'></i>AI Email</a></li>
+
+            <li><a href="#"><i class='bx bx-edit'></i>Cover Letter</a></li>
+
+            <li><a href="#"><i class='bx bx-history'></i>History</a></li>
+
+            <li><a href="#"><i class='bx bx-user'></i>Profile</a></li>
+
+            <li><a href="#"><i class='bx bx-cog'></i>Settings</a></li>
+
+        </ul>
+
+        <div class="sidebar-bottom">
+            <a href="#">
+                <i class='bx bx-log-out'></i>
+                <span>Logout</span>
+            </a>
+        </div>
+
+    </aside>
+
+    <main class="main-content">
+
+        <div class="ai-wrapper">
+
+            <div class="login-header">
+
+                <div class="login-icon">
+                    <i class='bx bx-briefcase-alt'></i>
+                </div>
+
+            </div>
+
+            <h2>AI Job Application Assistant</h2>
+
+            <p class="subtitle">Generate and send AI-powered job applications</p>
+
+            <form>
+
+                <!-- Job Description -->
+
+                <div class="input-field">
+
+                    <i class='bx bx-file input-icon'></i>
+
+                    <textarea
+                        id="job_description"
+                        rows="8"
+                        placeholder="Paste Job Description Here..."
+                    ></textarea>
+
+                </div>
+
+                <!-- Resume -->
+
+                <div class="input-field file-upload">
+
+                    <label for="resume" class="upload-btn">
+                        <i class='bx bx-cloud-upload'></i>
+                        Upload Resume
+                    </label>
+
+                    <input
+                        type="file"
+                        id="resume"
+                        accept=".pdf"
+                        onchange="updateFileName(this)"
+                    >
+
+                    <span id="file-name">
+                        No file selected
+                    </span>
+
+                </div>
+
+                <!-- Recruiter Email -->
+
+                <div class="input-field">
+
+                    <i class='bx bx-envelope input-icon'></i>
+
+                    <input
+                        type="email"
+                        id="recruiter_email"
+                        placeholder="Recruiter Email"
+                    >
+
+                </div>
+
+                <!-- Buttons -->
+
+                <div class="button-group">
+
+                    <button
+                        type="button"
+                        onclick="generateDocuments()">
+
+                        <i class='bx bx-magic-wand'></i>
+
+                        Generate
+
+                    </button>
+
+                    <button
+                        type="button"
+                        onclick="sendApplication()">
+
+                        <i class='bx bx-mail-send'></i>
+
+                        Send Application
+
+                    </button>
+
+                    <button
+                        type="button"
+                        onclick="generateAndSend()">
+
+                        <i class='bx bx-send'></i>
+
+                        Generate & Send
+
+                    </button>
+
+                </div>
+
+                <!-- ================= STATUS ================= -->
+
+                <div class="divider">
+                    <span>Application Status</span>
+                </div>
+
+                <div
+                    id="application_status"
+                    class="output-box">
+
+                    Not Sent
+
+                </div>
+
+                <!-- ================= EMAIL & COVER LETTER ================= -->
+
+                <div class="document-grid">
+
+                    <!-- Email Section -->
+
+                    <div class="document-card">
+
+                        <div class="divider">
+                            <span>Email</span>
+                        </div>
+
+                        <div class="input-field">
+
+                            <textarea
+                                id="email_subject"
+                                rows="2"
+                                placeholder="Email Subject"
+                            ></textarea>
+
+                        </div>
+
+                        <div class="input-field">
+
+                            <textarea
+                                id="email_body"
+                                rows="10"
+                                placeholder="Generated Email Body"
+                            ></textarea>
+
+                        </div>
+
+                        <button
+                            type="button"
+                            onclick="downloadEmailPDF()">
+
+                            <i class='bx bx-download'></i>
+
+                            Download Email PDF
+
+                        </button>
+
+                    </div>
+
+                    <!-- Cover Letter Section -->
+
+                    <div class="document-card">
+
+                        <div class="divider">
+                            <span>Cover Letter</span>
+                        </div>
+
+                        <div class="input-field">
+
+                            <textarea
+                                id="cover_letter"
+                                rows="15"
+                                placeholder="Generated Cover Letter"
+                            ></textarea>
+
+                        </div>
+
+                        <button
+                            type="button"
+                            onclick="downloadCoverLetterPDF()">
+
+                            <i class='bx bx-download'></i>
+
+                            Download Cover Letter PDF
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+                
+
+            </form>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+
+
+<script src="{% static 'js/ai_email.js' %}"></script>
+<script src="{% static 'js/sidebar.js' %}"></script>
+
+</body>
+
+</html>

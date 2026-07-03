@@ -1,0 +1,159 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+
+    <link rel="stylesheet" href = "{% static 'css/common.css' %}">
+    <link rel="stylesheet" href = "{% static 'css/layout.css' %}">
+    <link rel="stylesheet" href = "{% static 'css/login.css' %}">
+    <link rel="stylesheet" href="{% static 'css/index.css' %}">
+
+    <!-- Boxicons -->
+    <link rel="stylesheet"
+        href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+    <link rel="stylesheet" href="templatemo-622-clearwave.css" />
+</head>
+
+<body class="auth-body">
+
+ <!-- ============ NAV (TOP — unchanged structure) ============ -->
+  <header class="site-header" id="siteHeader">
+    <div class="container nav-inner">
+      <a href="#top" class="logo">
+        <span class="logo-dot"></span>
+        CareerGrowza
+      </a>
+
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <nav class="nav-links" id="navLinks">
+        <a href="#features">Product</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#stories">Stories</a>
+        <a href="{% url 'login' %}" class="nav-login">Log in</a>
+        <a href="{% url 'register' %}" class="btn btn-primary btn-small">Sign Up</a>
+      </nav>
+    </div>
+    <div class="nav-overlay" id="navOverlay"></div>
+  </header>
+
+
+    <div class="wrapper">
+
+    <form action="#">
+
+        <!-- Header -->
+        <div class="login-header">
+
+            <div class="login-icon">
+                <i class="bx bx-user"></i>
+            </div>
+
+            <h2>Welcome Back</h2>
+
+            <p class="subtitle">
+                Login to your account to continue
+            </p>
+
+        </div>
+
+        <!-- Email -->
+        <div class="input-field email-field">
+
+            <i class="bx bx-envelope input-icon"></i>
+
+            <input
+                type="email"
+                class="email"
+                placeholder="Enter your Email"
+                autocomplete="email"
+                required>
+
+            <span class="error email-error">
+                <i class="bx bx-error-circle error-icon"></i>
+
+                <p class="error-text">
+                    Please enter a valid email.
+                </p>
+            </span>
+
+        </div>
+
+        <!-- Password -->
+        <div class="input-field create-password">
+
+            <i class="bx bx-lock-alt input-icon"></i>
+
+            <input
+                type="password"
+                class="password"
+                placeholder="Enter your Password"
+                autocomplete="current-password"
+                required>
+
+            <i class="bx bx-hide show-hide"></i>
+
+            <span class="error password-error">
+                <i class="bx bx-error-circle error-icon"></i>
+
+                <p class="error-text">
+                    Please enter your password.
+                </p>
+            </span>
+
+        </div>
+
+        <!-- Remember -->
+        <div class="forget">
+
+            <label>
+                <input type="checkbox" id="remember">
+                Remember me
+            </label>
+
+            <a href="#">Forgot Password?</a>
+
+        </div>
+
+        <!-- Login Button -->
+        <button type="submit">
+            Log In
+            <i class="bx bx-right-arrow-alt"></i>
+        </button>
+
+        <!-- Divider -->
+        <div class="divider">
+            <span>or</span>
+        </div>
+
+        <!-- Register -->
+        <div class="register">
+
+            <p>
+                Don't have an account?
+
+                <a href="{% url 'register' %}">
+                    Create Account
+                </a>
+
+            </p>
+
+        </div>
+
+    </form>
+
+</div>
+
+    <script src="js/login.js"></script>
+
+</body>
+
+</html>
