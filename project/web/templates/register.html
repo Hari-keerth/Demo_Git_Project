@@ -48,7 +48,7 @@
 
 
 
-    <div class="wrapper">
+    <div class="wrapper register-wrapper">
 
         <form method = "POST" action="{% url 'register' %}">
             {% csrf_token %}
@@ -61,6 +61,8 @@
             <h2>Register</h2>
 
             </div>
+
+        <div class="form-row">
 
 
 
@@ -75,11 +77,16 @@
                 <label>Enter your Last Name</label>
             </div>
 
+        </div>
+        <div class="form-row">
+
             <!-- Phone Number -->
             <div class="input-field">
                 <input type="number" min="0" max="120"required name="ph_no">
                 <label>Enter your Phone Number</label>
             </div>
+
+        
 
             <!-- Email -->
             <div class="input-field email-field" >
@@ -93,6 +100,9 @@
                 </span>
 
             </div>
+
+        </div>
+        <div class="form-row">
 
             <!-- Password -->
             <div class="input-field create-password">
@@ -131,6 +141,8 @@
 
             </div>
 
+        </div>
+
             <button type="submit">
                 Sign Up
             </button>
@@ -141,6 +153,8 @@
                     <a href="{% url 'login' %}">Login</a>
                 </p>
             </div>
+
+        
 
         </form>
 
