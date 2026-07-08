@@ -1,0 +1,53 @@
+
+<button
+    class="menu-toggle"
+    onclick="toggleSidebar()">
+
+    <i class='bx bx-menu'></i>
+
+</button>
+
+<div
+    class="sidebar-overlay"
+    onclick="closeSidebar()">
+
+</div>
+
+<div class="dashboard">
+
+    <aside class="sidebar">
+
+        <div class="sidebar-logo">
+            <a href="#" class="nav-logo">
+                Career<span>Growza</span>
+            </a>
+        </div>
+
+        <ul class="sidebar-links">
+
+            <li><a href="{% url 'dashboard' %}" class="{% if request.path == '/dashboard/' %}active{% endif %}"><i class='bx bx-home'></i>Dashboard</a></li>
+
+            <li><a href="#" class="{% if request.path == '#' %}active{% endif %}"><i class='bx bx-file'></i>Resume Analyzer</a></li>
+
+            <li><a href="#" class="{% if request.path == '#' %}active{% endif %}"><i class='bx bx-bar-chart-alt-2'></i>ATS Score</a></li>
+
+            <li><a href="{% url 'ai_email' %}" class="{% if request.path == '/ai_email/' %}active{% endif %}"><i class='bx bx-envelope'></i>AI Email</a></li>
+
+            <li><a href="#" class="{% if request.path == '#' %}active{% endif %}"><i class='bx bx-edit'></i>Cover Letter</a></li>
+
+            <li><a href="#" class="{% if request.path == '#' %}active{% endif %}"><i class='bx bx-history'></i>History</a></li>
+
+            <li><a href="{% url 'profile' %}" class="{% if request.path == '/profile/' %}active{% endif %}"><i class='bx bx-user'></i>Profile</a></li>
+
+            <li><a href="#" class="{% if request.path == '#' %}active{% endif %}"><i class='bx bx-cog'></i>Settings</a></li>
+
+        </ul>
+
+        <div class="sidebar-bottom">
+            <a href="{% url 'user-logout' %}">
+                <i class='bx bx-log-out'></i>
+                Logout
+            </a>
+        </div>
+
+    </aside>

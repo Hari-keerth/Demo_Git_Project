@@ -24,58 +24,7 @@
 
 <body>
 
-<button
-    class="menu-toggle"
-    onclick="toggleSidebar()">
-
-    <i class='bx bx-menu'></i>
-
-</button>
-
-<div
-    class="sidebar-overlay"
-    onclick="closeSidebar()">
-
-</div>
-
-<div class="dashboard">
-
-    <aside class="sidebar">
-
-        <div class="sidebar-logo">
-            <a href="#" class="nav-logo">
-                Career<span>Growza</span>
-            </a>
-        </div>
-
-        <ul class="sidebar-links">
-
-            <li><a href="#" class="active"><i class='bx bx-home'></i>Dashboard</a></li>
-
-            <li><a href="#"><i class='bx bx-file'></i>Resume Analyzer</a></li>
-
-            <li><a href="#"><i class='bx bx-bar-chart-alt-2'></i>ATS Score</a></li>
-
-            <li><a href="{% url 'ai_email' %}"><i class='bx bx-envelope'></i>AI Email</a></li>
-
-            <li><a href="#"><i class='bx bx-edit'></i>Cover Letter</a></li>
-
-            <li><a href="#"><i class='bx bx-history'></i>History</a></li>
-
-            <li><a href="#"><i class='bx bx-user'></i>Profile</a></li>
-
-            <li><a href="#"><i class='bx bx-cog'></i>Settings</a></li>
-
-        </ul>
-
-        <div class="sidebar-bottom">
-            <a href="#">
-                <i class='bx bx-log-out'></i>
-                Logout
-            </a>
-        </div>
-
-    </aside>
+{% include "navbar.html" with active_page="dashboard" %}
 
     <main class="main-content">
 

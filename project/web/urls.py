@@ -58,5 +58,11 @@ urlpatterns = [
         "profile/",
         views.profile,
         name="profile"
-    )
+    ),
+
+    path(
+        "user-logout",
+        views.user_logout,
+        name="user-logout"
+    ),
 ]

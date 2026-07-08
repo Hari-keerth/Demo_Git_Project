@@ -23,7 +23,7 @@
  <!-- ============ NAV (TOP — unchanged structure) ============ -->
   <header class="site-header" id="siteHeader">
     <div class="container nav-inner">
-      <a href="#top" class="logo">
+      <a href="{% url 'index' %}" class="logo">
         <span class="logo-dot"></span>
         CareerGrowza
       </a>
@@ -48,7 +48,9 @@
 
     <div class="wrapper">
 
-    <form action="#">
+    <form method="POST" autocomplete="off">
+
+        {% csrf_token %}
 
         <!-- Header -->
         <div class="login-header">
@@ -57,33 +59,30 @@
                 <i class="bx bx-user"></i>
             </div>
 
-            <h2>Welcome Back</h2>
-
-            <p class="subtitle">
-                Login to your account to continue
-            </p>
+            <div>
+                <h2>Welcome Back</h2>
+                <p class="subtitle">
+                    Login to your account to continue
+                </p>
+            </div>
 
         </div>
 
-        <!-- Email -->
+        <!-- Username -->
         <div class="input-field email-field">
 
             <i class="bx bx-envelope input-icon"></i>
 
-            <input
-                type="email"
-                class="email"
-                placeholder="Enter your Email"
-                autocomplete="email"
-                required>
+            {{ form.username }}
 
-            <span class="error email-error">
-                <i class="bx bx-error-circle error-icon"></i>
-
-                <p class="error-text">
-                    Please enter a valid email.
-                </p>
-            </span>
+            {% if form.username.errors %}
+                <span class="error email-error">
+                    <i class="bx bx-error-circle error-icon"></i>
+                    <p class="error-text">
+                        {{ form.username.errors.0 }}
+                    </p>
+                </span>
+            {% endif %}
 
         </div>
 
@@ -92,30 +91,35 @@
 
             <i class="bx bx-lock-alt input-icon"></i>
 
-            <input
-                type="password"
-                class="password"
-                placeholder="Enter your Password"
-                autocomplete="current-password"
-                required>
+            {{ form.password }}
 
             <i class="bx bx-hide show-hide"></i>
 
-            <span class="error password-error">
-                <i class="bx bx-error-circle error-icon"></i>
-
-                <p class="error-text">
-                    Please enter your password.
-                </p>
-            </span>
+            {% if form.password.errors %}
+                <span class="error password-error">
+                    <i class="bx bx-error-circle error-icon"></i>
+                    <p class="error-text">
+                        {{ form.password.errors.0 }}
+                    </p>
+                </span>
+            {% endif %}
 
         </div>
+
+        <!-- Login Error -->
+        {% if form.non_field_errors %}
+            <div class="error">
+                {% for error in form.non_field_errors %}
+                    <p class="error-text">{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
 
         <!-- Remember -->
         <div class="forget">
 
             <label>
-                <input type="checkbox" id="remember">
+                <input type="checkbox">
                 Remember me
             </label>
 
@@ -123,7 +127,7 @@
 
         </div>
 
-        <!-- Login Button -->
+        <!-- Button -->
         <button type="submit">
             Log In
             <i class="bx bx-right-arrow-alt"></i>
@@ -143,7 +147,6 @@
                 <a href="{% url 'register' %}">
                     Create Account
                 </a>
-
             </p>
 
         </div>

@@ -3,8 +3,14 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.files.storage import default_storage
 import os
-# from .models import Register
-# from .forms import RegisterForm
+
+
+from .forms import ProfileForm
+from .forms import CreateUserForm,LoginForm
+from django.contrib.auth.models import auth
+from django.contrib.auth import authenticate
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 from reportlab.platypus import (
         SimpleDocTemplate,
@@ -40,13 +46,17 @@ def ai_email(request):
         return render(request, "ai_email.html")
 
 def dashboard(request):
-        return render(request, "dashboard.html")
 
-def login(request):
-        return render(request, "login.html")
+    profile = request.user.profile
 
-def register(request):
-        return render(request, "register.html")
+    return render(request, "dashboard.html", {
+        "profile": profile
+    })
+
+
+def profile(request):
+        return render(request, "profile.html")
+
 
 def extract_resume_text(pdf_file):
 
@@ -742,16 +752,60 @@ def download_cover_letter_pdf(request):
 
         return response
 
-
-
-# def register(request):
-#     if request.method == "POST":
-#         form = RegisterForm(request.POST or None)
-#         if form.is_valid():
-#             form.save()
-#         return redirect('login')
-#     else:
-#         return render(request, "register.html", {})
-
 def profile(request):
         return render(request, "profile.html")
+
+# register a user
+def register(request):
+
+    if request.method == "POST":
+
+        user_form = CreateUserForm(request.POST)
+        profile_form = ProfileForm(request.POST)
+
+        if user_form.is_valid() and profile_form.is_valid():
+
+            user = user_form.save()
+
+            profile = profile_form.save(commit=False)
+            profile.user = user
+            profile.save()
+
+            return redirect('login')
+
+    else:
+        user_form = CreateUserForm()
+        profile_form = ProfileForm()
+
+    return render(request, 'register.html', {
+        'form': user_form,
+        'profile_form': profile_form
+    })
+
+
+#-- login a user
+
+def login(request):
+    form =LoginForm()
+    if request.method == "POST":
+        form = LoginForm(request, data=request.POST)
+        if form.is_valid():
+            username=request.POST.get('username')
+            password=request.POST.get('password')
+            user = authenticate(request , username=username , password=password)
+            if user is not None:
+                auth.login(request,user)
+                messages.success(request ,'Logged in')
+                return redirect('dashboard')
+    context ={'form':form}
+
+    return render (request,'login.html',context=context)
+
+
+
+# user logout
+
+def user_logout(request):
+    auth.logout(request)
+    messages.success(request ,'Logout Successful')
+    return redirect("login")
