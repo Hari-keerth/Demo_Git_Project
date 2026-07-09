@@ -370,7 +370,7 @@
 
 .login-header h2{
 
-    font-size:28px;
+    font-size:clamp(2rem,5vw,3.5rem);
 
 }
 

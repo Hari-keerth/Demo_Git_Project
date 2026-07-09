@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registration Page</title>
+    <title>CareerGrowza | Registration</title>
 
     <link rel="stylesheet" href = "{% static 'css/common.css' %}">
     <link rel="stylesheet" href = "{% static 'css/layout.css' %}">
@@ -52,19 +52,146 @@
     <div class="wrapper register-wrapper">
 
         <form method="POST" autocomplete="off">
-                {% csrf_token %}
 
-                {{user_form|crispy}}
-                {{profile_form|crispy}}
+          {% csrf_token %}
 
-                <button type="submit" class="btn btn-primary w-100 btn-block p-2">
-                    Create account &nbsp; <i class="fa fa-user"></i>
-                </button>
-            </form>
+          <!-- Header -->
+          <div class="login-header">
+
+              <div class="login-icon">
+                  <i class="bx bx-user"></i>
+              </div>
+
+              <h2>Register</h2>
+
+              <p class="subtitle">
+                  Create your CareerGrowza account
+              </p>
+
+          </div>
+
+          <!-- Username & Email -->
+
+
+              <div class="input-field">
+                  {{ user_form.username }}
+              </div>
+
+              <div class="input-field">
+                  {{ profile_form.email }}
+              </div>
+
+
+
+          <!-- First & Last Name -->
+          <div class="form-row">
+
+              <div class="input-field">
+                  {{ profile_form.first_name }}
+              </div>
+
+              <div class="input-field">
+                  {{ profile_form.last_name }}
+              </div>
+
+          </div>
+
+          <!-- Phone & Age -->
+          <div class="form-row">
+
+              <div class="input-field">
+                  {{ profile_form.phone }}
+              </div>
+
+              <div class="input-field">
+                  {{ profile_form.age }}
+              </div>
+
+          </div>
+
+          <!-- Address -->
+
+              <div class="input-field full-width">
+                  {{ profile_form.address }}
+              </div>
+
+
+          <!-- City & Country -->
+          <div class="form-row">
+
+              <div class="input-field">
+                  {{ profile_form.city }}
+              </div>
+
+              <div class="input-field">
+                  {{ profile_form.country }}
+              </div>
+
+          </div>
+
+          <!-- Password -->
+          <div class="form-row">
+
+              <div class="input-field password-field">
+
+                  {{ user_form.password1 }}
+
+                  <i class="bx bx-hide show-hide"></i>
+
+              </div>
+
+              <div class="input-field password-field">
+
+                  {{ user_form.password2 }}
+
+                  <i class="bx bx-hide show-hide"></i>
+
+              </div>
+
+          </div>
+
+          <!-- Form Errors -->
+          {% if user_form.errors or profile_form.errors %}
+
+              <div class="form-errors">
+
+                  {{ user_form.non_field_errors }}
+
+                  {{ profile_form.non_field_errors }}
+
+              </div>
+
+          {% endif %}
+
+          <!-- Submit -->
+          <button type="submit">
+
+              Sign Up
+
+              <i class="bx bx-right-arrow-alt"></i>
+
+          </button>
+
+          <!-- Login Link -->
+          <div class="register">
+
+              <p>
+
+                  Already have an account?
+
+                  <a href="{% url 'login' %}">
+                      Login
+                  </a>
+
+              </p>
+
+          </div>
+
+      </form>
 
     </div>
 
-    <script src="js/reg.js"></script>
+    <script src="{% static 'js/reg.js' %}"></script>
 
 </body>
 

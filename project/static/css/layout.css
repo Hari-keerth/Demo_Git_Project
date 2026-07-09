@@ -115,9 +115,11 @@ body{
 
 .wrapper{
 
-    width:430px;
+    width:min(92%, 420px);
 
-    padding:45px;
+    min-height:700px;
+
+    padding:40px;
 
     margin:auto;
 

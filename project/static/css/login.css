@@ -4,10 +4,29 @@
 =========================== */
 
 body.auth-body{
+
     display:flex;
+
     justify-content:center;
-    align-items:center;
-    overflow-y:hidden;
+
+    align-items:flex-start;
+
+    min-height:100vh;
+
+    padding:120px 20px 50px;
+
+    overflow-y:auto;
+
+    overflow-x:hidden;
+
+}
+
+.register-wrapper{
+
+    width:min(92%,720px);
+
+    margin-bottom:40px;
+
 }
 
 form{

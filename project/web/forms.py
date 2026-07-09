@@ -53,7 +53,20 @@ class ProfileForm(forms.ModelForm):
         ]
 
         widgets = {
-            'phone': forms.TextInput(attrs={
+            'first_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter Your First Name'
+            }),
+            'last_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter Your Last Name',
+                'rows': 3
+            }),
+            'email': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter Your Email'
+            }),
+            'phone': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Enter Phone Number'
             }),
@@ -65,5 +78,17 @@ class ProfileForm(forms.ModelForm):
             'age': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Enter Age'
+            }),
+            'address': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter Address'
+            }),
+            'city': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter City'
+            }),
+            'country': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter Country'
             }),
         }
