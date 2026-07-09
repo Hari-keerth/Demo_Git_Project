@@ -3,7 +3,7 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.files.storage import default_storage
 import os
-
+from .models import Profile
 
 from .forms import ProfileForm
 from .forms import CreateUserForm,LoginForm
@@ -46,16 +46,15 @@ def ai_email(request):
         return render(request, "ai_email.html")
 
 def dashboard(request):
-
-    profile = request.user.profile
-
-    return render(request, "dashboard.html", {
-        "profile": profile
-    })
+    profile, created = Profile.objects.get_or_create(user=request.user)
+    context= {"profile":profile}
+    return render(request, "dashboard.html", context = context)
 
 
 def profile(request):
-        return render(request, "profile.html")
+    profile, created = Profile.objects.get_or_create(user=request.user)
+    context= {"profile":profile}
+    return render(request, "profile.html",context = context)
 
 
 def extract_resume_text(pdf_file):
@@ -752,35 +751,43 @@ def download_cover_letter_pdf(request):
 
         return response
 
-def profile(request):
-        return render(request, "profile.html")
+
+
+
+
+
+
+
 
 # register a user
 def register(request):
-
     if request.method == "POST":
-
         user_form = CreateUserForm(request.POST)
         profile_form = ProfileForm(request.POST)
 
         if user_form.is_valid() and profile_form.is_valid():
-
-            user = user_form.save()
-
+            # 1. Save the user first to generate their database ID
+            new_user = user_form.save()
+            
+            # 2. Hold the profile in memory without writing to the database yet
             profile = profile_form.save(commit=False)
-            profile.user = user
+            
+            # 3. Manually link the profile to the newly created user
+            profile.user = new_user
+            
+            # 4. Now it is safe to save the profile to the database
             profile.save()
-
+            
             return redirect('login')
-
     else:
         user_form = CreateUserForm()
         profile_form = ProfileForm()
 
     return render(request, 'register.html', {
-        'form': user_form,
+        'user_form': user_form,
         'profile_form': profile_form
     })
+
 
 
 #-- login a user

@@ -42,9 +42,14 @@ class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
         fields = [
-            'phone',
-            'address',
-            'age',
+          "first_name",
+          "last_name",
+          "email",
+          "phone",
+          "age",
+          "address",
+          "city",
+          "country",
         ]
 
         widgets = {

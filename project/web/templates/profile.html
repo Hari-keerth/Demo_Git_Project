@@ -48,11 +48,11 @@
 
                 </div>
 
-                <h2>{{ user.name }}</h2>
+                <h3>{{ profile.user }}</h3>
 
                 <p class="profile-email">
 
-                    {{ user.email }}
+                    {{ profile.age }}
 
                 </p>
 
@@ -76,14 +76,7 @@
 
                     </label>
 
-                    <p>
-
-                        {%for item in all %}
-
-                        {{ item }}
-
-                        {% endfor %}
-
+                    <p>{{profile}}
                     </p>
 
                 </div>
@@ -96,13 +89,7 @@
 
                     </label>
 
-                    <p>
-
-                        {%for item in all %}
-
-                        {{ item.age }}
-
-                        {% endfor %}
+                    <p>{{profile.age}}
 
                     </p>
 
@@ -116,37 +103,12 @@
 
                     </label>
 
-                    <p>
-
-                        {%for item in all %}
-
-                        {{ item.email }}
-
-                        {% endfor %}
-
+                    <p>{{profile.email}}
                     </p>
 
                 </div>
 
-                <div class="profile-item">
-
-                    <label>
-
-                        Password
-
-                    </label>
-
-                    <p>
-
-                        {%for item in all %}
-
-                        {{ item.password }}
-
-                        {% endfor %}
-
-                    </p>
-
-                </div>
+            
 
                 <div class="profile-item">
 
@@ -158,7 +120,7 @@
 
                     <p>
 
-                        {{ user.date_joined|date:"d M Y" }}
+                        {{ profile.creation_date|date:"d M Y" }}
 
                     </p>
 
