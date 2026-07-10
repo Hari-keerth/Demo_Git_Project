@@ -2,7 +2,7 @@
 .env
 
 # Google OAuth secrets
-secrets/client_secret.json
+project/secrets/client_secret.json
 
 # SQLite database
 db.sqlite3
