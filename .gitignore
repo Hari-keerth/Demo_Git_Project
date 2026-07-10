@@ -2,8 +2,7 @@
 .env
 
 # Google OAuth secrets
-secrets/
-client_secret.json
+secrets/client_secret.json
 
 # SQLite database
 db.sqlite3
@@ -15,3 +14,4 @@ __pycache__/
 # Media uploads
 media/
 
+project/web/recommendation/.env
