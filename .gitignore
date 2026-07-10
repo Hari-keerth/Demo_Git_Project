@@ -1,1 +1,17 @@
+# Environment variables
+.env
+
+# Google OAuth secrets
+secrets/
+client_secret.json
+
+# SQLite database
+db.sqlite3
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Media uploads
+media/
 

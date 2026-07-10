@@ -39,14 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     'web',
-    'crispy_forms',
-    "crispy_bootstrap4",
 ]
-# 1. Allow the Bootstrap 4 pack
-CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4"
-
-# 2. Set it as the default
-CRISPY_TEMPLATE_PACK = "bootstrap4"
 
 
 MIDDLEWARE = [
@@ -141,3 +134,13 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "sp.pathiyoor@gmail.com"
 
 EMAIL_HOST_PASSWORD = "kkqw ddoy dshj jzmy"
+
+#-----------
+
+GOOGLE_CLIENT_SECRETS_FILE = BASE_DIR / "secrets/client_secret.json"
+
+GOOGLE_REDIRECT_URI = "http://127.0.0.1:8000/google/callback/"
+
+import os
+
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"

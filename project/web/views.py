@@ -33,6 +33,18 @@ from pypdf import PdfReader
 
 from django.conf import settings
 
+from .services.gmail_service import send_gmail
+from .models import GmailConnection
+from google_auth_oauthlib.flow import Flow
+from .services.gmail_service import (
+    get_google_flow,
+    exchange_code
+)
+import tempfile
+from googleapiclient.discovery import build
+
+from web.recommendation.recc_engine import get_recommendations, normalize_jobs, search_jobs
+
 
 import io
 import json
@@ -54,7 +66,41 @@ def dashboard(request):
 def profile(request):
     profile, created = Profile.objects.get_or_create(user=request.user)
     context= {"profile":profile}
+    gmail = GmailConnection.objects.filter(
+
+        user=request.user,
+
+        connected=True
+
+    ).first()
+
+    context={
+
+        "gmail_connected":gmail is not None,
+
+        "gmail_email":gmail.gmail_email if gmail else ""
+
+    }
     return render(request, "profile.html",context = context)
+    
+@login_required
+def disconnect_gmail(request):
+
+    gmail = GmailConnection.objects.get(
+
+        user=request.user
+
+    )
+
+    gmail.connected = False
+
+    gmail.access_token = ""
+
+    gmail.refresh_token = ""
+
+    gmail.save()
+
+    return redirect("profile")
 
 
 def extract_resume_text(pdf_file):
@@ -520,33 +566,42 @@ def send_application(request):
             cover_letter
         )
 
-        # Create Email
-        email = EmailMessage(
+        
+        resume_full_path = os.path.join(
+            settings.MEDIA_ROOT,
+            resume_path
+        )
+
+        with tempfile.NamedTemporaryFile(
+            delete=False,
+            suffix=".pdf"
+        ) as temp_cover:
+
+            temp_cover.write(cover_pdf)
+
+            cover_path = temp_cover.name
+
+        send_gmail(
+
+            user=request.user,
+
+            to_email=recruiter_email,
+
             subject=subject,
+
             body=email_body,
-            from_email=settings.EMAIL_HOST_USER,
-            to=[recruiter_email]
+
+            attachments=[
+
+                resume_full_path,
+
+                cover_path
+
+            ]
+
         )
 
-        # Attach Resume PDF
-        email.attach_file(
-            os.path.join(
-                settings.MEDIA_ROOT,
-                resume_path
-            )
-        )
-
-        # Attach Generated Cover Letter PDF
-        email.attach(
-            "Cover_Letter.pdf",
-            cover_pdf,
-            "application/pdf"
-        )
-
-        # Send Email
-        email.send(
-            fail_silently=False
-        )
+        os.remove(cover_path)
 
         # Delete Temporary Resume
         resume_full_path = os.path.join(
@@ -585,38 +640,55 @@ def send_application(request):
 @csrf_exempt
 def send_email_api(request):
 
-        if request.method != "POST":
-            return JsonResponse(
-                {"error": "POST required"},
-                status=400
-            )
+    if request.method != "POST":
+        return JsonResponse(
+            {"error": "POST required"},
+            status=400
+        )
+    
+    try:
 
-        try:
+        gmail = GmailConnection.objects.get(
 
-            data = json.loads(request.body)
+            user=request.user,
 
-            to_email = data.get("to")
-            subject = data.get("subject")
-            body = data.get("body")
+            connected=True
 
-            email = EmailMessage(
-                subject=subject,
-                body=body,
-                to=[to_email]
-            )
+        )
 
-            email.send()
+    except GmailConnection.DoesNotExist:
 
-            return JsonResponse({
-                "status": "success"
-            })
+        return JsonResponse({
 
-        except Exception as e:
+            "error":"Please connect Gmail first."
 
-            return JsonResponse({
-                "error": str(e)
-            }, status=500)
-        
+        }, status=400)
+
+    try:
+
+        data = json.loads(request.body)
+
+        to_email = data.get("to")
+        subject = data.get("subject")
+        body = data.get("body")
+
+        send_gmail(
+            user=request.user,
+            to_email=to_email,
+            subject=subject,
+            body=body
+        )
+
+        return JsonResponse({
+            "status": "success"
+        })
+
+    except Exception as e:
+
+        return JsonResponse({
+            "error": str(e)
+        }, status=500)
+    
 @csrf_exempt
 def download_email_pdf(request):
 
@@ -753,12 +825,6 @@ def download_cover_letter_pdf(request):
 
 
 
-
-
-
-
-
-
 # register a user
 def register(request):
     if request.method == "POST":
@@ -816,3 +882,105 @@ def user_logout(request):
     auth.logout(request)
     messages.success(request ,'Logout Successful')
     return redirect("login")
+
+#--gmail
+
+def google_login(request):
+
+    flow = get_google_flow()
+
+    authorization_url, state = flow.authorization_url(
+
+        access_type="offline",
+
+        include_granted_scopes="true",
+
+        prompt="consent"
+
+    )
+
+    request.session["google_state"] = state
+
+    return redirect(authorization_url)
+
+def google_callback(request):
+
+    state = request.session.get("google_state")
+
+    flow = get_google_flow(state)
+
+    flow.fetch_token(
+        authorization_response=request.build_absolute_uri()
+    )
+
+    credentials = flow.credentials
+
+    service = build(
+        "gmail",
+        "v1",
+        credentials=credentials
+    )
+
+    profile = service.users().getProfile(
+        userId="me"
+    ).execute()
+
+    GmailConnection.objects.update_or_create(
+
+        user=request.user,
+
+        defaults={
+
+            "gmail_email": profile["emailAddress"],
+
+            "access_token": credentials.token,
+
+            "refresh_token": credentials.refresh_token,
+
+            "token_expiry": credentials.expiry,
+
+            "connected": True,
+
+        }
+
+    )
+
+    return redirect("dashboard")
+
+
+#---------Recommendation------------
+
+# 1. DASHBOARD VIEW: Shows all 20 raw jobs fetched from Adzuna
+def dashboard_all_jobs_view(request):
+    # For now, searching 'Python Developer'. 
+    raw_adzuna_jobs = search_jobs("Python Developer")
+    cleaned_adzuna_jobs = normalize_jobs(raw_adzuna_jobs)
+    
+    context = {
+        'adzuna_jobs': cleaned_adzuna_jobs
+    }
+    return render(request, 'live_jobs.html', context)
+
+# 2. RECOMMENDATION VIEW: Shows your custom AI Top 10 matching jobs
+def recommendations_page_view(request):
+    # Dummy resume data for testing the algorithm match
+    sample_resume = {
+        "technical_skills": ["Python", "Django", "SQL", "Git"],
+        "tools": ["Docker"],
+        "frameworks": [],
+        "databases": ["PostgreSQL"],
+        "cloud_skills": ["AWS"],
+        "project_skills": [],
+        "soft_skills": ["Communication"],
+        "degrees": ["B.Tech Computer Science"],
+        "total_experience_years": 2,
+        "job_titles": ["Python Developer"]
+    }
+    
+    # Gets the calculated top 10 recommended jobs via cosine similarity
+    recommended_jobs = get_recommendations(sample_resume)
+    
+    context = {
+        'recommendations': recommended_jobs
+    }
+    return render(request, 'recomend_jobs.html', context)

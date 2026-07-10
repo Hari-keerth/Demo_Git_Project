@@ -23,3 +23,20 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.first_name + "   " + self.last_name
+    
+class GmailConnection(models.Model):
+
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE
+    )
+
+    gmail_email = models.EmailField(blank=True)
+
+    access_token = models.TextField()
+
+    refresh_token = models.TextField()
+
+    token_expiry = models.DateTimeField()
+
+    connected = models.BooleanField(default=True)

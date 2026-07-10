@@ -65,4 +65,43 @@ urlpatterns = [
         views.user_logout,
         name="user-logout"
     ),
+
+    #--gmail
+
+    path(
+        "google/login/",
+        views.google_login,
+        name="google_login"
+    ),
+
+    path(
+        "google/callback/",
+        views.google_callback,
+        name="google_callback"
+    ),
+
+    path(
+
+        "google/disconnect/",
+
+        views.disconnect_gmail,
+
+        name="disconnect_gmail"
+
+    ),
+
+
+    #--recommendation---
+
+    path(
+        "dashboard_all_jobs_view/",
+        views.dashboard_all_jobs_view,
+        name="dashboard_all_jobs_view"
+    ),
+
+    path(
+        "recommendations_page_view/",
+        views.recommendations_page_view,
+        name="recommendations_page_view"
+    ),
 ]

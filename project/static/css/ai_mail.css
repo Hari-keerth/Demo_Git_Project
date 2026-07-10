@@ -493,3 +493,71 @@
     }
 
 }
+
+/* ------EMAIL-------- */
+
+.gmail-status{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+    margin:20px 0;
+
+}
+
+.gmail-info h4{
+
+    margin:0;
+
+    font-size:18px;
+
+}
+
+.gmail-info p{
+
+    margin:4px 0 0;
+
+    color:#666;
+
+    font-size:14px;
+
+}
+
+.status-dot{
+
+    width:12px;
+
+    height:12px;
+
+    border-radius:50%;
+
+    background:#22c55e;
+
+}
+
+.status-dot.offline{
+
+    background:#ef4444;
+
+}
+
+.disconnect-btn{
+
+    margin-left:auto;
+
+    color:#ef4444;
+
+    text-decoration:none;
+
+    font-weight:600;
+
+}
+
+.disconnect-btn:hover{
+
+    text-decoration:underline;
+
+}
