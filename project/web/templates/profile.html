@@ -1,0 +1,212 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>CareerGrowza | Profile</title>
+
+    <link rel="stylesheet"
+          href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+
+    <link rel="stylesheet"
+          href="{% static 'css/common.css' %}">
+
+    <link rel="stylesheet"
+          href="{% static 'css/layout.css' %}">
+
+    <link rel="stylesheet"
+          href="{% static 'css/sidebar.css' %}">
+
+    <link rel="stylesheet"
+          href="{% static 'css/profile.css' %}">
+
+</head>
+
+<body>
+
+{% include "navbar.html" with active_page="profile" %}
+
+    <!-- Main -->
+
+    <main class="main-content">
+
+        <div class="profile-wrapper">
+
+            <!-- Header -->
+
+            <div class="profile-header">
+
+                <div class="profile-image">
+
+                    <i class='bx bx-user'></i>
+
+                </div>
+
+                <h3>{{ profile.user }}</h3>
+
+                <p class="profile-email">
+
+                    {{ profile.age }}
+
+                </p>
+
+                <span class="status">
+
+                    Active Member
+
+                </span>
+
+            </div>
+
+            <!-- Information -->
+
+            <div class="profile-info">
+
+                <div class="profile-item">
+
+                    <label>
+
+                        Full Name
+
+                    </label>
+
+                    <p>{{profile}}
+                    </p>
+
+                </div>
+
+                <div class="profile-item">
+
+                    <label>
+
+                        Age
+
+                    </label>
+
+                    <p>{{profile.age}}
+
+                    </p>
+
+                </div>
+
+                <div class="profile-item">
+
+                    <label>
+
+                        Email
+
+                    </label>
+
+                    <p>{{profile.email}}
+                    </p>
+
+                </div>
+
+            
+
+                <div class="profile-item">
+
+                    <label>
+
+                        Member Since
+
+                    </label>
+
+                    <p>
+
+                        {{ profile.creation_date|date:"d M Y" }}
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <!-- Buttons -->
+            <div class="profile-buttons">
+
+                <!-- Gmail Connection -->
+                {% if gmail_connected %}
+
+                    <button class="gmail-btn" disabled>
+                        ✓ Gmail Connected
+                    </button>
+
+                    <div class="gmail-status">
+
+                        <span class="status-dot"></span>
+
+                        <div class="gmail-info">
+
+                            <h4>Connected</h4>
+
+                            <p>{{ gmail_email }}</p>
+
+                        </div>
+
+                        <a href="{% url 'disconnect_gmail' %}" class="disconnect-btn">
+                            Disconnect
+                        </a>
+
+                    </div>
+
+                {% else %}
+
+                    <a href="{% url 'google_login' %}" class="gmail-btn">
+                        Connect Gmail
+                    </a>
+
+                    <div class="gmail-status">
+
+                        <span class="status-dot offline"></span>
+
+                        <div class="gmail-info">
+
+                            <h4>Not Connected</h4>
+
+                            <p>Connect Gmail to send emails.</p>
+
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+                <!-- Profile Buttons -->
+                <button>
+
+                    <i class='bx bx-edit'></i>
+
+                    Edit Profile
+
+                </button>
+
+                <button>
+
+                    <i class='bx bx-lock-alt'></i>
+
+                    Change Password
+
+                </button>
+
+            </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+<script src="{% static 'js/sidebar.js' %}"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,197 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareerGrowza | Registration</title>
+
+    <link rel="stylesheet" href = "{% static 'css/common.css' %}">
+    <link rel="stylesheet" href = "{% static 'css/layout.css' %}">
+    <link rel="stylesheet" href = "{% static 'css/login.css' %}">
+    <link rel="stylesheet" href="{% static 'css/index.css' %}">
+
+    <!-- Boxicons -->
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+    <link rel="stylesheet" href="templatemo-622-clearwave.css" />
+</head>
+
+<body class="auth-body">
+
+
+  <!-- ============ NAV (TOP — unchanged structure) ============ -->
+  <header class="site-header" id="siteHeader">
+    <div class="container nav-inner">
+      <a href="{% url 'index' %}" class="logo">
+        <span class="logo-dot"></span>
+        CareerGrowza
+      </a>
+
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <nav class="nav-links" id="navLinks">
+        <a href="#features">Product</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#stories">Stories</a>
+        <a href="{% url 'login' %}" class="nav-login">Log in</a>
+        <a href="{% url 'register' %}" class="btn btn-primary btn-small">Sign Up</a>
+      </nav>
+    </div>
+    <div class="nav-overlay" id="navOverlay"></div>
+  </header>
+
+
+
+
+    <div class="wrapper register-wrapper">
+
+        <form method="POST" autocomplete="off">
+
+          {% csrf_token %}
+
+          <!-- Header -->
+          <div class="login-header">
+
+              <div class="login-icon">
+                  <i class="bx bx-user"></i>
+              </div>
+
+              <h2>Register</h2>
+
+              <p class="subtitle">
+                  Create your CareerGrowza account
+              </p>
+
+          </div>
+
+          <!-- Username & Email -->
+
+
+              <div class="input-field">
+                  {{ user_form.username }}
+              </div>
+
+              <div class="input-field">
+                  {{ profile_form.email }}
+              </div>
+
+
+
+          <!-- First & Last Name -->
+          <div class="form-row">
+
+              <div class="input-field">
+                  {{ profile_form.first_name }}
+              </div>
+
+              <div class="input-field">
+                  {{ profile_form.last_name }}
+              </div>
+
+          </div>
+
+          <!-- Phone & Age -->
+          <div class="form-row">
+
+              <div class="input-field">
+                  {{ profile_form.phone }}
+              </div>
+
+              <div class="input-field">
+                  {{ profile_form.age }}
+              </div>
+
+          </div>
+
+          <!-- Address -->
+
+              <div class="input-field full-width">
+                  {{ profile_form.address }}
+              </div>
+
+
+          <!-- City & Country -->
+          <div class="form-row">
+
+              <div class="input-field">
+                  {{ profile_form.city }}
+              </div>
+
+              <div class="input-field">
+                  {{ profile_form.country }}
+              </div>
+
+          </div>
+
+          <!-- Password -->
+          <div class="form-row">
+
+              <div class="input-field password-field">
+
+                  {{ user_form.password1 }}
+
+                  <i class="bx bx-hide show-hide"></i>
+
+              </div>
+
+              <div class="input-field password-field">
+
+                  {{ user_form.password2 }}
+
+                  <i class="bx bx-hide show-hide"></i>
+
+              </div>
+
+          </div>
+
+          <!-- Form Errors -->
+          {% if user_form.errors or profile_form.errors %}
+
+              <div class="form-errors">
+
+                  {{ user_form.non_field_errors }}
+
+                  {{ profile_form.non_field_errors }}
+
+              </div>
+
+          {% endif %}
+
+          <!-- Submit -->
+          <button type="submit">
+
+              Sign Up
+
+              <i class="bx bx-right-arrow-alt"></i>
+
+          </button>
+
+          <!-- Login Link -->
+          <div class="register">
+
+              <p>
+
+                  Already have an account?
+
+                  <a href="{% url 'login' %}">
+                      Login
+                  </a>
+
+              </p>
+
+          </div>
+
+      </form>
+
+    </div>
+
+    <script src="{% static 'js/reg.js' %}"></script>
+
+</body>
+
+</html>

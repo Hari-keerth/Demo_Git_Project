@@ -1,0 +1,162 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareerGrowza | Login</title>
+
+    <link rel="stylesheet" href = "{% static 'css/common.css' %}">
+    <link rel="stylesheet" href = "{% static 'css/layout.css' %}">
+    <link rel="stylesheet" href = "{% static 'css/login.css' %}">
+    <link rel="stylesheet" href="{% static 'css/index.css' %}">
+
+    <!-- Boxicons -->
+    <link rel="stylesheet"
+        href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+    <link rel="stylesheet" href="templatemo-622-clearwave.css" />
+</head>
+
+<body class="auth-body">
+
+ <!-- ============ NAV (TOP — unchanged structure) ============ -->
+  <header class="site-header" id="siteHeader">
+    <div class="container nav-inner">
+      <a href="{% url 'index' %}" class="logo">
+        <span class="logo-dot"></span>
+        CareerGrowza
+      </a>
+
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <nav class="nav-links" id="navLinks">
+        <a href="#features">Product</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#stories">Stories</a>
+        <a href="{% url 'login' %}" class="nav-login">Log in</a>
+        <a href="{% url 'register' %}" class="btn btn-primary btn-small">Sign Up</a>
+      </nav>
+    </div>
+    <div class="nav-overlay" id="navOverlay"></div>
+  </header>
+
+
+    <div class="wrapper">
+
+    <form method="POST" autocomplete="off">
+
+        {% csrf_token %}
+
+        <!-- Header -->
+        <div class="login-header">
+
+            <div class="login-icon">
+                <i class="bx bx-user"></i>
+            </div>
+
+            <div>
+                <h2>Welcome Back</h2>
+                <p class="subtitle">
+                    Login to your account to continue
+                </p>
+            </div>
+
+        </div>
+
+        <!-- Username -->
+        <div class="input-field email-field">
+
+            <i class="bx bx-envelope input-icon"></i>
+
+            {{ form.username }}
+
+            {% if form.username.errors %}
+                <span class="error email-error">
+                    <i class="bx bx-error-circle error-icon"></i>
+                    <p class="error-text">
+                        {{ form.username.errors.0 }}
+                    </p>
+                </span>
+            {% endif %}
+
+        </div>
+
+        <!-- Password -->
+        <div class="input-field create-password">
+
+            <i class="bx bx-lock-alt input-icon"></i>
+
+            {{ form.password }}
+
+            <i class="bx bx-hide show-hide"></i>
+
+            {% if form.password.errors %}
+                <span class="error password-error">
+                    <i class="bx bx-error-circle error-icon"></i>
+                    <p class="error-text">
+                        {{ form.password.errors.0 }}
+                    </p>
+                </span>
+            {% endif %}
+
+        </div>
+
+        <!-- Login Error -->
+        {% if form.non_field_errors %}
+            <div class="error">
+                {% for error in form.non_field_errors %}
+                    <p class="error-text">{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Remember -->
+        <div class="forget">
+
+            <label>
+                <input type="checkbox">
+                Remember me
+            </label>
+
+            <a href="#">Forgot Password?</a>
+
+        </div>
+
+        <!-- Button -->
+        <button type="submit">
+            Log In
+            <i class="bx bx-right-arrow-alt"></i>
+        </button>
+
+        <!-- Divider -->
+        <div class="divider">
+            <span>or</span>
+        </div>
+
+        <!-- Register -->
+        <div class="register">
+
+            <p>
+                Don't have an account?
+
+                <a href="{% url 'register' %}">
+                    Create Account
+                </a>
+            </p>
+
+        </div>
+
+    </form>
+
+</div>
+
+    <script src="{% static 'js/index.js' %}"></script>
+
+</body>
+
+</html>

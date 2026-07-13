@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Smart Recommendations</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans">
+
+    <div class="max-w-5xl mx-auto px-4 py-8">
+        <header class="mb-10 text-center">
+            <span class="bg-emerald-100 text-emerald-800 text-xs px-3 py-1 rounded-full font-semibold uppercase tracking-wide">AI Powered</span>
+            <h1 class="text-4xl font-black text-gray-900 mt-2">Your Top 10 Job Matches</h1>
+            <p class="text-gray-500 mt-2 max-w-xl mx-auto">We've analyzed your resume and mapped it against available openings using machine learning scoring.</p>
+        </header>
+
+        {% if recommendations %}
+            <div class="space-y-6">
+                {% for job in recommendations %}
+                    <div class="bg-white rounded-xl border-l-4 border-emerald-500 shadow-xs border-y border-r border-gray-200 p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:shadow-md transition-shadow">
+                        
+                        <!-- Job Core Info -->
+                        <div class="flex-1">
+                            <h2 class="text-2xl font-bold text-gray-900">{{ job.title }}</h2>
+                            <p class="text-lg text-gray-600 font-medium mb-1">{{ job.company }}</p>
+                            <p class="text-sm text-gray-400 mb-4"> {{ job.location }}</p>
+
+                            <!-- Skills section -->
+                            <div class="space-y-2">
+                                {% if job.Matched_Skills %}
+                                <div>
+                                    <span class="text-xs font-bold text-emerald-600 block mb-1">✓ Matched Skills:</span>
+                                    <p class="text-sm text-gray-700 font-medium">{{ job.Matched_Skills }}</p>
+                                </div>
+                                {% endif %}
+
+                                {% if job.Missing_Skills %}
+                                <div>
+                                  <span class="text-xs font-bold text-amber-600 block mb-2">⚠ Missing Skills (Click to Learn):</span>
+                                  <div class="flex flex-wrap gap-2">
+                                    {% for skill in job.Missing_Skills.split|default_if_none:"" %}
+                                       {% if skill %}
+                                         <a href="https://www.youtube.com/results?search_query={{ skill|urlencode }}+tutorial+for+beginners" 
+                                            target="_blank" 
+                                            class="inline-flex items-center gap-1 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-1 rounded-md border border-amber-200 transition-colors shadow-2xs">
+                                           {{ skill|center:0 }}
+                                         </a>
+                                        {% endif %}
+                                    {% empty %}
+                                         <p class="text-sm text-gray-500 italic">{{ job.Missing_Skills }}</p>
+                                    {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Match Scoring Circle/Badge -->
+                        <div class="flex flex-col items-center justify-center bg-emerald-50 text-emerald-900 p-4 rounded-xl min-w-[140px] text-center border border-emerald-100">
+                            <span class="text-xs uppercase font-bold tracking-wider text-emerald-700">Match Score</span>
+                            <span class="text-3xl font-black mt-1">{{ job.match_percentage }}%</span>
+                            
+                            <!-- Simple visual progress indicator -->
+                            <div class="w-full bg-emerald-200 rounded-full h-1.5 mt-2">
+                                <div class="bg-emerald-600 h-1.5 rounded-full w-[{{ job.match_percentage }}%]"></div>
+                            </div>
+                        </div>
+
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-12 bg-white rounded-xl border border-gray-200 shadow-xs">
+                <p class="text-gray-500 text-lg">No AI recommendations found. Try adding more skills to your resume.</p>
+            </div>
+        {% endif %}
+    </div>
+
+</body>
+</html>

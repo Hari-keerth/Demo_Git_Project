@@ -1,0 +1,27 @@
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:40px;
+}
+.topbar h1{font-size:34px;color:#1c1c32;}
+.topbar-profile{display:flex;align-items:center;gap:15px;}
+
+.cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:25px;
+}
+
+.card{
+    background:rgba(255,255,255,.75);
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+    border:1px solid rgba(255,255,255,.6);
+    border-radius:22px;
+    padding:30px;
+    box-shadow:0 15px 35px rgba(80,90,180,.08);
+}
+.card i{font-size:34px;color:#6366f1;margin-bottom:18px;}
+.card h3{color:#666;font-size:15px;margin-bottom:10px;}
+.card h2{font-size:30px;margin:0;}
