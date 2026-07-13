@@ -195,6 +195,42 @@
 
                 </button>
 
+                <h3>Your Skills</h3>
+
+
+{% if skills %}
+
+<h5>Technical Skills</h5>
+
+{% for skill in skills.technical_skills %}
+<li>{{skill}}</li>
+{% endfor %}
+
+
+
+<h5>Frameworks</h5>
+
+{% for skill in skills.frameworks %}
+<li>{{skill}}</li>
+{% endfor %}
+
+
+
+<h5>Tools</h5>
+
+{% for skill in skills.tools %}
+<li>{{skill}}</li>
+{% endfor %}
+
+
+{% else %}
+
+<p>
+Upload your resume to extract skills.
+</p>
+
+{% endif %}
+
             </div>
 
             </div>

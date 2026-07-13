@@ -2,22 +2,181 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CareerGrowza | Resume Analyzer</title>
-  <!--
-  TemplateMo 622 Clearwave
-  https://templatemo.com/tm-622-clearwave
-  Free for personal and commercial use
-  -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet"
-          href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareerGrowza | Resume Analyzer</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 
     <link rel="stylesheet" href="{% static 'css/common.css' %}">
     <link rel="stylesheet" href="{% static 'css/layout.css' %}">
     <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/ai_mail.css' %}">
+
 </head>
+
+<body>
+
+{% include "navbar.html" with active_page="resume-analyzer" %}
+
+<main class="main-content">
+
+<div class="ai-wrapper">
+
+    <div class="login-header">
+
+        <div class="login-icon">
+            <i class='bx bx-briefcase-alt'></i>
+        </div>
+
+    </div>
+
+    <h2>AI Resume Analyzer</h2>
+
+    <p class="subtitle">
+        Upload your resume and compare it with a Job Description.
+    </p>
+
+    <form id="atsForm" enctype="multipart/form-data">
+
+        {% csrf_token %}
+
+        <!-- Job Description -->
+
+        <div class="input-field">
+
+            <i class='bx bx-file input-icon'></i>
+
+            <textarea
+                id="job_description"
+                name="job_description"
+                rows="10"
+                placeholder="Paste Job Description Here..."
+                required></textarea>
+
+        </div>
+
+        <!-- Resume Upload -->
+
+        <div class="input-field file-upload">
+
+            <label for="resume" class="upload-btn">
+
+                <i class='bx bx-cloud-upload'></i>
+
+                Upload Resume
+
+            </label>
+
+            <input
+                type="file"
+                id="resume"
+                name="resume"
+                accept=".pdf"
+                onchange="updateFileName(this)"
+                required>
+
+            <span id="file-name">
+                No file selected
+            </span>
+
+        </div>
+
+        <div class="button-group">
+
+            <button
+                id="ats-btn"
+                type="button"
+                onclick="calculate_ats_score()">
+
+                <i class='bx bx-magic-wand'></i>
+
+                Calculate ATS Score
+
+            </button>
+
+        </div>
+
+    </form>
+
+    <!-- Loading -->
+
+    <div id="loading" style="display:none; margin-top:20px;">
+
+        <h4>
+            <i class='bx bx-loader-alt bx-spin'></i>
+            Analyzing Resume...
+        </h4>
+
+    </div>
+
+    <!-- Result -->
+
+    <div id="ats-result" style="display:none; margin-top:40px;">
+
+        <h2>ATS Analysis Result</h2>
+
+        <hr>
+
+        <h3>
+            ATS Score :
+            <span id="ats-score">0%</span>
+        </h3>
+
+        <br>
+
+        <h3>Your Skills</h3>
+
+        <ul id="matched-skills"></ul>
+
+        <br>
+
+        <h3>Missing Skills</h3>
+
+        <ul id="missing-skills"></ul>
+
+        <br>
+
+        <h3>Recommended Skills</h3>
+
+        <ul id="recommended-skills"></ul>
+
+    </div>
+
+</div>
+
+</main>
+
+<script>
+
+function updateFileName(input){
+
+    const fileName=document.getElementById("file-name");
+
+    if(input.files.length>0){
+
+        fileName.innerHTML=input.files[0].name;
+
+    }
+
+    else{
+
+        fileName.innerHTML="No file selected";
+
+    }
+
+}
+
+</script>
+
+<script src="{% static 'js/ats.js' %}"></script>
+
+<script src="{% static 'js/sidebar.js' %}"></script>
+
+</body>
+</html>

@@ -3,7 +3,16 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.files.storage import default_storage
 import os
-from .models import Profile
+from .models import Profile,UserSkillProfile,ATSResult
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+
+from .utils.pdf_parser import extract_resume_text
+from .utils.groq_parser import parse_resume
+from .utils.groq_parser import parse_job_description
+
+from .utils.ats_engine import calculate_ats
+
 
 from .forms import ProfileForm
 from .forms import CreateUserForm,LoginForm
@@ -63,9 +72,16 @@ def dashboard(request):
     return render(request, "dashboard.html", context = context)
 
 
+@login_required
 def profile(request):
-    profile, created = Profile.objects.get_or_create(user=request.user)
-    context= {"profile":profile}
+
+    # Get or create user profile
+    profile, created = Profile.objects.get_or_create(
+        user=request.user
+    )
+
+
+    # Get Gmail connection status
     gmail = GmailConnection.objects.filter(
 
         user=request.user,
@@ -74,15 +90,45 @@ def profile(request):
 
     ).first()
 
-    context={
 
-        "gmail_connected":gmail is not None,
 
-        "gmail_email":gmail.gmail_email if gmail else ""
+    # Get saved skills
+    skills = UserSkillProfile.objects.filter(
+
+        profile=profile
+
+    ).first()
+
+
+
+    context = {
+
+        "profile": profile,
+
+
+        # Gmail details
+        "gmail_connected": gmail is not None,
+
+        "gmail_email":
+            gmail.gmail_email if gmail else "",
+
+
+        # User skills
+        "skills": skills
 
     }
-    return render(request, "profile.html",context = context)
-    
+
+
+
+    return render(
+
+        request,
+
+        "profile.html",
+
+        context=context
+
+    )
 @login_required
 def disconnect_gmail(request):
 
@@ -102,21 +148,6 @@ def disconnect_gmail(request):
 
     return redirect("profile")
 
-
-def extract_resume_text(pdf_file):
-
-        reader = PdfReader(pdf_file)
-
-        text = ""
-
-        for page in reader.pages:
-
-            page_text = page.extract_text()
-
-            if page_text:
-                text += page_text + "\n"
-
-        return text
 
 
 @csrf_exempt
@@ -984,3 +1015,427 @@ def recommendations_page_view(request):
         'recommendations': recommended_jobs
     }
     return render(request, 'recomend_jobs.html', context)
+
+
+
+def resume_analyzer(request):
+        return render(request, "resume_analyzer.html")
+
+
+@require_POST
+@require_POST
+@login_required
+def calculate_ats_score(request):
+
+    resume = request.FILES.get("resume")
+    job_description = request.POST.get("job_description")
+
+
+    # -----------------------------
+    # Validation
+    # -----------------------------
+
+    if not resume:
+        return JsonResponse({
+
+            "success": False,
+
+            "message": "Resume not uploaded."
+
+        })
+
+
+    if not job_description:
+
+        return JsonResponse({
+
+            "success": False,
+
+            "message": "Job Description missing."
+
+        })
+
+
+
+    try:
+
+
+        # -----------------------------
+        # Step 1
+        # Extract Resume Text
+        # -----------------------------
+
+        resume_text = extract_resume_text(
+            resume
+        )
+
+
+
+        # -----------------------------
+        # Step 2
+        # Groq Resume Parsing
+        # -----------------------------
+
+        resume_json = parse_resume(
+            resume_text
+        )
+
+
+
+        # -----------------------------
+        # Step 3
+        # Groq Job Description Parsing
+        # -----------------------------
+
+        jd_json = parse_job_description(
+            job_description
+        )
+
+
+
+        # -----------------------------
+        # Step 4
+        # ATS Calculation
+        # -----------------------------
+
+        result = calculate_ats(
+
+            resume_json,
+
+            jd_json
+
+        )
+
+
+
+        # -----------------------------
+        # Convert numpy values
+        # -----------------------------
+
+        def convert_numpy(obj):
+
+            import numpy as np
+
+
+            if isinstance(obj, np.generic):
+
+                return obj.item()
+
+
+
+            elif isinstance(obj, dict):
+
+                return {
+
+                    key: convert_numpy(value)
+
+                    for key, value in obj.items()
+
+                }
+
+
+
+            elif isinstance(obj, list):
+
+                return [
+
+                    convert_numpy(item)
+
+                    for item in obj
+
+                ]
+
+
+            return obj
+
+
+
+        result = convert_numpy(
+            result
+        )
+
+
+
+        # -----------------------------
+        # Save User Skills
+        # -----------------------------
+
+
+        profile, created = Profile.objects.get_or_create(
+
+            user=request.user
+
+        )
+
+
+
+        UserSkillProfile.objects.update_or_create(
+
+            profile=profile,
+
+
+            defaults={
+
+
+                "technical_skills":
+                    resume_json.get(
+
+                        "technical_skills",
+
+                        []
+
+                    ),
+
+
+
+                "tools":
+
+                    resume_json.get(
+
+                        "tools",
+
+                        []
+
+                    ),
+
+
+
+                "frameworks":
+
+                    resume_json.get(
+
+                        "frameworks",
+
+                        []
+
+                    ),
+
+
+
+                "databases":
+
+                    resume_json.get(
+
+                        "databases",
+
+                        []
+
+                    ),
+
+
+
+                "cloud_skills":
+
+                    resume_json.get(
+
+                        "cloud_skills",
+
+                        []
+
+                    ),
+
+
+
+                "soft_skills":
+
+                    resume_json.get(
+
+                        "soft_skills",
+
+                        []
+
+                    )
+
+
+            }
+
+        )
+
+
+
+
+        # -----------------------------
+        # Save ATS Result
+        # -----------------------------
+
+
+        ATSResult.objects.create(
+
+
+            user=request.user,
+
+
+            resume=resume,
+
+
+            job_description=job_description,
+
+
+            resume_json=resume_json,
+
+
+            jd_json=jd_json,
+
+
+            ats_score=result.get(
+
+                "ats_score",
+
+                0
+
+            ),
+
+
+
+            matched_skills=result.get(
+
+                "matched_skills",
+
+                []
+
+            ),
+
+
+
+            missing_skills=result.get(
+
+                "missing_skills",
+
+                []
+
+            ),
+
+
+
+            recommended_skills=result.get(
+
+                "recommended_skills",
+
+                []
+
+            ),
+
+
+
+            strengths=result.get(
+
+                "strengths",
+
+                []
+
+            ),
+
+
+
+            improvements=result.get(
+
+                "improvements",
+
+                []
+
+            )
+
+
+        )
+
+
+
+
+        # -----------------------------
+        # Send Response to HTML
+        # -----------------------------
+
+
+        return JsonResponse({
+
+
+            "success": True,
+
+
+            "ats_score":
+
+                result.get(
+
+                    "ats_score",
+
+                    0
+
+                ),
+
+
+
+            "matched_skills":
+
+                result.get(
+
+                    "matched_skills",
+
+                    []
+
+                ),
+
+
+
+            "missing_skills":
+
+                result.get(
+
+                    "missing_skills",
+
+                    []
+
+                ),
+
+
+
+            "recommended_skills":
+
+                result.get(
+
+                    "recommended_skills",
+
+                    []
+
+                ),
+
+
+
+            "strengths":
+
+                result.get(
+
+                    "strengths",
+
+                    []
+
+                ),
+
+
+
+            "improvements":
+
+                result.get(
+
+                    "improvements",
+
+                    []
+
+                )
+
+        })
+
+
+
+    except Exception as e:
+
+
+        return JsonResponse({
+
+
+            "success": False,
+
+
+            "error": str(e)
+
+
+        }, status=500)

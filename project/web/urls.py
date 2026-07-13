@@ -104,4 +104,12 @@ urlpatterns = [
         views.recommendations_page_view,
         name="recommendations_page_view"
     ),
+    path( "resume-analyzer",
+        views.resume_analyzer,
+        name="resume-analyzer"),
+          path(
+        "calculate-ats/",
+        views.calculate_ats_score,
+        name="calculate_ats"
+    ),
 ]

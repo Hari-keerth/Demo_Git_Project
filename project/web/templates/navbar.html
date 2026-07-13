@@ -27,7 +27,7 @@
 
             <li><a href="{% url 'dashboard' %}" class="{% if request.path == '/dashboard/' %}active{% endif %}"><i class='bx bx-home'></i>Dashboard</a></li>
 
-            <li><a href="#" class="{% if request.path == '#' %}active{% endif %}"><i class='bx bx-file'></i>Resume Analyzer</a></li>
+            <li><a href="{% url 'resume-analyzer' %}" class="{% if request.path == '/resume-analyzer' %}active{% endif %}"><i class='bx bx-file'></i>Resume Analyzer</a></li>
 
             <li><a href="#" class="{% if request.path == '#' %}active{% endif %}"><i class='bx bx-bar-chart-alt-2'></i>ATS Score</a></li>
 
