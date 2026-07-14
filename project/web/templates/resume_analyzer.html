@@ -2,22 +2,207 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CareerGrowza | Resume Analyzer</title>
-  <!--
-  TemplateMo 622 Clearwave
-  https://templatemo.com/tm-622-clearwave
-  Free for personal and commercial use
-  -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet"
-          href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareerGrowza | Resume Analyzer</title>
+    <link rel="icon" type="image/png" sizes="512x512" href="{% static 'images/favicon/CareerGrowza_Favicon.png' %}">
+    <link rel="shortcut icon" href="{% static 'images/favicon/favicon.ico' %}">
 
     <link rel="stylesheet" href="{% static 'css/common.css' %}">
     <link rel="stylesheet" href="{% static 'css/layout.css' %}">
     <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/resume_analyzer.css' %}">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 </head>
+
+<body>
+
+{% include "navbar.html" with active_page="resume-analyzer" %}
+
+
+<main class="main-content">
+
+<div class="resume-container">
+
+    <div class="hero">
+
+        <div class="hero-icon">
+            <i class='bx bx-file'></i>
+        </div>
+
+        <h1>AI Resume Analyzer</h1>
+
+        <p>
+            Upload your resume, compare it with a Job Description,
+            and receive an AI-powered ATS score with actionable
+            recommendations.
+        </p>
+
+    </div>
+
+    <form id="atsForm" enctype="multipart/form-data">
+
+        {% csrf_token %}
+
+        <div class="analyzer-grid">
+
+            <div class="upload-card">
+
+                <h2>
+                    <i class='bx bx-upload'></i>
+                    Resume Upload
+                </h2>
+
+                <label for="resume" class="drop-zone">
+
+                    <i class='bx bx-cloud-upload'></i>
+
+                    <h3>Drag & Drop Resume</h3>
+
+                    <p>or click to browse PDF</p>
+
+                    <input
+                        type="file"
+                        id="resume"
+                        name="resume"
+                        accept=".pdf"
+                        required>
+
+                    <span id="file-name">
+                        No file selected
+                    </span>
+
+                </label>
+
+            </div>
+
+            <div class="jd-card">
+
+                <h2>
+                    <i class='bx bx-briefcase'></i>
+                    Job Description
+                </h2>
+
+                <textarea
+                    id="job_description"
+                    name="job_description"
+                    placeholder="Paste the complete Job Description here..."
+                    rows="18"
+                    required></textarea>
+
+            </div>
+
+        </div>
+
+        <div class="analyze-section">
+
+            <button
+                type="button"
+                id="ats-btn"
+                onclick="calculate_ats_score()">
+
+                <i class='bx bx-magic-wand'></i>
+
+                Analyze Resume
+
+            </button>
+
+        </div>
+
+    </form>
+
+    <div id="loading" style="display:none;">
+
+        <div class="loading-card">
+
+            <i class='bx bx-loader-alt bx-spin'></i>
+
+            <h2>Analyzing Resume...</h2>
+
+            <p>Please wait while AI evaluates your resume.</p>
+
+        </div>
+
+    </div>
+
+    <div id="ats-result" style="display:none;">
+
+        <div class="result-header">
+
+            <h2>ATS Analysis Report</h2>
+
+            <div class="score-circle">
+
+                <span id="ats-score">0%</span>
+
+            </div>
+
+        </div>
+
+        <div class="result-grid">
+
+            <div class="result-card">
+
+                <h3>Matched Skills</h3>
+
+                <div id="matched-skills" class="skills-container"></div>
+
+            </div>
+
+            <div class="result-card">
+
+                <h3>Missing Skills</h3>
+
+                <div id="missing-skills" class="skills-container"></div>
+
+            </div>
+
+            <div class="result-card">
+
+                <h3>Recommended Skills</h3>
+
+                <div id="recommended-skills" class="skills-container"></div>
+
+            </div>
+
+            <div class="result-card">
+
+                <h3>Improvement Suggestions</h3>
+
+                <ul id="improvement-list">
+
+                    <li>Add measurable achievements.</li>
+
+                    <li>Include relevant projects.</li>
+
+                    <li>Tailor the resume to the job description.</li>
+
+                </ul>
+
+            </div>
+
+        </div>
+
+        <div class="report-actions">
+
+            <button type="button">
+
+                <i class='bx bx-download'></i>
+
+                Download ATS Report
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+</main>
+
+<script src="{% static 'js/ats.js' %}"></script>
+<script src="{% static 'js/sidebar.js' %}"></script>
+
+</body>
+</html>

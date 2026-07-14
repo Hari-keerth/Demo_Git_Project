@@ -42,13 +42,13 @@ form{
 .input-field input,
 .input-field textarea{
     width:100%;
-    border:1px solid #d8def7;
+    border:1px solid var(--border);
     border-radius:14px;
-    background:#fff;
+    background:var(--card);
     outline:none;
     font-size:15px;
     transition:.3s;
-    color:#1f2937;
+    color:var(--text);
 }
 
 .input-field input{
@@ -92,7 +92,7 @@ form{
 
 .divider span{
     margin:0 15px;
-    color:#888;
+    color:var(--text-light);
     font-size:14px;
 }
 
@@ -117,7 +117,7 @@ form{
     display:flex;
     justify-content:center;
     align-items:center;
-    background:#fff;
+    background:var(--card);
     /* box-shadow:0 15px 35px rgba(99,102,241,.18); */
 }
 
@@ -146,9 +146,9 @@ form{
     left:18px;
     top:50%;
     transform:translateY(-50%);
-    background:#fff;
+    background:var(--card);
     padding:0 6px;
-    color:#888;
+    color:var(--text-light);
     transition:.3s;
     pointer-events:none;
 }
@@ -169,7 +169,7 @@ form{
    ("Already have an account? / Don't have an account?")
    Shared by login.html and register.html
 =========================== */
-.register{text-align:center;margin-top:25px;color:#666;}
+.register{text-align:center;margin-top:25px;color:var(--text-light);}
 .register a{color:#5b5df0;font-weight:600;}
 
 /* ===========================
@@ -182,7 +182,7 @@ form{
     margin:0 auto 20px;
     border-radius:50%;
     display:flex;justify-content:center;align-items:center;
-    background:#fff;
+    background:var(--card);
     box-shadow:0 15px 35px rgba(99,102,241,.18);
 }
 .login-icon i{font-size:32px;color:#6366f1;}
@@ -207,7 +207,7 @@ button{
 
     border-radius:16px;
 
-    background:#ffffff;
+    background:var(--card);
     color:#1c1c32;
 
     font-size:18px;
@@ -281,4 +281,39 @@ button:active{
 
     }
 
+}
+
+/* ==========================================================
+   DARK MODE SUPPORT
+========================================================== */
+
+[data-theme="dark"] .input-field input,
+[data-theme="dark"] .input-field textarea{
+    background:var(--input-bg);
+    color:var(--text);
+    border-color:var(--border);
+}
+
+[data-theme="dark"] .input-field label{
+    background:var(--input-bg);
+    color:var(--text-light);
+}
+
+[data-theme="dark"] .login-icon{
+    background:var(--card);
+}
+
+[data-theme="dark"] .divider::before,
+[data-theme="dark"] .divider::after{
+    background:var(--border);
+}
+
+[data-theme="dark"] button{
+    background:var(--card);
+    color:var(--text);
+}
+
+[data-theme="dark"] .register,
+[data-theme="dark"] .forget{
+    color:var(--text-light);
 }

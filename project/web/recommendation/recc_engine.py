@@ -3,12 +3,14 @@ import os
 import re
 import requests
 import pandas as pd
-from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
-# Load environment variables
-load_dotenv() # It's better to put your .env in the root Django directory
+from dotenv import load_dotenv
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+load_dotenv(BASE_DIR / ".env")
 
 APP_ID = os.getenv("ADZUNA_APP_ID")
 APP_KEY = os.getenv("ADZUNA_APP_KEY")
@@ -62,6 +64,7 @@ def search_jobs(query):
         return []
     return response.json().get("results", [])
 
+
 def normalize_jobs(jobs):
     normalized = []
     for job in jobs:
@@ -75,6 +78,7 @@ def normalize_jobs(jobs):
             "salary_max": job.get("salary_max", ""),
             "contract_time": job.get("contract_time", ""),
             "contract_type": job.get("contract_type", ""),
+            "redirect_url": job.get("redirect_url","#"),
             "category": job.get("category", {}).get("label", ""),
             "description": description,
             "skills": skills
@@ -135,6 +139,7 @@ def get_recommendations(resume_data):
             "match_percentage": round(float(score) * 100, 2),
             "Matched_Skills": ", ".join(matched_skill),
             "Missing_Skills": ", ".join(missing_skill),
+            "redirect_url": job.get("redirect_url", "#"),
         })
         
     return sorted(recommendations, key=lambda x: x["match_percentage"], reverse=True)[:10]

@@ -68,7 +68,7 @@ body{
 
     --text:#111827;
 
-    --text-light:#6B7280;
+    --text-light:#ffffff;
 
     --radius:18px;
 
@@ -90,13 +90,13 @@ body.dark{
 
     --background:#0F172A;
 
-    --card:#1E293B;
+    --card:#083781;
 
-    --border:#334155;
+    --border:#084cac;
 
     --text:#F8FAFC;
 
-    --text-light:#94A3B8;
+    --text-light:#ffffff;
 
 }
 
@@ -2645,4 +2645,30 @@ body.dark .toast-message{
 
     min-width:140px;
 
+}
+
+/* ==========================================================
+   DARK MODE SUPPORT
+========================================================== */
+
+[data-theme="dark"] body{
+    background:var(--background);
+    color:var(--text);
+}
+
+[data-theme="dark"] body::before{
+    opacity:.12;
+}
+
+[data-theme="dark"] body::after{
+    opacity:.10;
+}
+
+[data-theme="dark"] h2{
+    color:var(--text);
+}
+
+[data-theme="dark"] .subtitle,
+[data-theme="dark"] .show-hide{
+    color:var(--text-light);
 }

@@ -1,3 +1,4 @@
+{% load static %}
 
 <button
     class="menu-toggle"
@@ -27,21 +28,33 @@
 
             <li><a href="{% url 'dashboard' %}" class="{% if request.path == '/dashboard/' %}active{% endif %}"><i class='bx bx-home'></i>Dashboard</a></li>
 
-            <li><a href="#" class="{% if request.path == '#' %}active{% endif %}"><i class='bx bx-file'></i>Resume Analyzer</a></li>
+            <li><a href="{% url 'recomend_jobs' %}" class="{% if request.path == '/recomend_jobs/' %}active{% endif %}"><i class='bx bx-history'></i>Recommended Jobs</a></li>
 
-            <li><a href="#" class="{% if request.path == '#' %}active{% endif %}"><i class='bx bx-bar-chart-alt-2'></i>ATS Score</a></li>
+            <li><a href="{% url 'resume-analyzer' %}" class="{% if request.path == '/resume-analyzer' %}active{% endif %}"><i class='bx bx-file'></i>Resume Analyzer</a></li>
 
             <li><a href="{% url 'ai_email' %}" class="{% if request.path == '/ai_email/' %}active{% endif %}"><i class='bx bx-envelope'></i>AI Email</a></li>
-
-            <li><a href="#" class="{% if request.path == '#' %}active{% endif %}"><i class='bx bx-edit'></i>Cover Letter</a></li>
-
-            <li><a href="#" class="{% if request.path == '#' %}active{% endif %}"><i class='bx bx-history'></i>History</a></li>
 
             <li><a href="{% url 'profile' %}" class="{% if request.path == '/profile/' %}active{% endif %}"><i class='bx bx-user'></i>Profile</a></li>
 
             <li><a href="#" class="{% if request.path == '#' %}active{% endif %}"><i class='bx bx-cog'></i>Settings</a></li>
 
         </ul>
+
+        <div class="theme-switch">
+
+            <i class='bx bxs-sun'></i>
+
+            <label class="switch">
+
+                <input type="checkbox" id="themeToggle">
+
+                <span class="slider"></span>
+
+            </label>
+
+            <i class='bx bxs-moon'></i>
+
+        </div>
 
         <div class="sidebar-bottom">
             <a href="{% url 'user-logout' %}">
@@ -51,3 +64,5 @@
         </div>
 
     </aside>
+
+    <script src="{% static 'js/theme.js' %}"></script>

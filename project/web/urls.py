@@ -6,7 +6,7 @@ urlpatterns = [
 
     path('ai_email/', views.ai_email, name='ai_email'),
 
-    path('dashboard/', views.dashboard, name='dashboard'),
+    path('dashboard/', views.dashboard_all_jobs_view, name='dashboard'),
 
     path('login/', views.login, name='login'),
 
@@ -93,15 +93,56 @@ urlpatterns = [
 
     #--recommendation---
 
+    # path(
+    #     "dashboard_all_jobs_view/",
+    #     views.dashboard_all_jobs_view,
+    #     name="dashboard_all_jobs_view"
+    # ),
+
     path(
-        "dashboard_all_jobs_view/",
-        views.dashboard_all_jobs_view,
-        name="dashboard_all_jobs_view"
+        "recomend_jobs/",
+        views.recommendations_page_view,
+        name="recomend_jobs"
+    ),
+
+
+    #----ATS-----
+
+    path(
+        "resume-analyzer",
+        views.resume_analyzer,
+        name="resume-analyzer"),
+    
+    path(
+        "calculate-ats/",
+        views.calculate_ats_score,
+        name="calculate_ats"
+    ),
+
+    # -------- Profile --------
+
+    path(
+        "profile/extract_skills/",
+        views.extract_skills,
+        name="extract_skills"
     ),
 
     path(
-        "recommendations_page_view/",
-        views.recommendations_page_view,
-        name="recommendations_page_view"
+        "profile/edit_skills/",
+        views.edit_skills,
+        name="edit_skills"
     ),
+
+    path(
+        "profile/edit_profile/",
+        views.edit_profile,
+        name="edit_profile"
+    ),
+
+    #---chatbot---
+
+    path("",views.chatbot,name="chatbot"),
+    path('ask_ai/',views.ask_ai,name='ask_ai'),
+    path('clear_chat/',views.clear_chat,name='clear_chat'),
+    
 ]

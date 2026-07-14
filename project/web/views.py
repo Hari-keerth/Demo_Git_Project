@@ -1,54 +1,121 @@
-from django.shortcuts import render,redirect
-from django.http import JsonResponse, HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.core.files.storage import default_storage
-import os
-from .models import Profile
-
-from .forms import ProfileForm
-from .forms import CreateUserForm,LoginForm
-from django.contrib.auth.models import auth
-from django.contrib.auth import authenticate
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-
-from reportlab.platypus import (
-        SimpleDocTemplate,
-        Paragraph,
-        Spacer
-    )
-
-from reportlab.lib.styles import (
-        getSampleStyleSheet,
-        ParagraphStyle
-    )
-
-from reportlab.lib.enums import TA_LEFT
-
-from datetime import datetime
-
-from django.core.mail import EmailMessage
-
-from pypdf import PdfReader
-
-from django.conf import settings
-
-from .services.gmail_service import send_gmail
-from .models import GmailConnection
-from google_auth_oauthlib.flow import Flow
-from .services.gmail_service import (
-    get_google_flow,
-    exchange_code
-)
-import tempfile
-from googleapiclient.discovery import build
-
-from web.recommendation.recc_engine import get_recommendations, normalize_jobs, search_jobs
-
+# ==========================================================
+# Python Standard Library
+# ==========================================================
 
 import io
 import json
+import os
+import tempfile
+from datetime import datetime
+
 import requests
+
+
+# ==========================================================
+# Django Imports
+# ==========================================================
+
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import authenticate
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import auth
+from django.core.files.storage import default_storage
+from django.core.mail import EmailMessage
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render, redirect
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+
+
+# ==========================================================
+# Google Gmail API
+# ==========================================================
+
+from google_auth_oauthlib.flow import Flow
+from googleapiclient.discovery import build
+
+
+# ==========================================================
+# PDF Processing
+# ==========================================================
+
+from pypdf import PdfReader
+
+from reportlab.lib.enums import TA_LEFT
+from reportlab.lib.styles import (
+    ParagraphStyle,
+    getSampleStyleSheet,
+)
+from reportlab.platypus import (
+    Paragraph,
+    SimpleDocTemplate,
+    Spacer,
+)
+
+
+# ==========================================================
+# Forms
+# ==========================================================
+
+from .forms import (
+    CreateUserForm,
+    LoginForm,
+    ProfileForm,
+)
+
+
+# ==========================================================
+# Models
+# ==========================================================
+
+from .models import (
+    ATSResult,
+    GmailConnection,
+    Profile,
+    UserSkillProfile,
+)
+
+
+# ==========================================================
+# Gmail Services
+# ==========================================================
+
+from .services.gmail_service import (
+    exchange_code,
+    get_google_flow,
+    send_gmail,
+)
+
+
+# ==========================================================
+# Resume & ATS Utilities
+# ==========================================================
+
+from .utils.ats_engine import calculate_ats
+from .utils.groq_parser import (
+    parse_job_description,
+    parse_resume,
+)
+from .utils.pdf_parser import extract_resume_text
+
+
+# ==========================================================
+# Job Recommendation Engine
+# ==========================================================
+
+from web.recommendation.recc_engine import (
+    get_recommendations,
+    normalize_jobs,
+    search_jobs,
+)
+
+# ==========================================================
+# Chatbot
+# ==========================================================
+
+
+from web.AI_chatbot.chatbot import chatbot_response
 
 
 def index(request):
@@ -63,9 +130,16 @@ def dashboard(request):
     return render(request, "dashboard.html", context = context)
 
 
+@login_required
 def profile(request):
-    profile, created = Profile.objects.get_or_create(user=request.user)
-    context= {"profile":profile}
+
+    # Get or create user profile
+    profile, created = Profile.objects.get_or_create(
+        user=request.user
+    )
+
+
+    # Get Gmail connection status
     gmail = GmailConnection.objects.filter(
 
         user=request.user,
@@ -74,15 +148,45 @@ def profile(request):
 
     ).first()
 
-    context={
 
-        "gmail_connected":gmail is not None,
 
-        "gmail_email":gmail.gmail_email if gmail else ""
+    # Get saved skills
+    skills = UserSkillProfile.objects.filter(
+
+        profile=profile
+
+    ).first()
+
+
+
+    context = {
+
+        "profile": profile,
+
+
+        # Gmail details
+        "gmail_connected": gmail is not None,
+
+        "gmail_email":
+            gmail.gmail_email if gmail else "",
+
+
+        # User skills
+        "skills": skills
 
     }
-    return render(request, "profile.html",context = context)
-    
+
+
+
+    return render(
+
+        request,
+
+        "profile.html",
+
+        context=context
+
+    )
 @login_required
 def disconnect_gmail(request):
 
@@ -102,21 +206,6 @@ def disconnect_gmail(request):
 
     return redirect("profile")
 
-
-def extract_resume_text(pdf_file):
-
-        reader = PdfReader(pdf_file)
-
-        text = ""
-
-        for page in reader.pages:
-
-            page_text = page.extract_text()
-
-            if page_text:
-                text += page_text + "\n"
-
-        return text
 
 
 @csrf_exempt
@@ -951,36 +1040,732 @@ def google_callback(request):
 #---------Recommendation------------
 
 # 1. DASHBOARD VIEW: Shows all 20 raw jobs fetched from Adzuna
-def dashboard_all_jobs_view(request):
-    # For now, searching 'Python Developer'. 
-    raw_adzuna_jobs = search_jobs("Python Developer")
-    cleaned_adzuna_jobs = normalize_jobs(raw_adzuna_jobs)
+# def dashboard_all_jobs_view(request):
+#     # For now, searching 'Python Developer'. 
+#     raw_adzuna_jobs = search_jobs("Python Developer")
+#     cleaned_adzuna_jobs = normalize_jobs(raw_adzuna_jobs)
     
-    context = {
-        'adzuna_jobs': cleaned_adzuna_jobs
-    }
-    return render(request, 'live_jobs.html', context)
+#     context = {
+#         'adzuna_jobs': cleaned_adzuna_jobs
+#     }
+#     return render(request, 'live_jobs.html', context)
 
-# 2. RECOMMENDATION VIEW: Shows your custom AI Top 10 matching jobs
-def recommendations_page_view(request):
-    # Dummy resume data for testing the algorithm match
-    sample_resume = {
-        "technical_skills": ["Python", "Django", "SQL", "Git"],
-        "tools": ["Docker"],
-        "frameworks": [],
-        "databases": ["PostgreSQL"],
-        "cloud_skills": ["AWS"],
-        "project_skills": [],
-        "soft_skills": ["Communication"],
-        "degrees": ["B.Tech Computer Science"],
-        "total_experience_years": 2,
-        "job_titles": ["Python Developer"]
-    }
+
+# def dashboard_all_jobs_view(request):
+#     query = request.GET.get('q', '').strip()
     
-    # Gets the calculated top 10 recommended jobs via cosine similarity
-    recommended_jobs = get_recommendations(sample_resume)
+#     if not query:
+#         search_query = "Python Developer"
+#     else:
+#         search_query = query
+        
+#     raw_adzuna_jobs = search_jobs(search_query)
+#     cleaned_adzuna_jobs = normalize_jobs(raw_adzuna_jobs)
+
+#     context = {
+#         'adzuna_jobs': cleaned_adzuna_jobs,
+#         'current_query': query
+#     }
     
+#     return render(request, 'dashboard.html', context)
+
+# # 2. RECOMMENDATION VIEW: Shows your custom AI Top 10 matching jobs
+# def recommendations_page_view(request):
+#     # Dummy resume data for testing the algorithm match
+#     sample_resume = {
+#         "technical_skills": ["Python", "Django", "SQL", "Git"],
+#         "tools": ["Docker"],
+#         "frameworks": [],
+#         "databases": ["PostgreSQL"],
+#         "cloud_skills": ["AWS"],
+#         "project_skills": [],
+#         "soft_skills": ["Communication"],
+#         "degrees": ["B.Tech Computer Science"],
+#         "total_experience_years": 2,
+#         "job_titles": ["Python Developer"]
+#     }
+    
+#     # Gets the calculated top 10 recommended jobs via cosine similarity
+#     recommended_jobs = get_recommendations(sample_resume)
+    
+#     context = {
+#         'recommendations': recommended_jobs
+#     }
+#     return render(request, 'recomend_jobs.html', context)
+
+
+
+def resume_analyzer(request):
+        return render(request, "resume_analyzer.html")
+
+
+def save_user_skills(user, resume_json):
+
+    profile, _ = Profile.objects.get_or_create(
+        user=user
+    )
+
+    UserSkillProfile.objects.update_or_create(
+
+        profile=profile,
+
+        defaults={
+
+            "technical_skills":
+                resume_json.get(
+                    "technical_skills",
+                    []
+                ),
+
+            "tools":
+                resume_json.get(
+                    "tools",
+                    []
+                ),
+
+            "frameworks":
+                resume_json.get(
+                    "frameworks",
+                    []
+                ),
+
+            "databases":
+                resume_json.get(
+                    "databases",
+                    []
+                ),
+
+            "cloud_skills":
+                resume_json.get(
+                    "cloud_skills",
+                    []
+                ),
+
+            "soft_skills":
+                resume_json.get(
+                    "soft_skills",
+                    []
+                )
+
+        }
+
+    )
+
+@require_POST
+@login_required
+def calculate_ats_score(request):
+
+    resume = request.FILES.get("resume")
+    job_description = request.POST.get("job_description")
+
+
+    # -----------------------------
+    # Validation
+    # -----------------------------
+
+    if not resume:
+        return JsonResponse({
+
+            "success": False,
+
+            "message": "Resume not uploaded."
+
+        })
+
+
+    if not job_description:
+
+        return JsonResponse({
+
+            "success": False,
+
+            "message": "Job Description missing."
+
+        })
+
+
+
+    try:
+
+
+        # -----------------------------
+        # Step 1
+        # Extract Resume Text
+        # -----------------------------
+
+        resume_text = extract_resume_text(
+            resume
+        )
+
+
+
+        # -----------------------------
+        # Step 2
+        # Groq Resume Parsing
+        # -----------------------------
+
+        resume_json = parse_resume(
+            resume_text
+        )
+
+
+
+        # -----------------------------
+        # Step 3
+        # Groq Job Description Parsing
+        # -----------------------------
+
+        jd_json = parse_job_description(
+            job_description
+        )
+
+
+
+        # -----------------------------
+        # Step 4
+        # ATS Calculation
+        # -----------------------------
+
+        result = calculate_ats(
+
+            resume_json,
+
+            jd_json
+
+        )
+
+
+
+        # -----------------------------
+        # Convert numpy values
+        # -----------------------------
+
+        def convert_numpy(obj):
+
+            import numpy as np
+
+
+            if isinstance(obj, np.generic):
+
+                return obj.item()
+
+
+
+            elif isinstance(obj, dict):
+
+                return {
+
+                    key: convert_numpy(value)
+
+                    for key, value in obj.items()
+
+                }
+
+
+
+            elif isinstance(obj, list):
+
+                return [
+
+                    convert_numpy(item)
+
+                    for item in obj
+
+                ]
+
+
+            return obj
+
+
+
+        result = convert_numpy(
+            result
+        )
+
+
+
+        # -----------------------------
+        # Save User Skills
+        # -----------------------------
+
+
+        save_user_skills(
+            request.user,
+            resume_json
+        )
+
+
+
+
+        # -----------------------------
+        # Save ATS Result
+        # -----------------------------
+
+
+        ATSResult.objects.create(
+
+
+            user=request.user,
+
+
+            resume=resume,
+
+
+            job_description=job_description,
+
+
+            resume_json=resume_json,
+
+
+            jd_json=jd_json,
+
+
+            ats_score=result.get(
+
+                "ats_score",
+
+                0
+
+            ),
+
+
+
+            matched_skills=result.get(
+
+                "matched_skills",
+
+                []
+
+            ),
+
+
+
+            missing_skills=result.get(
+
+                "missing_skills",
+
+                []
+
+            ),
+
+
+
+            recommended_skills=result.get(
+
+                "recommended_skills",
+
+                []
+
+            ),
+
+
+
+            strengths=result.get(
+
+                "strengths",
+
+                []
+
+            ),
+
+
+
+            improvements=result.get(
+
+                "improvements",
+
+                []
+
+            )
+
+
+        )
+
+
+
+
+        # -----------------------------
+        # Send Response to HTML
+        # -----------------------------
+
+
+        return JsonResponse({
+
+
+            "success": True,
+
+
+            "ats_score":
+
+                result.get(
+
+                    "ats_score",
+
+                    0
+
+                ),
+
+
+
+            "matched_skills":
+
+                result.get(
+
+                    "matched_skills",
+
+                    []
+
+                ),
+
+
+
+            "missing_skills":
+
+                result.get(
+
+                    "missing_skills",
+
+                    []
+
+                ),
+
+
+
+            "recommended_skills":
+
+                result.get(
+
+                    "recommended_skills",
+
+                    []
+
+                ),
+
+
+
+            "strengths":
+
+                result.get(
+
+                    "strengths",
+
+                    []
+
+                ),
+
+
+
+            "improvements":
+
+                result.get(
+
+                    "improvements",
+
+                    []
+
+                )
+
+        })
+
+
+
+    except Exception as e:
+
+
+        return JsonResponse({
+
+
+            "success": False,
+
+
+            "error": str(e)
+
+
+        }, status=500)
+    
+
+@login_required
+@require_POST
+def extract_skills(request):
+
+    resume = request.FILES.get("resume")
+
+    if not resume:
+
+        messages.error(
+            request,
+            "Please upload a resume."
+        )
+
+        return redirect("profile")
+
+    try:
+
+        resume_text = extract_resume_text(
+            resume
+        )
+
+        resume_json = parse_resume(
+            resume_text
+        )
+
+        save_user_skills(
+            request.user,
+            resume_json
+        )
+
+        messages.success(
+            request,
+            "Skills extracted successfully."
+        )
+
+    except Exception as e:
+
+        messages.error(
+            request,
+            str(e)
+        )
+
+    return redirect("profile")
+
+@login_required
+def edit_skills(request):
+
+    profile = Profile.objects.get(user=request.user)
+
+    skill_profile, created = UserSkillProfile.objects.get_or_create(
+        profile=profile
+    )
+
+    if request.method == "POST":
+
+        skill_profile.technical_skills = [
+            skill.strip()
+            for skill in request.POST.get(
+                "technical_skills",
+                ""
+            ).split(",")
+            if skill.strip()
+        ]
+
+        skill_profile.frameworks = [
+            skill.strip()
+            for skill in request.POST.get(
+                "frameworks",
+                ""
+            ).split(",")
+            if skill.strip()
+        ]
+
+        skill_profile.tools = [
+            skill.strip()
+            for skill in request.POST.get(
+                "tools",
+                ""
+            ).split(",")
+            if skill.strip()
+        ]
+
+        skill_profile.databases = [
+            skill.strip()
+            for skill in request.POST.get(
+                "databases",
+                ""
+            ).split(",")
+            if skill.strip()
+        ]
+
+        skill_profile.cloud_skills = [
+            skill.strip()
+            for skill in request.POST.get(
+                "cloud_skills",
+                ""
+            ).split(",")
+            if skill.strip()
+        ]
+
+        skill_profile.soft_skills = [
+            skill.strip()
+            for skill in request.POST.get(
+                "soft_skills",
+                ""
+            ).split(",")
+            if skill.strip()
+        ]
+
+        skill_profile.save()
+
+        messages.success(
+            request,
+            "Skills updated successfully."
+        )
+
+        return redirect("profile")
+
     context = {
-        'recommendations': recommended_jobs
+        "skills": skill_profile
+    }
+
+    return render(
+        request,
+        "edit_skills.html",
+        context
+    )
+
+@login_required
+def edit_profile(request):
+
+    profile = Profile.objects.get(user=request.user)
+
+    if request.method == "POST":
+
+        form = ProfileForm(
+
+            request.POST,
+
+            instance=profile
+
+        )
+
+        if form.is_valid():
+
+            form.save()
+
+            messages.success(
+
+                request,
+
+                "Profile updated successfully."
+
+            )
+
+            return redirect("profile")
+
+    else:
+
+        form = ProfileForm(
+
+            instance=profile
+
+        )
+
+    return render(
+
+        request,
+
+        "edit_profile.html",
+
+        {
+
+            "form": form
+
+        }
+
+    )
+
+#-----chatbot---
+
+def chatbot(request):
+    response =''
+    if request.method == 'POST':
+        question= request.POST.get("question")
+        response = chatbot_response(question,request)
+    return render(
+        request,
+        "chatbot.html",
+        {
+            "response":response
+        }
+    )
+
+   
+def ask_ai(request):
+
+    question = request.GET.get('question',"")
+
+    answer = chatbot_response(question,request)
+
+    return JsonResponse(
+        {
+            "response":answer
+        }
+    )
+
+def clear_chat(request):
+    request.session['conversation']=[]
+    return JsonResponse(
+        {
+            'status':'success'
+        }
+    )
+
+@login_required
+def dashboard_all_jobs_view(request):
+    query = request.GET.get('q', '').strip()
+    
+    # Check if a parsed resume exists to extract a smart default keyword
+    latest_record = ATSResult.objects.filter(user=request.user).order_by('-created_at').first()
+    
+    if not query:
+        # If there's a record, look inside your teammate's resume_json for their target job title
+        if latest_record and latest_record.resume_json:
+            # Safely gets target_role from json, falls back to "Python Developer" if missing
+            extracted_role = latest_record.resume_json.get('personal_info', {}).get('target_role', '')
+            search_query = extracted_role if extracted_role else "Python Developer"
+        else:
+            search_query = "Python Developer"
+    else:
+        search_query = query
+        
+    raw_adzuna_jobs = search_jobs(search_query)
+    cleaned_adzuna_jobs = normalize_jobs(raw_adzuna_jobs)
+
+    context = {
+        'adzuna_jobs': cleaned_adzuna_jobs,
+        'current_query': query
+    }
+    return render(request, 'dashboard.html', context)
+
+
+# 2. RECOMMENDATION VIEW: Dynamic Live Matching based on teammate's model database data
+@login_required
+def recommendations_page_view(request):
+    # 1. 🟢 Grab the latest ATSResult record to verify they have uploaded a resume
+    latest_record = ATSResult.objects.filter(user=request.user).order_by('-created_at').first()
+    
+    # 2. 🟢 Pull the structured UserSkillProfile linked to this user's profile
+    user_profile = getattr(request.user, 'profile', None)
+    skill_profile = getattr(user_profile, 'skills', None) if user_profile else None
+    
+    recommended_jobs = []
+    
+    # We only run the engine if they have a saved skill profile
+    if skill_profile:
+        # Get target role from ATSResult if available, fallback to "Developer"
+        target_role = "Developer"
+        if latest_record and latest_record.resume_json:
+            target_role = latest_record.resume_json.get("personal_info", {}).get("target_role", "Developer")
+
+        # 3. 🟢 Build the profile using the exact fields from UserSkillProfile!
+        user_profile_data = {
+            "technical_skills": skill_profile.technical_skills,  # From UserSkillProfile
+            "tools": skill_profile.tools,                        # From UserSkillProfile
+            "frameworks": skill_profile.frameworks,              # From UserSkillProfile
+            "databases": skill_profile.databases,                # From UserSkillProfile
+            "cloud_skills": skill_profile.cloud_skills,          # From UserSkillProfile
+            "soft_skills": skill_profile.soft_skills,            # From UserSkillProfile
+            "project_skills": [],                                # Safe empty fallback
+            "degrees": [],                                       # Safe empty fallback
+            "total_experience_years": 0,                         # Safe empty fallback
+            "job_titles": [target_role]
+        }
+        
+        # 4. 🟢 Run your recommendation algorithm with the clean database profile
+        recommended_jobs = get_recommendations(user_profile_data)
+        
+    context = {
+        'recommendations': recommended_jobs,
+        # If they have a skill profile, we consider their record active
+        'has_record': skill_profile is not None  
     }
     return render(request, 'recomend_jobs.html', context)

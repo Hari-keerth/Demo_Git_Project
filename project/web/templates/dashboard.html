@@ -5,21 +5,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CareerGrowza | Dashboard</title>
-  <!--
-  TemplateMo 622 Clearwave
-  https://templatemo.com/tm-622-clearwave
-  Free for personal and commercial use
-  -->
+  <link rel="icon" type="image/png" sizes="128x128" href="{% static 'images/favicon/CareerGrowza_Favicon.png' %}">
+  <link rel="shortcut icon" href="{% static 'images/favicon/favicon.ico' %}">
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet"
-          href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
 
-    <link rel="stylesheet" href="{% static 'css/common.css' %}">
-    <link rel="stylesheet" href="{% static 'css/layout.css' %}">
-    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+  <link rel="stylesheet" href="{% static 'css/common.css' %}">
+  <link rel="stylesheet" href="{% static 'css/layout.css' %}">
+  <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+  
 </head>
 
 <body>
@@ -27,18 +25,251 @@
 {% include "navbar.html" with active_page="dashboard" %}
 
     <main class="main-content">
-<div> hai
-        <h1>
-                 {{profile.user}}
-                 {{profile.age}}
+        <!-- ================= Dashboard Header ================= -->
 
-        </h1>
-    </div>
+        <div class="topbar">
 
-</div>
+            <div class="topbar-left">
+
+                <h1>
+
+                    👋 Welcome back,
+                    {{ profile.user }}!
+
+                </h1>
+
+                <p class="dashboard-subtitle">
+
+                    Discover your next career opportunity with AI-powered recommendations.
+
+                </p>
+
+            </div>
+
+            <div class="topbar-profile">
+
+                <span class="job-category-badge">
+
+                    Active Session
+
+                </span>
+
+            </div>
+
+        </div>
+        
+
+        <!-- ================= Search Jobs ================= -->
+
+            <div class="search-section">
+
+                <h2 class="section-title">
+
+                    <i class='bx bx-search-alt'></i>
+
+                    Search Jobs
+
+                </h2>
+
+                <p class="section-description">
+
+                    Search jobs by title, technology, skill, or role.
+
+                </p>
+
+                <form
+                    method="GET"
+                    action="{% url 'dashboard' %}"
+                    class="search-form">
+
+                    <div class="search-box">
+
+                        <i class='bx bx-search'></i>
+
+                        <input
+                            type="text"
+                            name="q"
+                            value="{{ current_query }}"
+                            placeholder="Eg: Python Developer, Django Developer, React Developer..."
+                            class="search-input">
+
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="search-btn">
+
+                        <i class='bx bx-search'></i>
+
+                        Search
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        {% if adzuna_jobs %}
+        <div class="cards">
+
+            {% for job in adzuna_jobs %}
+
+            <div class="job-card">
+
+                <!-- Header -->
+
+                <div class="job-header">
+
+                    <div class="job-info">
+
+                        <h2 class="job-title">
+
+                            {{ job.title|truncatechars:45 }}
+
+                        </h2>
+
+                        <p class="company-name">
+
+                            {{ job.company }}
+
+                        </p>
+
+                    </div>
+
+                    {% if job.contract_time %}
+
+                    <span class="job-type">
+
+                        {{ job.contract_time|title }}
+
+                    </span>
+
+                    {% endif %}
+
+                </div>
+
+                <!-- Meta -->
+
+                <div class="job-meta">
+
+                    <span>
+
+                        <i class='bx bx-map'></i>
+
+                        {{ job.location }}
+
+                    </span>
+
+                    {% if job.salary_min %}
+
+                    <span>
+
+                        <i class='bx bx-wallet'></i>
+
+                        {{ job.salary_min }} - {{ job.salary_max }}
+
+                    </span>
+
+                    {% endif %}
+
+                </div>
+
+                <!-- Description -->
+
+                <p class="job-desc">
+
+                    {{ job.description|truncatechars:120 }}
+
+                </p>
+
+                <!-- Skills -->
+
+                <div class="skills-box">
+
+                    <p class="skills-title">
+
+                        Required Skills
+
+                    </p>
+
+                    <div class="skills-tags">
+
+                        {% for skill in job.skills|slice:":5" %}
+
+                            <span class="skill-tag">
+
+                                {{ skill }}
+
+                            </span>
+
+                        {% empty %}
+
+                            <span class="no-skills">
+
+                                No skills detected
+
+                            </span>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+                <!-- Footer -->
+
+                <div class="job-footer">
+
+                    <span class="source">
+
+                        Adzuna API
+
+                    </span>
+
+                    <a
+                        href="{{ job.redirect_url }}"
+                        target="_blank"
+                        class="apply-btn">
+
+                        Apply Now
+
+                        <i class='bx bx-right-arrow-alt'></i>
+
+                    </a>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="no-jobs-box">
+
+            <i class='bx bx-search-alt'></i>
+
+            <h2>
+
+                No Jobs Found
+
+            </h2>
+
+            <p>
+
+                Try searching with another keyword.
+
+            </p>
+
+        </div>
+
+        {% endif %}
+    </main>
 
 <script src="{% static 'js/sidebar.js' %}"></script>
+<script src="{% static 'js/theme.js' %}"></script>
 
 </body>
-
 </html>

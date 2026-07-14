@@ -18,12 +18,12 @@
 
     padding:28px 20px;
 
-    background:rgba(255,255,255,.75);
+    background:var(--glass);
 
     backdrop-filter:blur(24px);
     -webkit-backdrop-filter:blur(24px);
 
-    border-right:1px solid rgba(255,255,255,.7);
+    border-right:1px solid var(--glass-border);
 
     box-shadow:
         8px 0 30px rgba(0,0,0,.06);
@@ -55,7 +55,7 @@
 
     font-weight:700;
 
-    color:#1d1d1f;
+    color:var(--text);
 
 }
 
@@ -100,7 +100,7 @@
 
     border-radius:14px;
 
-    color:#555;
+    color:var(--text-light);
 
     text-decoration:none;
 
@@ -120,7 +120,7 @@
 
 .sidebar-links a:hover{
 
-    background:#eef2ff;
+    background:var(--hover);
 
     color:#6366f1;
 
@@ -168,11 +168,11 @@
 
     text-decoration:none;
 
-    color:#555;
+    color:var(--text-light);
 
     border-radius:14px;
 
-    background:#fff;
+    background:var(--card);
 
     transition:.3s;
 
@@ -368,4 +368,31 @@
 
 }
 
+}
+
+/* ==========================================================
+   DARK MODE SUPPORT
+========================================================== */
+
+[data-theme="dark"] .sidebar{
+    background:var(--glass);
+    border-right:1px solid var(--glass-border);
+}
+
+[data-theme="dark"] .sidebar-links a{
+    color:var(--text-light);
+}
+
+[data-theme="dark"] .sidebar-links a:hover{
+    background:rgba(99,102,241,.18);
+    color:#ffffff;
+}
+
+[data-theme="dark"] .sidebar-bottom a{
+    background:var(--card);
+    color:var(--text);
+}
+
+[data-theme="dark"] .nav-logo{
+    color:var(--text);
 }

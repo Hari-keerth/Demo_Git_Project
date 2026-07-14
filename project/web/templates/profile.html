@@ -10,21 +10,16 @@
           content="width=device-width, initial-scale=1.0">
 
     <title>CareerGrowza | Profile</title>
+    <link rel="icon" type="image/png" sizes="128x128" href="{% static 'images/favicon/CareerGrowza_Favicon.png' %}">
+    <link rel="shortcut icon" href="{% static 'images/favicon/favicon.ico' %}">
 
     <link rel="stylesheet"
           href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
 
-    <link rel="stylesheet"
-          href="{% static 'css/common.css' %}">
-
-    <link rel="stylesheet"
-          href="{% static 'css/layout.css' %}">
-
-    <link rel="stylesheet"
-          href="{% static 'css/sidebar.css' %}">
-
-    <link rel="stylesheet"
-          href="{% static 'css/profile.css' %}">
+    <link rel="stylesheet" href="{% static 'css/common.css' %}">
+    <link rel="stylesheet" href="{% static 'css/layout.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/profile.css' %}">
 
 </head>
 
@@ -32,162 +27,170 @@
 
 {% include "navbar.html" with active_page="profile" %}
 
-    <!-- Main -->
+<main class="main-content">
 
-    <main class="main-content">
+    <div class="profile-wrapper">
 
-        <div class="profile-wrapper">
+        <!-- ================= Header ================= -->
 
-            <!-- Header -->
+        <div class="profile-header">
 
-            <div class="profile-header">
-
-                <div class="profile-image">
-
-                    <i class='bx bx-user'></i>
-
-                </div>
-
-                <h3>{{ profile.user }}</h3>
-
-                <p class="profile-email">
-
-                    {{ profile.age }}
-
-                </p>
-
-                <span class="status">
-
-                    Active Member
-
-                </span>
-
+            <div class="profile-image">
+                <i class='bx bx-user'></i>
             </div>
 
-            <!-- Information -->
+            <h2>{{ profile.user }}</h2>
+
+            <p class="profile-email">
+                {{ profile.email }}
+            </p>
+
+            <span class="status">
+                Active Member
+            </span>
+
+        </div>
+
+        <!-- ================= Personal Information ================= -->
+
+        <div class="profile-section">
+
+            <h3>
+                <i class='bx bx-id-card'></i>
+                Personal Information
+            </h3>
 
             <div class="profile-info">
 
                 <div class="profile-item">
-
-                    <label>
-
-                        Full Name
-
-                    </label>
-
-                    <p>{{profile}}
-                    </p>
-
+                    <label>Username</label>
+                    <p>{{ profile.user }}</p>
                 </div>
 
                 <div class="profile-item">
-
-                    <label>
-
-                        Age
-
-                    </label>
-
-                    <p>{{profile.age}}
-
-                    </p>
-
+                    <label>Age</label>
+                    <p>{{ profile.age }}</p>
                 </div>
 
                 <div class="profile-item">
+                    <label>Email</label>
+                    <p>{{ profile.email }}</p>
+                </div>
 
-                    <label>
+                <div class="profile-item">
+                    <label>Address</label>
+                    <p>{{ profile.address }}</p>
+                </div>
 
-                        Email
+                <div class="profile-item">
+                    <label>City</label>
+                    <p>{{ profile.city }}</p>
+                </div>
 
-                    </label>
+                <div class="profile-item">
+                    <label>Country</label>
+                    <p>{{ profile.country }}</p>
+                </div>
 
-                    <p>{{profile.email}}
-                    </p>
+                <div class="profile-item">
+                    <label>Member Since</label>
+                    <p>{{ profile.creation_date|date:"d M Y" }}</p>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ================= Gmail ================= -->
+
+        <div class="profile-card">
+
+            <h3>
+                <i class='bx bxl-gmail'></i>
+                Gmail Connection
+            </h3>
+
+            {% if gmail_connected %}
+
+            <div class="gmail-status">
+
+                <span class="status-dot"></span>
+
+                <div class="gmail-info">
+
+                    <h4>Connected</h4>
+
+                    <p>{{ gmail_email }}</p>
 
                 </div>
 
-            
+                <a href="{% url 'disconnect_gmail' %}"
+                   class="disconnect-btn">
 
-                <div class="profile-item">
+                    Disconnect
 
-                    <label>
+                </a>
 
-                        Member Since
+            </div>
 
-                    </label>
+            {% else %}
 
-                    <p>
+            <div class="gmail-empty">
 
-                        {{ profile.creation_date|date:"d M Y" }}
+                <i class='bx bx-envelope'></i>
 
-                    </p>
+                <p>
+                    Gmail is not connected.
+                </p>
+
+                <div class="profile-buttons">
+
+                    <button disabled>
+
+                        <a href="{% url 'google_login' %}"
+                    class="gmail-btn">
+
+                        Connect Gmail
+
+                        </a>
+
+                    </button>
 
                 </div>
 
             </div>
 
-            <!-- Buttons -->
+            {% endif %}
+
+        </div>
+
+        <!-- ================= Account ================= -->
+
+        <div class="profile-card">
+
+            <h3>
+
+                <i class='bx bx-cog'></i>
+
+                Account
+
+            </h3>
+
             <div class="profile-buttons">
 
-                <!-- Gmail Connection -->
-                {% if gmail_connected %}
+                <button disabled>
 
-                    <button class="gmail-btn" disabled>
-                        ✓ Gmail Connected
-                    </button>
+                    <a href="{% url 'edit_profile' %}" class="btn-primary">
 
-                    <div class="gmail-status">
+                        <i class='bx bx-edit'></i>
 
-                        <span class="status-dot"></span>
+                        Edit Profile
 
-                        <div class="gmail-info">
-
-                            <h4>Connected</h4>
-
-                            <p>{{ gmail_email }}</p>
-
-                        </div>
-
-                        <a href="{% url 'disconnect_gmail' %}" class="disconnect-btn">
-                            Disconnect
-                        </a>
-
-                    </div>
-
-                {% else %}
-
-                    <a href="{% url 'google_login' %}" class="gmail-btn">
-                        Connect Gmail
                     </a>
-
-                    <div class="gmail-status">
-
-                        <span class="status-dot offline"></span>
-
-                        <div class="gmail-info">
-
-                            <h4>Not Connected</h4>
-
-                            <p>Connect Gmail to send emails.</p>
-
-                        </div>
-
-                    </div>
-
-                {% endif %}
-
-                <!-- Profile Buttons -->
-                <button>
-
-                    <i class='bx bx-edit'></i>
-
-                    Edit Profile
 
                 </button>
 
-                <button>
+                <button disabled>
 
                     <i class='bx bx-lock-alt'></i>
 
@@ -197,16 +200,303 @@
 
             </div>
 
+        </div>
+
+        <!-- ================= Resume ================= -->
+
+        <div class="profile-card">
+
+            <div class="card-header">
+
+                <div>
+
+                    <h3>
+
+                        <i class='bx bx-upload'></i>
+
+                        Resume Skills
+
+                    </h3>
+
+                    <p class="resume-text">
+
+                        Upload your latest resume to automatically extract your skills.
+
+                    </p>
+
+                </div>
+
             </div>
+
+            <form
+                method="POST"
+                enctype="multipart/form-data"
+                action="{% url 'extract_skills' %}"
+                class="resume-form">
+
+                {% csrf_token %}
+
+                <input
+                    type="file"
+                    id="resume"
+                    name="resume"
+                    accept=".pdf"
+                    hidden
+                    required>
+
+                <label
+                    for="resume"
+                    class="upload-btn">
+
+                    <i class='bx bx-file'></i>
+
+                    Choose Resume
+
+                </label>
+
+                <span
+                    id="file-name">
+
+                    No file selected
+
+                </span>
+
+                <button
+                    type="submit"
+                    class="extract-btn">
+
+                    <i class='bx bx-upload'></i>
+
+                    Extract Skills
+
+                </button>
+
+            </form>
 
         </div>
 
-    </main>
+        <!-- ================= Skills ================= -->
 
-</div>
+        <div class="profile-card">
+
+            <div class="skills-header">
+
+                <h3>
+
+                    <i class='bx bx-code-alt'></i>
+
+                    Your Skills
+
+                </h3>
+
+                <a
+                    href="{% url 'edit_skills' %}"
+                    class="edit-btn">
+
+                    <i class='bx bx-edit'></i>
+
+                    Edit
+
+                </a>
+
+            </div>
+
+            {% if skills %}
+
+            <div class="skills-grid">
+
+                <!-- Technical Skills -->
+
+                <div class="skill-box">
+
+                    <h4>
+
+                        <i class='bx bx-chip'></i>
+
+                        Technical Skills
+
+                    </h4>
+
+                    <div class="skill-tags">
+
+                        {% for skill in skills.technical_skills %}
+                        <span class="skill-tag">{{ skill }}</span>
+                        {% empty %}
+                        <span class="no-skill">No technical skills</span>
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+                <!-- Frameworks -->
+
+                <div class="skill-box">
+
+                    <h4>
+
+                        <i class='bx bx-layer'></i>
+
+                        Frameworks
+
+                    </h4>
+
+                    <div class="skill-tags">
+
+                        {% for skill in skills.frameworks %}
+                        <span class="skill-tag">{{ skill }}</span>
+                        {% empty %}
+                        <span class="no-skill">No frameworks</span>
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+                <!-- Tools -->
+
+                <div class="skill-box">
+
+                    <h4>
+
+                        <i class='bx bx-wrench'></i>
+
+                        Tools
+
+                    </h4>
+
+                    <div class="skill-tags">
+
+                        {% for skill in skills.tools %}
+                        <span class="skill-tag">{{ skill }}</span>
+                        {% empty %}
+                        <span class="no-skill">No tools</span>
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+                <!-- Databases -->
+
+                <div class="skill-box">
+
+                    <h4>
+
+                        <i class='bx bx-data'></i>
+
+                        Databases
+
+                    </h4>
+
+                    <div class="skill-tags">
+
+                        {% for skill in skills.databases %}
+                        <span class="skill-tag">{{ skill }}</span>
+                        {% empty %}
+                        <span class="no-skill">No databases</span>
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+                <!-- Cloud -->
+
+                <div class="skill-box">
+
+                    <h4>
+
+                        <i class='bx bx-cloud'></i>
+
+                        Cloud Skills
+
+                    </h4>
+
+                    <div class="skill-tags">
+
+                        {% for skill in skills.cloud_skills %}
+                        <span class="skill-tag">{{ skill }}</span>
+                        {% empty %}
+                        <span class="no-skill">No cloud skills</span>
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+                <!-- Soft Skills -->
+
+                <div class="skill-box">
+
+                    <h4>
+
+                        <i class='bx bx-group'></i>
+
+                        Soft Skills
+
+                    </h4>
+
+                    <div class="skill-tags">
+
+                        {% for skill in skills.soft_skills %}
+                        <span class="skill-tag">{{ skill }}</span>
+                        {% empty %}
+                        <span class="no-skill">No soft skills</span>
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="skill-actions">
+
+
+                <div class="profile-buttons">
+
+                    <button disabled>
+
+                        <a href="{% url 'edit_skills' %}" class="btn-primary">
+
+                            <i class='bx bx-edit'></i>
+
+                            Edit Skills
+
+                        </a>
+
+                    </button>
+
+                </div>
+
+            </div>
+
+            {% else %}
+
+            <div class="empty-state">
+
+                <i class='bx bx-file'></i>
+
+                <p>
+
+                    Upload your resume to automatically extract your skills.
+
+                </p>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</main>
 
 <script src="{% static 'js/sidebar.js' %}"></script>
+<script src="{% static 'js/profile.js' %}"></script>
+<script src="{% static 'js/theme.js' %}"></script>
 
 </body>
-
 </html>

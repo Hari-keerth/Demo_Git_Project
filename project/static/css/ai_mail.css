@@ -93,11 +93,11 @@
 
     width:100%;
 
-    border:1px solid #d9def7;
+    border:1px solid var(--border);
 
     border-radius:16px;
 
-    background:#fff;
+    background:var(--card);
 
     padding:16px 18px 16px 55px;
 
@@ -198,7 +198,7 @@
 
     white-space:nowrap;
 
-    color:#555;
+    color:var(--text-light);
 
 }
 
@@ -267,7 +267,7 @@
 
 .output-box{
 
-    background:#fff;
+    background:var(--card);
 
     border-radius:16px;
 
@@ -275,7 +275,7 @@
 
     text-align:center;
 
-    border:1px solid #d9def7;
+    border:1px solid var(--border);
 
     font-weight:600;
 
@@ -298,7 +298,7 @@
 
     font-weight:700;
 
-    color:#1c1c32;
+    color:var(--text);
 
     font-size:20px;
 
@@ -324,13 +324,13 @@
 
 .document-card{
 
-    background:rgba(255,255,255,.65);
+    background:var(--glass);
 
     backdrop-filter:blur(20px);
 
     border-radius:22px;
 
-    border:1px solid rgba(255,255,255,.75);
+    border:1px solid var(--glass-border);
 
     padding:25px;
 
@@ -520,7 +520,7 @@
 
     margin:4px 0 0;
 
-    color:#666;
+    color:var(--text-light);
 
     font-size:14px;
 
@@ -560,4 +560,31 @@
 
     text-decoration:underline;
 
+}
+
+/* ==========================================================
+   DARK MODE SUPPORT
+========================================================== */
+
+[data-theme="dark"] .document-card,
+[data-theme="dark"] .output-box{
+    background:var(--card);
+    color:var(--text);
+    border-color:var(--border);
+}
+
+[data-theme="dark"] .input-field input,
+[data-theme="dark"] .input-field textarea{
+    background:var(--input-bg);
+    color:var(--text);
+    border-color:var(--border);
+}
+
+[data-theme="dark"] #file-name,
+[data-theme="dark"] .gmail-info p{
+    color:var(--text-light);
+}
+
+[data-theme="dark"] .divider span{
+    color:var(--text);
 }
