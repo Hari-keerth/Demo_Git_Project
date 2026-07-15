@@ -17,7 +17,7 @@ import requests
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import auth
 from django.core.files.storage import default_storage
@@ -26,6 +26,8 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from django.contrib.auth import logout
+
 
 
 # ==========================================================
@@ -138,55 +140,25 @@ def profile(request):
         user=request.user
     )
 
-
-    # Get Gmail connection status
-    gmail = GmailConnection.objects.filter(
-
-        user=request.user,
-
-        connected=True
-
-    ).first()
-
-
-
     # Get saved skills
     skills = UserSkillProfile.objects.filter(
-
         profile=profile
-
     ).first()
-
-
 
     context = {
 
         "profile": profile,
 
-
-        # Gmail details
-        "gmail_connected": gmail is not None,
-
-        "gmail_email":
-            gmail.gmail_email if gmail else "",
-
-
-        # User skills
         "skills": skills
 
     }
 
-
-
     return render(
-
         request,
-
         "profile.html",
-
-        context=context
-
+        context
     )
+
 @login_required
 def disconnect_gmail(request):
 
@@ -204,7 +176,7 @@ def disconnect_gmail(request):
 
     gmail.save()
 
-    return redirect("profile")
+    return redirect("settings")
 
 
 
@@ -992,6 +964,7 @@ def google_login(request):
 
     return redirect(authorization_url)
 
+
 def google_callback(request):
 
     state = request.session.get("google_state")
@@ -1004,15 +977,14 @@ def google_callback(request):
 
     credentials = flow.credentials
 
-    service = build(
-        "gmail",
-        "v1",
-        credentials=credentials
-    )
+    userinfo = requests.get(
+        "https://openidconnect.googleapis.com/v1/userinfo",
+        headers={
+            "Authorization": f"Bearer {credentials.token}"
+        }
+    ).json()
 
-    profile = service.users().getProfile(
-        userId="me"
-    ).execute()
+    email = userinfo["email"]
 
     GmailConnection.objects.update_or_create(
 
@@ -1020,7 +992,7 @@ def google_callback(request):
 
         defaults={
 
-            "gmail_email": profile["emailAddress"],
+            "gmail_email": email,
 
             "access_token": credentials.token,
 
@@ -1034,7 +1006,7 @@ def google_callback(request):
 
     )
 
-    return redirect("dashboard")
+    return redirect("settings")
 
 
 #---------Recommendation------------
@@ -1769,3 +1741,113 @@ def recommendations_page_view(request):
         'has_record': skill_profile is not None  
     }
     return render(request, 'recomend_jobs.html', context)
+
+#----settings----
+
+@login_required
+def settings_view(request):
+
+    gmail = GmailConnection.objects.filter(
+
+        user=request.user,
+
+        connected=True
+
+    ).first()
+
+    context = {
+
+        "gmail_connected": gmail is not None,
+
+        "gmail_email":
+
+            gmail.gmail_email if gmail else ""
+
+    }
+
+    return render(
+
+        request,
+
+        "settings.html",
+
+        context
+
+    )
+
+@login_required
+def change_password_view(request):
+
+    if request.method == "POST":
+
+        current = request.POST["current_password"]
+
+        new = request.POST["new_password"]
+
+        confirm = request.POST["confirm_password"]
+
+        if not request.user.check_password(current):
+
+            messages.error(
+                request,
+                "Current password is incorrect."
+            )
+
+            return redirect("settings")
+
+        if new != confirm:
+
+            messages.error(
+                request,
+                "Passwords do not match."
+            )
+
+            return redirect("settings")
+
+        request.user.set_password(new)
+
+        request.user.save()
+
+        update_session_auth_hash(
+            request,
+            request.user
+        )
+
+        messages.success(
+            request,
+            "Password updated successfully."
+        )
+
+    return redirect("settings")
+
+@login_required
+def delete_account(request):
+
+    if request.method == "POST":
+
+        password = request.POST["password"]
+
+        if not request.user.check_password(password):
+
+            messages.error(
+                request,
+                "Incorrect password."
+            )
+
+            return redirect("settings")
+
+        user = request.user
+
+        logout(request)
+
+        user.delete()
+
+        messages.success(
+            request,
+            "Account deleted."
+        )
+
+        return redirect("login")
+
+    return redirect("settings")
+

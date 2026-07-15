@@ -101,69 +101,6 @@
 
         </div>
 
-        <!-- ================= Gmail ================= -->
-
-        <div class="profile-card">
-
-            <h3>
-                <i class='bx bxl-gmail'></i>
-                Gmail Connection
-            </h3>
-
-            {% if gmail_connected %}
-
-            <div class="gmail-status">
-
-                <span class="status-dot"></span>
-
-                <div class="gmail-info">
-
-                    <h4>Connected</h4>
-
-                    <p>{{ gmail_email }}</p>
-
-                </div>
-
-                <a href="{% url 'disconnect_gmail' %}"
-                   class="disconnect-btn">
-
-                    Disconnect
-
-                </a>
-
-            </div>
-
-            {% else %}
-
-            <div class="gmail-empty">
-
-                <i class='bx bx-envelope'></i>
-
-                <p>
-                    Gmail is not connected.
-                </p>
-
-                <div class="profile-buttons">
-
-                    <button disabled>
-
-                        <a href="{% url 'google_login' %}"
-                    class="gmail-btn">
-
-                        Connect Gmail
-
-                        </a>
-
-                    </button>
-
-                </div>
-
-            </div>
-
-            {% endif %}
-
-        </div>
-
         <!-- ================= Account ================= -->
 
         <div class="profile-card">
@@ -187,14 +124,6 @@
                         Edit Profile
 
                     </a>
-
-                </button>
-
-                <button disabled>
-
-                    <i class='bx bx-lock-alt'></i>
-
-                    Change Password
 
                 </button>
 

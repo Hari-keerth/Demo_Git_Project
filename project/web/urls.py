@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -144,5 +145,26 @@ urlpatterns = [
     path("",views.chatbot,name="chatbot"),
     path('ask_ai/',views.ask_ai,name='ask_ai'),
     path('clear_chat/',views.clear_chat,name='clear_chat'),
+
+    #----settings-----
+
+    path(
+        "settings/",
+        views.settings_view,
+        name="settings"
+    ),
+
+    path(
+        "change-password/",
+        views.change_password_view,
+        name="change_password"
+    ),
+
+    path(
+        "delete-account/",
+        views.delete_account,
+        name="delete_account"
+    ),
     
+
 ]
