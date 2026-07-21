@@ -144,5 +144,34 @@ urlpatterns = [
     path("",views.chatbot,name="chatbot"),
     path('ask_ai/',views.ask_ai,name='ask_ai'),
     path('clear_chat/',views.clear_chat,name='clear_chat'),
+
+    #recrutires jobs
+
+    path(
+        'jobs/post/',
+        views.post_job_view, 
+        name='post_job'),
+
     
+    #--- Recruiter Dashboard ---
+    path(
+        'recruiter/dashboard/', 
+        views.recruiter_dashboard_view, 
+        name='recruiter_dashboard'
+    ),
+
+    #job Managementss
+    path(
+        'jobs/edit/<int:job_id>/',
+        views.edit_job_view,
+        name='edit_job'
+    ),
+   
+   path(
+       'jobs/delete/<int:job_id>/',
+       views.delete_job_view,
+       name='delete_job'
+   ),
+
+   
 ]

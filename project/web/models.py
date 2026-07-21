@@ -115,3 +115,21 @@ class UserSkillProfile(models.Model):
 
     def __str__(self):
         return f"{self.profile.user.username} Skills"
+
+
+
+class RecruiterJob(models.Model):
+    recruiter = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'is_staff': True}) # Or extend via a profile type
+    title = models.CharField(max_length=255)
+    company = models.CharField(max_length=255)
+    location = models.CharField(max_length=255)
+    description = models.TextField()
+     
+    #zstore the req as list/json
+    required_skills = models.JSONField(default=list, blank=True)
+    
+    redirect_url = models.URLField(blank=True, null=True, help_text="Link to external application form if applicable")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.title} at {self.company}"

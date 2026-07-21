@@ -17,17 +17,22 @@ import requests
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login
+from django.contrib.auth import login as auth_login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import auth
 from django.core.files.storage import default_storage
 from django.core.mail import EmailMessage
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from django.db.models import Q
+from django.contrib.auth.forms import AuthenticationForm
 
-
+from .models import Profile
+from .forms import CreateUserForm, ProfileForm
+from .models import RecruiterJob
 # ==========================================================
 # Google Gmail API
 # ==========================================================
@@ -109,6 +114,7 @@ from web.recommendation.recc_engine import (
     normalize_jobs,
     search_jobs,
 )
+from .models import ATSResult, UserSkillProfile, RecruiterJob
 
 # ==========================================================
 # Chatbot
@@ -914,26 +920,63 @@ def download_cover_letter_pdf(request):
 
 
 
+
 # register a user
 def register(request):
     if request.method == "POST":
         user_form = CreateUserForm(request.POST)
         profile_form = ProfileForm(request.POST)
+        
+        role = request.POST.get('role', 'candidate')
+        
+        #  TERMINAL DEBUG LOGS
+        print("\n--- REGISTRATION ATTEMPT ---")
+        print(f"Role Submitted: {role}")
+        print(f"User Form Valid?: {user_form.is_valid()}")
+        if not user_form.is_valid():
+            print(f"User Form Errors: {user_form.errors}")
+        print("-----------------------------\n")
 
-        if user_form.is_valid() and profile_form.is_valid():
-            # 1. Save the user first to generate their database ID
-            new_user = user_form.save()
-            
-            # 2. Hold the profile in memory without writing to the database yet
-            profile = profile_form.save(commit=False)
-            
-            # 3. Manually link the profile to the newly created user
-            profile.user = new_user
-            
-            # 4. Now it is safe to save the profile to the database
-            profile.save()
-            
-            return redirect('login')
+        if role == 'recruiter':
+            #  RECRUITER PATH: We only validate user_form!
+            if user_form.is_valid():
+                # 1. Save the new user and mark as Recruiter (staff status)
+                new_user = user_form.save(commit=False)
+                new_user.is_staff = True  
+                new_user.save()
+                
+                # 2. Extract shared values directly from POST data
+                first_name = request.POST.get('first_name', '')
+                last_name = request.POST.get('last_name', '')
+                email = request.POST.get('email', '')
+                
+                # 3. Create the Profile record directly using the model
+                Profile.objects.create(
+                    user=new_user,
+                    first_name=first_name,
+                    last_name=last_name,
+                    email=email,
+                    phone='',
+                    age=None,
+                    address='',
+                    city='Not Specified',    # Fills required DB constraints securely
+                    country='Not Specified'  # Fills required DB constraints securely
+                )
+                
+                print("🎉 RECRUITER SAVED SUCCESSFULLY TO DATABASE!")
+                messages.success(request, 'Recruiter registration successful! Please log in.')
+                return redirect('login')
+        else:
+            #  CANDIDATE PATH: Both forms must be valid
+            if user_form.is_valid() and profile_form.is_valid():
+                new_user = user_form.save()
+                profile = profile_form.save(commit=False)
+                profile.user = new_user
+                profile.save()
+                
+                print("🎉 CANDIDATE SAVED SUCCESSFULLY TO DATABASE!")
+                messages.success(request, 'Registration successful! Please log in.')
+                return redirect('login')
     else:
         user_form = CreateUserForm()
         profile_form = ProfileForm()
@@ -944,24 +987,28 @@ def register(request):
     })
 
 
-
 #-- login a user
 
 def login(request):
     form =LoginForm()
     if request.method == "POST":
-        form = LoginForm(request, data=request.POST)
+        form = LoginForm(request, data=request.POST) # Keeps your exact form validation
         if form.is_valid():
-            username=request.POST.get('username')
-            password=request.POST.get('password')
-            user = authenticate(request , username=username , password=password)
+            username = request.POST.get('username')
+            password = request.POST.get('password')
+            user = authenticate(request, username=username, password=password)
+            
             if user is not None:
-                auth.login(request,user)
-                messages.success(request ,'Logged in')
-                return redirect('dashboard')
-    context ={'form':form}
+                auth_login(request, user)
+                messages.success(request, 'Logged in')
 
-    return render (request,'login.html',context=context)
+                if user.is_staff:
+                    return redirect('recruiter_dashboard')
+                else:  
+                    return redirect('dashboard') # Replace with your actual candidate URL name
+                    
+    context = {'form': form}
+    return render(request, 'login.html', context=context)
 
 
 
@@ -1037,61 +1084,6 @@ def google_callback(request):
     return redirect("dashboard")
 
 
-#---------Recommendation------------
-
-# 1. DASHBOARD VIEW: Shows all 20 raw jobs fetched from Adzuna
-# def dashboard_all_jobs_view(request):
-#     # For now, searching 'Python Developer'. 
-#     raw_adzuna_jobs = search_jobs("Python Developer")
-#     cleaned_adzuna_jobs = normalize_jobs(raw_adzuna_jobs)
-    
-#     context = {
-#         'adzuna_jobs': cleaned_adzuna_jobs
-#     }
-#     return render(request, 'live_jobs.html', context)
-
-
-# def dashboard_all_jobs_view(request):
-#     query = request.GET.get('q', '').strip()
-    
-#     if not query:
-#         search_query = "Python Developer"
-#     else:
-#         search_query = query
-        
-#     raw_adzuna_jobs = search_jobs(search_query)
-#     cleaned_adzuna_jobs = normalize_jobs(raw_adzuna_jobs)
-
-#     context = {
-#         'adzuna_jobs': cleaned_adzuna_jobs,
-#         'current_query': query
-#     }
-    
-#     return render(request, 'dashboard.html', context)
-
-# # 2. RECOMMENDATION VIEW: Shows your custom AI Top 10 matching jobs
-# def recommendations_page_view(request):
-#     # Dummy resume data for testing the algorithm match
-#     sample_resume = {
-#         "technical_skills": ["Python", "Django", "SQL", "Git"],
-#         "tools": ["Docker"],
-#         "frameworks": [],
-#         "databases": ["PostgreSQL"],
-#         "cloud_skills": ["AWS"],
-#         "project_skills": [],
-#         "soft_skills": ["Communication"],
-#         "degrees": ["B.Tech Computer Science"],
-#         "total_experience_years": 2,
-#         "job_titles": ["Python Developer"]
-#     }
-    
-#     # Gets the calculated top 10 recommended jobs via cosine similarity
-#     recommended_jobs = get_recommendations(sample_resume)
-    
-#     context = {
-#         'recommendations': recommended_jobs
-#     }
-#     return render(request, 'recomend_jobs.html', context)
 
 
 
@@ -1699,29 +1691,49 @@ def clear_chat(request):
         }
     )
 
-@login_required
+login_required(login_url='login')
 def dashboard_all_jobs_view(request):
+    # 🟢 SECURITY FIX: Stop recruiters from seeing the candidate view![cite: 3]
+    if request.user.is_staff:
+        return redirect('recruiter_dashboard')
+
     query = request.GET.get('q', '').strip()
-    
-    # Check if a parsed resume exists to extract a smart default keyword
-    latest_record = ATSResult.objects.filter(user=request.user).order_by('-created_at').first()
-    
-    if not query:
-        # If there's a record, look inside your teammate's resume_json for their target job title
-        if latest_record and latest_record.resume_json:
-            # Safely gets target_role from json, falls back to "Python Developer" if missing
-            extracted_role = latest_record.resume_json.get('personal_info', {}).get('target_role', '')
-            search_query = extracted_role if extracted_role else "Python Developer"
-        else:
-            search_query = "Python Developer"
+    search_query = query if query else "Python Developer"
+
+    # db recruiters job
+    local_recruiter_jobs = []
+    if query:
+        db_jobs = RecruiterJob.objects.filter(
+            Q(title__icontains=query) | 
+            Q(company__icontains=query) |
+            Q(description__icontains=query)
+        ).order_by('-created_at')
     else:
-        search_query = query
-        
-    raw_adzuna_jobs = search_jobs(search_query)
-    cleaned_adzuna_jobs = normalize_jobs(raw_adzuna_jobs)
+        db_jobs = RecruiterJob.objects.all().order_by('-created_at')[:5]
+
+    for r_job in db_jobs:
+        local_recruiter_jobs.append({
+            'title': r_job.title,
+            'company': f"{r_job.company} (Featured)",  # Visual tag for native jobs
+            'location': r_job.location,
+            'description': r_job.description,
+            # Point to an application page if no external URL exists
+            'redirect_url': r_job.redirect_url if r_job.redirect_url else f"/jobs/apply/{r_job.id}/",
+            'contract_time': "Full Time"
+        })
+
+    try:
+        raw_adzuna_jobs = search_jobs(search_query)
+        cleaned_adzuna_jobs = normalize_jobs(raw_adzuna_jobs)
+    except Exception as e:
+        print(f"API Error: {e}")
+        cleaned_adzuna_jobs = []
+    
+    # Combine listings (native recruiter positions sit at the top!)
+    combined_job_listings = local_recruiter_jobs + cleaned_adzuna_jobs
 
     context = {
-        'adzuna_jobs': cleaned_adzuna_jobs,
+        'adzuna_jobs': combined_job_listings,
         'current_query': query
     }
     return render(request, 'dashboard.html', context)
@@ -1769,3 +1781,96 @@ def recommendations_page_view(request):
         'has_record': skill_profile is not None  
     }
     return render(request, 'recomend_jobs.html', context)
+
+@login_required
+def post_job_view(request):
+    # Only allow recruiters (is_staff = True) to post jobs
+    if not request.user.is_staff:
+        messages.error(request, "Access denied. Only recruiters can post jobs.")
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        company = request.POST.get('company')
+        location = request.POST.get('location')
+        description = request.POST.get('description')
+        redirect_url = request.POST.get('redirect_url') or None
+        
+        # Get raw skills input, split by comma, and clean up empty spaces
+        raw_skills = request.POST.get('required_skills', '')
+        required_skills_list = [skill.strip() for skill in raw_skills.split(',') if skill.strip()]
+
+        # Save to your RecruiterJob model
+        RecruiterJob.objects.create(
+            recruiter=request.user,
+            title=title,
+            company=company,
+            location=location,
+            description=description,
+            required_skills=required_skills_list,  # Saves beautifully as a JSON list
+            redirect_url=redirect_url
+        )
+
+        messages.success(request, "Job opportunity published successfully! 🚀")
+        return redirect('recruiter_dashboard')
+
+    return render(request, 'post_job.html')
+
+
+@login_required
+def recruiter_dashboard_view(request):
+    # Security Check: Redirect non-recruiters back to candidate dashboard
+    if not request.user.is_staff:
+        return redirect('dashboard')
+        
+    # Fetch all jobs posted by this specific recruiter[cite: 1]
+    my_jobs = RecruiterJob.objects.filter(recruiter=request.user).order_by('-created_at')
+    
+    context = {
+        'my_jobs': my_jobs,
+        'total_jobs': my_jobs.count()
+    }
+    return render(request, 'recruiter_dashboard.html', context)
+
+@login_required
+def edit_job_view(request, job_id):
+    # Fetch the specific job or throw a 404
+    job = get_object_or_404(RecruiterJob, id=job_id)
+    
+    # Security: Double check that this recruiter owns the job post[cite: 1]
+    if job.recruiter != request.user:
+        messages.error(request, "You do not have permission to edit this job.")
+        return redirect('recruiter_dashboard')
+
+    if request.method == 'POST':
+        job.title = request.POST.get('title')
+        job.company = request.POST.get('company')
+        job.location = request.POST.get('location')
+        job.description = request.POST.get('description')
+        job.redirect_url = request.POST.get('redirect_url') or None
+        
+        raw_skills = request.POST.get('required_skills', '')
+        job.required_skills = [skill.strip() for skill in raw_skills.split(',') if skill.strip()]
+        
+        job.save()
+        messages.success(request, "Job posting updated successfully! ")
+        return redirect('recruiter_dashboard')
+
+    # Join the skills array back into a comma-separated string for the text input form
+    skills_string = ", ".join(job.required_skills) if job.required_skills else ""
+    
+    return render(request, 'edit_job.html', {'job': job, 'skills_string': skills_string})
+
+
+@login_required
+def delete_job_view(request, job_id):
+    job = get_object_or_404(RecruiterJob, id=job_id)
+    
+    # Security: Ensure ownership[cite: 1]
+    if job.recruiter != request.user:
+        messages.error(request, "You do not have permission to delete this job.")
+        return redirect('recruiter_dashboard')
+        
+    job.delete()
+    messages.success(request, "Job posted Deleted.")
+    return redirect('recruiter_dashboard')

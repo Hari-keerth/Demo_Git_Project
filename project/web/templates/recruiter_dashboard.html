@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recruiter Dashboard | Career Growza</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen font-sans">
+
+    <!-- Navigation Bar -->
+    <nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl font-bold text-blue-600 flex items-center gap-2">
+                        <i class="fa-solid fa-briefcase"></i> Career Growza
+                    </span>
+                    <span class="ml-4 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        Recruiter Hub
+                    </span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="text-gray-700 font-medium hidden md:inline">Welcome, {{ request.user.username }}</span>
+                    <a href="{% url 'user-logout' %}" class="text-sm font-semibold text-gray-500 hover:text-red-600 transition-colors">
+                        Logout <i class="fa-solid fa-right-from-bracket ml-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Header Panel with Actions -->
+        <div class="md:flex md:items-center md:justify-between mb-8">
+            <div class="flex-1 min-w-0">
+                <h2 class="text-3xl font-bold leading-7 text-gray-900 sm:text-4xl sm:truncate">
+                    Your Job Board
+                </h2>
+                <p class="mt-1 text-sm text-gray-500">
+                    Manage and track all the active job opportunities you've listed on Career Growza.
+                </p>
+            </div>
+            <div class="mt-4 flex md:mt-0 md:ml-4">
+                <a href="{% url 'post_job' %}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all">
+                    <i class="fa-solid fa-plus mr-2"></i> Post a New Job
+                </a>
+            </div>
+        </div>
+
+        <!-- Metrics Row -->
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+            <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200 p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-md bg-blue-50 text-blue-600">
+                        <i class="fa-solid fa-list-check text-2xl"></i>
+                    </div>
+                    <div class="ml-5">
+                        <p class="text-sm font-medium text-gray-500 truncate">Total Active Jobs</p>
+                        <p class="text-3xl font-semibold text-gray-900">{{ total_jobs }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages Notifications -->
+        {% if messages %}
+        <div class="mb-6 space-y-2">
+            {% for message in messages %}
+            <div class="p-4 rounded-md {% if message.tags == 'error' %}bg-red-50 text-red-800 border border-red-200{% else %}bg-green-50 text-green-800 border border-green-200{% endif %} flex items-center gap-2">
+                {% if message.tags == 'error' %}
+                <i class="fa-solid fa-circle-xmark"></i>
+                {% else %}
+                <i class="fa-solid fa-circle-check"></i>
+                {% endif %}
+                <span class="text-sm font-medium">{{ message }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Job Listings -->
+        <div class="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+            <div class="px-6 py-5 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Active Postings</h3>
+            </div>
+            
+            {% if my_jobs %}
+            <ul class="divide-y divide-gray-200">
+                {% for job in my_jobs %}
+                <li class="p-6 hover:bg-gray-50 transition-all">
+                    <div class="flex items-center justify-between flex-wrap gap-4">
+                        <div class="flex-1">
+                            <h4 class="text-xl font-bold text-blue-600 hover:underline">
+                                {{ job.title }}
+                            </h4>
+                            <div class="mt-2 flex items-center gap-4 text-sm text-gray-500 flex-wrap">
+                                <span class="flex items-center gap-1">
+                                    <i class="fa-regular fa-building text-gray-400"></i> {{ job.company }}
+                                </span>
+                                <span class="flex items-center gap-1">
+                                    <i class="fa-solid fa-location-dot text-gray-400"></i> {{ job.location }}
+                                </span>
+                                <span class="flex items-center gap-1">
+                                    <i class="fa-regular fa-calendar-days text-gray-400"></i> Listed on: {{ job.created_at|date:"M d, Y" }}
+                                </span>
+                            </div>
+
+                            <!-- Skills Badge Row -->
+                            {% if job.required_skills %}
+                            <div class="mt-3 flex flex-wrap gap-1.5">
+                                {% for skill in job.required_skills %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800 border border-gray-200">
+                                    {{ skill }}
+                                </span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Action Controls -->
+                        <div class="flex items-center gap-3">
+                            {% if job.redirect_url %}
+                            <a href="{{ job.redirect_url }}" target="_blank" class="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all">
+                                External Apply <i class="fa-solid fa-arrow-up-right-from-square ml-1"></i>
+                            </a>
+                            {% endif %}
+                            <!-- 🟢 NEW: Edit Button -->
+                            <a href="{% url 'edit_job' job.id %}" class="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md text-xs font-medium text-blue-600 bg-white hover:bg-blue-50 transition-all">
+                                    <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
+                            </a>
+    
+                            <!-- 🟢 NEW: Delete Button with a confirmation safety prompt -->
+                            <a href="{% url 'delete_job' job.id %}" onclick="return confirm('Are you sure you want to delete this job posting permanently?');" class="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md text-xs font-medium text-white bg-red-600 hover:bg-red-700 transition-all">
+                                    <i class="fa-solid fa-trash mr-1"></i> Delete
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Short Snippet of Description -->
+                    <div class="mt-4 text-sm text-gray-600 line-clamp-2">
+                        {{ job.description|truncatewords:40 }}
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <!-- Empty State -->
+            <div class="text-center py-16 px-4">
+                <div class="inline-flex items-center justify-center p-4 rounded-full bg-blue-50 text-blue-500 mb-4">
+                    <i class="fa-solid fa-briefcase text-4xl"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900">No jobs posted yet</h3>
+                <p class="mt-1 text-sm text-gray-500">Get started by creating your first job listing today!</p>
+                <div class="mt-6">
+                    <a href="{% url 'post_job' %}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all">
+                        <i class="fa-solid fa-plus mr-2"></i> Post Your First Job
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+    </main>
+
+</body>
+</html>
