@@ -36,25 +36,9 @@
 
             <li><a href="{% url 'profile' %}" class="{% if request.path == '/profile/' %}active{% endif %}"><i class='bx bx-user'></i>Profile</a></li>
 
-            <li><a href="#" class="{% if request.path == '#' %}active{% endif %}"><i class='bx bx-cog'></i>Settings</a></li>
+            <li><a href="{% url 'settings' %}" class="{% if request.path == 'settings/' %}active{% endif %}"><i class='bx bx-cog'></i>Settings</a></li>
 
         </ul>
-
-        <div class="theme-switch">
-
-            <i class='bx bxs-sun'></i>
-
-            <label class="switch">
-
-                <input type="checkbox" id="themeToggle">
-
-                <span class="slider"></span>
-
-            </label>
-
-            <i class='bx bxs-moon'></i>
-
-        </div>
 
         <div class="sidebar-bottom">
             <a href="{% url 'user-logout' %}">

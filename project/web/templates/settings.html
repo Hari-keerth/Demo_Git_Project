@@ -1,0 +1,722 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>CareerGrowza | Settings</title>
+
+    <link rel="icon"
+          href="{% static 'images/favicon/CareerGrowza_Favicon.png' %}">
+
+    <link rel="stylesheet"
+          href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+
+    <link rel="stylesheet"
+          href="{% static 'css/common.css' %}">
+
+    <link rel="stylesheet"
+          href="{% static 'css/layout.css' %}">
+
+    <link rel="stylesheet"
+          href="{% static 'css/sidebar.css' %}">
+
+    <link rel="stylesheet"
+          href="{% static 'css/profile.css' %}">
+
+    <link rel="stylesheet"
+          href="{% static 'css/settings.css' %}">
+
+</head>
+
+<body>
+
+{% include "navbar.html" with active_page="settings" %}
+
+<main class="main-content">
+
+<div class="profile-wrapper">
+
+    <!-- ===========================
+            PAGE HEADER
+    ============================ -->
+
+    <div class="profile-header">
+
+        <div class="profile-image">
+
+            <i class='bx bx-cog'></i>
+
+        </div>
+
+        <h2>
+
+            Settings
+
+        </h2>
+
+        <p class="profile-email">
+
+            Customize your CareerGrowza experience.
+
+        </p>
+
+    </div>
+
+    <!-- ===========================
+            APPEARANCE
+    ============================ -->
+
+    <div class="profile-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+
+                    <i class='bx bx-palette'></i>
+
+                    Appearance
+
+                </h3>
+
+                <p>
+
+                    Select your preferred theme.
+
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="theme-grid">
+
+            <div
+                class="theme-option active"
+                data-theme="light">
+
+                <div class="theme-icon">
+
+                    <i class='bx bx-sun'></i>
+
+                </div>
+
+                <div class="theme-text">
+
+                    <h4>
+
+                        Light
+
+                    </h4>
+
+                    <span>
+
+                        Bright workspace
+
+                    </span>
+
+                </div>
+
+                <i class='bx bxs-check-circle theme-check'></i>
+
+            </div>
+
+            <div
+                class="theme-option"
+                data-theme="dark">
+
+                <div class="theme-icon">
+
+                    <i class='bx bx-moon'></i>
+
+                </div>
+
+                <div class="theme-text">
+
+                    <h4>
+
+                        Dark
+
+                    </h4>
+
+                    <span>
+
+                        Easy on the eyes
+
+                    </span>
+
+                </div>
+
+                <i class='bx bxs-check-circle theme-check'></i>
+
+            </div>
+
+            <div
+                class="theme-option"
+                data-theme="system">
+
+                <div class="theme-icon">
+
+                    <i class='bx bx-desktop'></i>
+
+                </div>
+
+                <div class="theme-text">
+
+                    <h4>
+
+                        System
+
+                    </h4>
+
+                    <span>
+
+                        Match device theme
+
+                    </span>
+
+                </div>
+
+                <i class='bx bxs-check-circle theme-check'></i>
+
+            </div>
+
+        </div>
+
+    </div>
+
+        <!-- ===========================
+            GMAIL
+    ============================ -->
+
+    <div class="profile-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+
+                    <i class='bx bxl-gmail'></i>
+
+                    Gmail Integration
+
+                </h3>
+
+                <p>
+
+                    Connect your Gmail account to send AI-generated emails.
+
+                </p>
+
+            </div>
+
+        </div>
+
+        {% if gmail_connected %}
+
+        <div class="gmail-container">
+
+            <div class="gmail-left">
+
+                <div class="gmail-status success">
+
+                    <i class='bx bxs-check-circle'></i>
+
+                    Connected
+
+                </div>
+
+                <h4>
+
+                    {{ gmail_email }}
+
+                </h4>
+
+                <p>
+
+                    CareerGrowza can send emails using your Gmail account.
+
+                </p>
+
+            </div>
+
+            <div class="gmail-actions">
+
+                <a
+                    href="{% url 'google_login' %}"
+                    class="btn-primary">
+
+                    <i class='bx bx-refresh'></i>
+
+                    Reconnect
+
+                </a>
+
+                <a
+                    href="{% url 'disconnect_gmail' %}"
+                    class="btn-outline">
+
+                    <i class='bx bx-unlink'></i>
+
+                    Disconnect
+
+                </a>
+
+            </div>
+
+        </div>
+
+        {% else %}
+
+        <div class="gmail-container">
+
+            <div class="gmail-left">
+
+                <div class="gmail-status">
+
+                    <i class='bx bx-error-circle'></i>
+
+                    Not Connected
+
+                </div>
+
+                <h4>
+
+                    Gmail Account
+
+                </h4>
+
+                <p>
+
+                    Connect Gmail to allow CareerGrowza to send AI-generated emails from your account.
+
+                </p>
+
+            </div>
+
+            <div class="gmail-actions">
+
+                <a
+                    href="{% url 'google_login' %}"
+                    class="btn-primary">
+
+                    <i class='bx bxl-gmail'></i>
+
+                    Connect Gmail
+
+                </a>
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+
+
+    <!-- ===========================
+            SECURITY
+    ============================ -->
+
+    <div class="profile-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+
+                    <i class='bx bx-lock-alt'></i>
+
+                    Security
+
+                </h3>
+
+                <p>
+
+                    Manage your account security.
+
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="setting-row">
+
+            <div>
+
+                <h4>
+
+                    Password
+
+                </h4>
+
+                <p>
+
+                    Update your password regularly to keep your account secure.
+
+                </p>
+
+            </div>
+
+            <button
+                id="openPasswordModal"
+                class="btn-primary">
+
+                <i class='bx bx-key'></i>
+
+                Change Password
+
+            </button>
+
+        </div>
+
+    </div>
+
+        <!-- ===========================
+            DANGER ZONE
+    ============================ -->
+
+    <div class="profile-card danger-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+
+                    <i class='bx bx-error-circle'></i>
+
+                    Danger Zone
+
+                </h3>
+
+                <p>
+
+                    Permanently delete your CareerGrowza account and all associated data.
+
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="danger-content">
+
+            <div class="danger-warning">
+
+                <i class='bx bx-info-circle'></i>
+
+                <span>
+
+                    This action cannot be undone.
+
+                </span>
+
+            </div>
+
+            <ul class="danger-list">
+
+                <li>
+
+                    <i class='bx bx-check-circle'></i>
+
+                    Profile Information
+
+                </li>
+
+                <li>
+
+                    <i class='bx bx-check-circle'></i>
+
+                    Uploaded Resume
+
+                </li>
+
+                <li>
+
+                    <i class='bx bx-check-circle'></i>
+
+                    Resume Analysis History
+
+                </li>
+
+                <li>
+
+                    <i class='bx bx-check-circle'></i>
+
+                    Cover Letters
+
+                </li>
+
+                <li>
+
+                    <i class='bx bx-check-circle'></i>
+
+                    AI Generated Emails
+
+                </li>
+
+                <li>
+
+                    <i class='bx bx-check-circle'></i>
+
+                    Recommended Jobs
+
+                </li>
+
+                <li>
+
+                    <i class='bx bx-check-circle'></i>
+
+                    Connected Gmail Account
+
+                </li>
+
+            </ul>
+
+            <button
+                id="openDeleteModal"
+                class="btn-danger">
+
+                <i class='bx bx-trash'></i>
+
+                Delete Account
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+</main>
+
+<!-- ==========================================
+            CHANGE PASSWORD MODAL
+========================================== -->
+
+<div
+    class="modal"
+    id="passwordModal">
+
+    <div class="modal-box">
+
+        <div class="modal-header">
+
+            <h2>
+
+                <i class='bx bx-lock-alt'></i>
+
+                Change Password
+
+            </h2>
+
+            <button
+                class="close-modal"
+                data-close="passwordModal">
+
+                <i class='bx bx-x'></i>
+
+            </button>
+
+        </div>
+
+        <form
+            method="POST"
+            action="{% url 'change_password' %}">
+
+            {% csrf_token %}
+
+            <div class="input-group">
+
+                <label>
+
+                    Current Password
+
+                </label>
+
+                <input
+                    type="password"
+                    name="current_password"
+                    required>
+
+            </div>
+
+            <div class="input-group">
+
+                <label>
+
+                    New Password
+
+                </label>
+
+                <input
+                    type="password"
+                    name="new_password"
+                    required>
+
+            </div>
+
+            <div class="input-group">
+
+                <label>
+
+                    Confirm Password
+
+                </label>
+
+                <input
+                    type="password"
+                    name="confirm_password"
+                    required>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    class="btn-outline close-modal"
+                    data-close="passwordModal">
+
+                    Cancel
+
+                </button>
+
+                <button
+                    type="submit"
+                    class="btn-primary">
+
+                    Update Password
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- ==========================================
+            DELETE ACCOUNT MODAL
+========================================== -->
+
+<div
+    class="modal"
+    id="deleteModal">
+
+    <div class="modal-box">
+
+        <div class="modal-header">
+
+            <h2>
+
+                <i class='bx bx-error-circle'></i>
+
+                Delete Account
+
+            </h2>
+
+            <button
+                class="close-modal"
+                data-close="deleteModal">
+
+                <i class='bx bx-x'></i>
+
+            </button>
+
+        </div>
+
+        <p class="modal-warning">
+
+            This action is permanent and cannot be undone.
+
+        </p>
+
+        <form
+            method="POST"
+            action="{% url 'delete_account' %}">
+
+            {% csrf_token %}
+
+            <div class="input-group">
+
+                <label>
+
+                    Password
+
+                </label>
+
+                <input
+                    type="password"
+                    name="password"
+                    required>
+
+            </div>
+
+            <div class="input-group">
+
+                <label>
+
+                    Type DELETE
+
+                </label>
+
+                <input
+                    type="text"
+                    id="deleteConfirm"
+                    placeholder="DELETE">
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    class="btn-outline close-modal"
+                    data-close="deleteModal">
+
+                    Cancel
+
+                </button>
+
+                <button
+                    id="confirmDelete"
+                    type="submit"
+                    class="btn-danger"
+                    disabled>
+
+                    Delete Forever
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script src="{% static 'js/sidebar.js' %}"></script>
+<script src="{% static 'js/theme.js' %}"></script>
+<script src="{% static 'js/settings.js' %}"></script>
+
+</body>
+
+</html>

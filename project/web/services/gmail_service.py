@@ -19,6 +19,7 @@ from ..models import GmailConnection
 import os
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+os.environ["OAUTHLIB_RELAX_TOKEN_SCOPE"] = "1"
 #-----
 
 def get_google_config():
@@ -36,6 +37,9 @@ def get_google_flow(state=None):
         settings.GOOGLE_CLIENT_SECRETS_FILE,
 
         scopes=[
+            "openid",
+            "email",
+            "profile",
             "https://www.googleapis.com/auth/gmail.send"
         ],
 
@@ -84,6 +88,9 @@ def build_gmail_service(user):
         client_secret=config["client_secret"],
 
         scopes=[
+            "openid",
+            "email",
+            "profile",
             "https://www.googleapis.com/auth/gmail.send"
         ]
 
