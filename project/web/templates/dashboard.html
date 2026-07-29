@@ -18,6 +18,198 @@
   <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
   <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
   
+  <style>
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 9999;
+      justify-content: center; align-items: center; padding: 20px;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-card {
+      background: #ffffff; width: 100%; max-width: 520px;
+      border-radius: 16px; padding: 28px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      position: relative; animation: modalSlide 0.25s ease-out;
+    }
+    @keyframes modalSlide {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+    .modal-title { font-size: 1.25rem; font-weight: 700; color: #0f172a; margin: 0; }
+    .modal-close {
+      background: #f1f5f9; border: none; width: 32px; height: 32px;
+      border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; color: #64748b;
+    }
+    .modal-close:hover { background: #e2e8f0; color: #0f172a; }
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; font-size: 0.88rem; font-weight: 600; color: #334155; margin-bottom: 6px; }
+    .form-control { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 0.9rem; box-sizing: border-box; }
+    .modal-actions { display: flex; gap: 12px; margin-top: 24px; }
+    .btn-submit-modal { flex: 2; background: #4f46e5; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .btn-cancel-modal { flex: 1; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+
+    /* Candidate Stats Grid Styling */
+    .candidate-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    .cand-stat-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+      transition: all 0.25s ease;
+    }
+
+    .cand-stat-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.06);
+      border-color: #cbd5e1;
+    }
+
+    /* Interactive Stat Card Links */
+    a.stat-card-link {
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+    }
+
+    a.stat-card-link:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(79, 70, 229, 0.12);
+      border-color: #818cf8;
+    }
+
+    a.stat-card-link .icon-arrow {
+      font-size: 1rem;
+      vertical-align: middle;
+      transition: transform 0.2s ease;
+    }
+
+    a.stat-card-link:hover .icon-arrow {
+      transform: translateX(4px);
+    }
+
+    .cand-stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .icon-purple { background: #eeef2; color: #4f46e5; }
+    .icon-blue   { background: #e0f2fe; color: #0284c7; }
+    .icon-amber  { background: #fef3c7; color: #d97706; }
+    .icon-green  { background: #dcfce7; color: #15803d; }
+
+    .cand-stat-info h3 {
+      font-size: 22px;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0;
+      line-height: 1.1;
+    }
+
+    .cand-stat-info p {
+      font-size: 13px;
+      color: #64748b;
+      margin: 4px 0 0 0;
+      font-weight: 600;
+    }
+
+    .profile-progress-bar {
+      width: 100%;
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 10px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+
+    .profile-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #d97706, #f59e0b);
+      border-radius: 10px;
+      transition: width 0.5s ease-in-out;
+    }
+
+    /* Search Bar Styling */
+    .search-form-dual {
+      display: flex;
+      align-items: center;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 6px 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      gap: 0;
+      margin-top: 12px;
+    }
+    .search-field-group {
+      display: flex;
+      align-items: center;
+      flex: 1;
+      padding: 6px 12px;
+    }
+    .search-field-group i {
+      font-size: 1.25rem;
+      color: #64748b;
+      margin-right: 10px;
+    }
+    .search-field-group input {
+      width: 100%;
+      border: none;
+      outline: none;
+      font-size: 0.95rem;
+      color: #0f172a;
+      background: transparent;
+      font-family: inherit;
+    }
+    .search-field-group input::placeholder {
+      color: #94a3b8;
+    }
+    .search-field-divider {
+      width: 1px;
+      height: 28px;
+      background-color: #e2e8f0;
+    }
+    @media (max-width: 768px) {
+      .search-form-dual {
+        flex-direction: column;
+        padding: 10px;
+        gap: 10px;
+      }
+      .search-field-divider {
+        display: none;
+      }
+      .search-field-group {
+        width: 100%;
+        border-bottom: 1px solid #f1f5f9;
+        padding-bottom: 8px;
+      }
+      .search-form-dual .search-btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
 </head>
 
 <body>
@@ -25,251 +217,292 @@
 {% include "navbar.html" with active_page="dashboard" %}
 
     <main class="main-content">
-        <!-- ================= Dashboard Header ================= -->
-
         <div class="topbar">
-
             <div class="topbar-left">
-
-                <h1>
-
-                    👋 Welcome back,
-                    {{ profile.user }}!
-
-                </h1>
-
-                <p class="dashboard-subtitle">
-
-                    Discover your next career opportunity with AI-powered recommendations.
-
-                </p>
-
+                <h1>👋 Welcome back, {{ profile.user }}!</h1>
+                <p class="dashboard-subtitle">Discover your next career opportunity with AI-powered recommendations.</p>
             </div>
-
             <div class="topbar-profile">
+                <span class="job-category-badge">Active Session</span>
+            </div>
+        </div>
 
-                <span class="job-category-badge">
+        <!-- Dynamic Success/Error Alert Banner -->
+        <div id="alertContainer" style="display: none; margin-bottom: 20px;">
+            <div id="alertBox" style="padding: 14px 18px; border-radius: 10px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <i class='bx bx-check-circle' style="font-size: 1.3rem;"></i>
+                <span id="alertMessage"></span>
+            </div>
+        </div>
 
-                    Active Session
+        {% if messages %}
+        <div class="messages-container" style="margin-bottom: 20px;">
+            {% for message in messages %}
+            <div style="padding: 14px 18px; border-radius: 10px; background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <i class='bx bx-check-circle' style="font-size: 1.3rem;"></i>
+                <span>{{ message }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
 
-                </span>
+        <!-- PROFESSIONAL STATS OVERVIEW CARDS -->
+        <div class="candidate-stats-grid">
+            
+            <!-- Card 1: Jobs Applied (Navigates to Applied Jobs Page) -->
+            <a href="{% url 'applied_jobs' %}" class="cand-stat-card stat-card-link">
+                <div class="cand-stat-icon icon-purple">
+                    <i class='bx bx-send'></i>
+                </div>
+                <div class="cand-stat-info">
+                    <h3>{{ applied_count|default:"0" }}</h3>
+                    <p>Jobs Applied <i class='bx bx-right-arrow-alt icon-arrow'></i></p>
+                </div>
+            </a>
 
+            <!-- Card 2: Matching Positions (Scrolls to Search Jobs section) -->
+            <a href="{% url 'recomend_jobs' %}" class="cand-stat-card stat-card-link">
+                <div class="cand-stat-icon icon-blue">
+                    <i class='bx bx-send'></i>
+                </div>
+                <div class="cand-stat-info">
+                    <h3>{{ adzuna_jobs|length|default:"0" }}</h3>
+                    <p>Matching Positions <i class='bx bx-right-arrow-alt icon-arrow'></i></p>
+                </div>
+            </a>
+
+            <!-- Card 3: Profile Completion (Navigates to Profile Page) -->
+            <a href="{% url 'profile' %}" class="cand-stat-card stat-card-link">
+                <div class="cand-stat-icon icon-amber">
+                    <i class='bx bx-user-check'></i>
+                </div>
+                <div class="cand-stat-info" style="width: 100%;">
+                    <h3>{{ profile_completion|default:"50" }}%</h3>
+                    <p>Profile Finished <i class='bx bx-right-arrow-alt icon-arrow'></i></p>
+                    <div class="profile-progress-bar">
+                        <div class="profile-progress-fill" style="width: {{ profile_completion|default:'50' }}%;"></div>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Card 4: Account Status -->
+            <div class="cand-stat-card">
+                <div class="cand-stat-icon icon-green">
+                    <i class='bx bx-check-shield'></i>
+                </div>
+                <div class="cand-stat-info">
+                    <h3>Active</h3>
+                    <p>Account Status</p>
+                </div>
             </div>
 
         </div>
-        
 
-        <!-- ================= Search Jobs ================= -->
+        <div id="searchSection" class="search-section">
+            <h2 class="section-title"><i class='bx bx-search-alt'></i> Search Jobs</h2>
+            <p class="section-description">Search jobs by title, technology, skill, or location.</p>
+            
+            <form method="GET" action="{% url 'dashboard' %}" class="search-form-dual">
+                <!-- Role / Skill Search -->
+                <div class="search-field-group">
+                    <i class='bx bx-search'></i>
+                    <input type="text" name="q" value="{{ current_query }}" placeholder="Title, skill, or role (e.g. Python Developer)">
+                </div>
 
-            <div class="search-section">
+                <div class="search-field-divider"></div>
 
-                <h2 class="section-title">
+                <!-- Location Search -->
+                <div class="search-field-group">
+                    <i class='bx bx-map'></i>
+                    <input type="text" name="location" value="{{ current_location }}" placeholder="City, state, or country (e.g. Kochi, Kerala)">
+                </div>
 
-                    <i class='bx bx-search-alt'></i>
-
-                    Search Jobs
-
-                </h2>
-
-                <p class="section-description">
-
-                    Search jobs by title, technology, skill, or role.
-
-                </p>
-
-                <form
-                    method="GET"
-                    action="{% url 'dashboard' %}"
-                    class="search-form">
-
-                    <div class="search-box">
-
-                        <i class='bx bx-search'></i>
-
-                        <input
-                            type="text"
-                            name="q"
-                            value="{{ current_query }}"
-                            placeholder="Eg: Python Developer, Django Developer, React Developer..."
-                            class="search-input">
-
-                    </div>
-
-                    <button
-                        type="submit"
-                        class="search-btn">
-
-                        <i class='bx bx-search'></i>
-
-                        Search
-
-                    </button>
-
-                </form>
-
-            </div>
+                <button type="submit" class="search-btn"><i class='bx bx-search'></i> Search</button>
+            </form>
+        </div>
 
         {% if adzuna_jobs %}
         <div class="cards">
-
             {% for job in adzuna_jobs %}
-
             <div class="job-card">
-
-                <!-- Header -->
-
                 <div class="job-header">
-
                     <div class="job-info">
-
-                        <h2 class="job-title">
-
-                            {{ job.title|truncatechars:45 }}
-
-                        </h2>
-
-                        <p class="company-name">
-
-                            {{ job.company }}
-
-                        </p>
-
+                        <h2 class="job-title">{{ job.title|truncatechars:45 }}</h2>
+                        <p class="company-name">{{ job.company }}</p>
                     </div>
-
                     {% if job.contract_time %}
-
-                    <span class="job-type">
-
-                        {{ job.contract_time|title }}
-
-                    </span>
-
+                    <span class="job-type">{{ job.contract_time|title }}</span>
                     {% endif %}
-
                 </div>
-
-                <!-- Meta -->
 
                 <div class="job-meta">
-
-                    <span>
-
-                        <i class='bx bx-map'></i>
-
-                        {{ job.location }}
-
-                    </span>
-
-                    {% if job.salary_min %}
-
-                    <span>
-
-                        <i class='bx bx-wallet'></i>
-
-                        {{ job.salary_min }} - {{ job.salary_max }}
-
-                    </span>
-
+                    {% if job.location %}
+                    <span><i class='bx bx-map'></i> {{ job.location }}</span>
                     {% endif %}
 
+                    {% if job.salary %}
+                    <span><i class='bx bx-wallet'></i> {{ job.salary }}</span>
+                    {% elif job.salary_min %}
+                    <span><i class='bx bx-wallet'></i> {{ job.salary_min }} - {{ job.salary_max }}</span>
+                    {% endif %}
+
+                    {% if job.experience_required %}
+                    <span><i class='bx bx-briefcase'></i> {{ job.experience_required }}</span>
+                    {% endif %}
                 </div>
 
-                <!-- Description -->
-
-                <p class="job-desc">
-
-                    {{ job.description|truncatechars:120 }}
-
-                </p>
-
-                <!-- Skills -->
+                <p class="job-desc">{{ job.description|truncatechars:120 }}</p>
 
                 <div class="skills-box">
-
-                    <p class="skills-title">
-
-                        Required Skills
-
-                    </p>
-
+                    <p class="skills-title">Required Skills</p>
                     <div class="skills-tags">
-
                         {% for skill in job.skills|slice:":5" %}
-
-                            <span class="skill-tag">
-
-                                {{ skill }}
-
-                            </span>
-
+                            <span class="skill-tag">{{ skill }}</span>
                         {% empty %}
-
-                            <span class="no-skills">
-
-                                No skills detected
-
-                            </span>
-
+                            <span class="no-skills">No skills detected</span>
                         {% endfor %}
-
                     </div>
-
                 </div>
-
-                <!-- Footer -->
 
                 <div class="job-footer">
-
                     <span class="source">
-
-                        Adzuna API
-
+                        {% if job.is_local %}Direct Employer{% else %}Adzuna API{% endif %}
                     </span>
 
-                    <a
-                        href="{{ job.redirect_url }}"
-                        target="_blank"
-                        class="apply-btn">
-
-                        Apply Now
-
-                        <i class='bx bx-right-arrow-alt'></i>
-
-                    </a>
-
+                    {% if job.is_local %}
+                        <a href="{{ job.redirect_url }}" class="apply-btn">
+                             Apply Now <i class='bx bx-right-arrow-alt'></i>
+                        </a>
+                    {% else %}
+                        <a href="{{ job.redirect_url }}" target="_blank" class="apply-btn">
+                            Apply Now <i class='bx bx-right-arrow-alt'></i>
+                        </a>
+                    {% endif %}
                 </div>
-
             </div>
-
             {% endfor %}
-
         </div>
-
         {% else %}
-
         <div class="no-jobs-box">
-
             <i class='bx bx-search-alt'></i>
-
-            <h2>
-
-                No Jobs Found
-
-            </h2>
-
-            <p>
-
-                Try searching with another keyword.
-
-            </p>
-
+            <h2>No Jobs Found</h2>
+            <p>Try searching with another keyword.</p>
         </div>
-
         {% endif %}
     </main>
 
+    <!-- Modal Popup Overlay -->
+<div id="applyModal" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div>
+        <h2 id="modalJobTitle" class="modal-title">Apply for Job</h2>
+        <p id="modalJobCompany" style="color: #64748b; margin: 4px 0 0 0; font-size: 0.9rem;"></p>
+      </div>
+      <button type="button" class="modal-close" onclick="closeApplyModal()"><i class='bx bx-x'></i></button>
+    </div>
+
+    <form id="applyJobForm" method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      
+      <div class="form-group">
+        <label for="modalResume">
+          Upload Resume (PDF or DOCX) 
+          {% if not profile.resume %}<span style="color: red;">*</span>{% endif %}
+        </label>
+
+        <!-- Show existing profile resume if available -->
+        {% if profile.resume %}
+          <div style="margin-bottom: 8px; padding: 8px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.85rem; display: flex; align-items: center; justify-content: space-between;">
+            <span style="color: #334155;">
+              <i class='bx bx-file' style="color: #4f46e5;"></i> Saved Profile Resume: 
+              <strong>{{ profile.resume.name|truncatechars:20 }}</strong>
+            </span>
+            <a href="{{ profile.resume.url }}" target="_blank" style="color: #4f46e5; font-weight: 600; text-decoration: none;">View</a>
+          </div>
+          <p style="font-size: 0.75rem; color: #64748b; margin-top: -4px; margin-bottom: 8px;">
+            Upload a new file below only if you want to replace your default profile resume.
+          </p>
+        {% endif %}
+
+        <input type="file" id="modalResume" name="resume" class="form-control" accept=".pdf,.doc,.docx" {% if not profile.resume %}required{% endif %}>
+      </div>
+
+      <div class="form-group">
+        <label for="modalCoverNote">Cover Note / Pitch (Optional)</label>
+        <textarea id="modalCoverNote" name="cover_note" class="form-control" rows="3" placeholder="Tell the recruiter why you are a great fit..."></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel-modal" onclick="closeApplyModal()">Cancel</button>
+        <button type="submit" id="submitBtn" class="btn-submit-modal">Submit Application</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script src="{% static 'js/sidebar.js' %}"></script>
 <script src="{% static 'js/theme.js' %}"></script>
+
+<script>
+  let targetActionUrl = '';
+
+  function openApplyModal(actionUrl, jobTitle, jobCompany) {
+    targetActionUrl = actionUrl;
+    document.getElementById('modalJobTitle').textContent = jobTitle;
+    document.getElementById('modalJobCompany').textContent = jobCompany;
+    document.getElementById('applyModal').classList.add('active');
+  }
+
+  function closeApplyModal() {
+    document.getElementById('applyModal').classList.remove('active');
+    document.getElementById('applyJobForm').reset();
+  }
+
+  document.getElementById('applyJobForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.textContent = 'Submitting...';
+    submitBtn.disabled = true;
+
+    const formData = new FormData(this);
+
+    fetch(targetActionUrl, {
+      method: 'POST',
+      body: formData,
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(res => res.json())
+    .then(data => {
+      closeApplyModal();
+      submitBtn.textContent = 'Submit Application';
+      submitBtn.disabled = false;
+
+      const alertContainer = document.getElementById('alertContainer');
+      const alertBox = document.getElementById('alertBox');
+      const alertMessage = document.getElementById('alertMessage');
+
+      if (data.status === 'success') {
+        alertBox.style.background = '#ecfdf5';
+        alertBox.style.border = '1px solid #a7f3d0';
+        alertBox.style.color = '#065f46';
+        alertMessage.textContent = data.message;
+      } else {
+        alertBox.style.background = '#fef2f2';
+        alertBox.style.border = '1px solid #fecaca';
+        alertBox.style.color = '#991b1b';
+        alertMessage.textContent = data.message || 'Error processing application.';
+      }
+      alertContainer.style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    })
+    .catch(err => {
+      console.error(err);
+      submitBtn.textContent = 'Submit Application';
+      submitBtn.disabled = false;
+    });
+  });
+</script>
 
 </body>
 </html>

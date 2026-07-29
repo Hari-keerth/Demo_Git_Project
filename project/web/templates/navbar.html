@@ -1,52 +1,82 @@
 {% load static %}
 
-<button
-    class="menu-toggle"
-    onclick="toggleSidebar()">
-
-    <i class='bx bx-menu'></i>
-
+<button class="menu-toggle" onclick="toggleSidebar()">
+  <i class="bx bx-menu"></i>
 </button>
 
-<div
-    class="sidebar-overlay"
-    onclick="closeSidebar()">
+<div class="sidebar-overlay" onclick="closeSidebar()"></div>
 
-</div>
 
-<div class="dashboard">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <a href="#" class="nav-logo"> Career<span>Growza</span> </a>
+    </div>
 
-    <aside class="sidebar">
+    <ul class="sidebar-links">
+      <li>
+        <a
+          href="{% url 'dashboard' %}"
+          class="{% if request.path == '/dashboard/' %}active{% endif %}"
+          ><i class="bx bx-home"></i>Dashboard</a
+        >
+      </li>
 
-        <div class="sidebar-logo">
-            <a href="#" class="nav-logo">
-                Career<span>Growza</span>
-            </a>
-        </div>
+      <li>
+        <a
+          href="{% url 'recomend_jobs' %}"
+          class="{% if request.path == '/recomend_jobs/' %}active{% endif %}"
+          ><i class="bx bx-history"></i>Recommended Jobs</a
+        >
+      </li>
 
-        <ul class="sidebar-links">
+      <li>
+        <a
+          href="{% url 'resume-analyzer' %}"
+          class="{% if request.path == '/resume-analyzer' %}active{% endif %}"
+          ><i class="bx bx-file"></i>Resume Analyzer</a
+        >
+      </li>
 
-            <li><a href="{% url 'dashboard' %}" class="{% if request.path == '/dashboard/' %}active{% endif %}"><i class='bx bx-home'></i>Dashboard</a></li>
+      <li>
+        <a
+          href="{% url 'resume_builder' %}"
+          class="{% if request.path == '/resume_builder/' %}active{% endif %}"
+          ><i class="bx bx-cog"></i>Resume Builder</a
+        >
+      </li>
 
-            <li><a href="{% url 'recomend_jobs' %}" class="{% if request.path == '/recomend_jobs/' %}active{% endif %}"><i class='bx bx-history'></i>Recommended Jobs</a></li>
+      <li>
+        <a
+          href="{% url 'ai_email' %}"
+          class="{% if request.path == '/ai_email/' %}active{% endif %}"
+          ><i class="bx bx-envelope"></i>AI Email</a
+        >
+      </li>
 
-            <li><a href="{% url 'resume-analyzer' %}" class="{% if request.path == '/resume-analyzer' %}active{% endif %}"><i class='bx bx-file'></i>Resume Analyzer</a></li>
+      <li>
+        <a
+          href="{% url 'profile' %}"
+          class="{% if request.path == '/profile/' %}active{% endif %}"
+          ><i class="bx bx-user"></i>Profile</a
+        >
+      </li>
 
-            <li><a href="{% url 'ai_email' %}" class="{% if request.path == '/ai_email/' %}active{% endif %}"><i class='bx bx-envelope'></i>AI Email</a></li>
+      <li>
+        <a
+          href="{% url 'settings' %}"
+          class="{% if request.path == 'settings/' %}active{% endif %}"
+          ><i class="bx bx-cog"></i>Settings</a
+        >
+      </li>
+    </ul>
 
-            <li><a href="{% url 'profile' %}" class="{% if request.path == '/profile/' %}active{% endif %}"><i class='bx bx-user'></i>Profile</a></li>
+    <div class="sidebar-bottom">
+      <a href="{% url 'user-logout' %}">
+        <i class="bx bx-log-out"></i>
+        Logout
+      </a>
+    </div>
+  </aside>
 
-            <li><a href="{% url 'settings' %}" class="{% if request.path == 'settings/' %}active{% endif %}"><i class='bx bx-cog'></i>Settings</a></li>
+  <script src="{% static 'js/theme.js' %}"></script>
 
-        </ul>
-
-        <div class="sidebar-bottom">
-            <a href="{% url 'user-logout' %}">
-                <i class='bx bx-log-out'></i>
-                Logout
-            </a>
-        </div>
-
-    </aside>
-
-    <script src="{% static 'js/theme.js' %}"></script>

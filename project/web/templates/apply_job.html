@@ -1,0 +1,246 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Apply for {{ job.title }} | CareerGrowza</title>
+
+  <link rel="icon" type="image/png" sizes="128x128" href="{% static 'images/favicon/CareerGrowza_Favicon.png' %}">
+  <link rel="shortcut icon" href="{% static 'images/favicon/favicon.ico' %}">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+
+  <link rel="stylesheet" href="{% static 'css/common.css' %}">
+  <link rel="stylesheet" href="{% static 'css/layout.css' %}">
+  <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+
+  <style>
+    .apply-container {
+      max-width: 650px;
+      margin: 30px auto;
+      padding: 0 16px;
+    }
+
+    .apply-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+    }
+
+    .job-summary {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .job-summary h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0 0 6px 0;
+    }
+
+    .job-meta-info {
+      display: flex;
+      gap: 16px;
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+
+    .job-meta-info span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 8px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      box-sizing: border-box;
+      transition: border-color 0.2s;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: #4f46e5;
+    }
+
+    textarea.form-control {
+      resize: vertical;
+      min-height: 110px;
+    }
+
+    .resume-choice-box {
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      background: #fafafa;
+    }
+
+    .resume-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      font-weight: 500;
+      color: #1e293b;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .btn-submit {
+      flex: 2;
+      background: #4f46e5;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 14px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-submit:hover {
+      background: #4338ca;
+    }
+
+    .btn-cancel {
+      flex: 1;
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 14px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-decoration: none;
+      text-align: center;
+    }
+
+    .btn-cancel:hover {
+      background: #e2e8f0;
+    }
+  </style>
+</head>
+
+<body>
+
+{% include "navbar.html" with active_page="dashboard" %}
+
+<main class="main-content">
+  <div class="apply-container">
+    <div class="apply-card">
+
+      <!-- Job Info -->
+      <div class="job-summary">
+        <h2>{{ job.title }}</h2>
+        <div class="job-meta-info">
+          <span><i class='bx bx-building-house'></i> {{ job.company }}</span>
+          <span><i class='bx bx-map'></i> {{ job.location }}</span>
+        </div>
+      </div>
+
+      <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% if latest_resume %}
+          <!-- Choice 1: Reuse ATS Resume -->
+          <div class="resume-choice-box">
+            <label class="resume-label">
+              <input type="radio" name="use_existing_resume" value="true" checked onclick="toggleUpload(false)">
+              <i class='bx bx-file' style="font-size: 1.3rem; color: #4f46e5;"></i>
+              <span>Use previous ATS resume ({{ latest_resume.name }})</span>
+            </label>
+          </div>
+
+          <!-- Choice 2: Upload New Resume -->
+          <div class="resume-choice-box">
+            <label class="resume-label">
+              <input type="radio" name="use_existing_resume" value="false" onclick="toggleUpload(true)">
+              <i class='bx bx-cloud-upload' style="font-size: 1.3rem; color: #4f46e5;"></i>
+              <span>Upload a new resume for this application</span>
+            </label>
+
+            <div id="file-upload-field" style="display: none; margin-top: 12px;">
+              <input type="file" id="resume" name="resume" class="form-control" accept=".pdf,.doc,.docx">
+            </div>
+          </div>
+        {% else %}
+          <!-- Pure Upload Field -->
+          <div class="form-group">
+            <label for="resume">Upload Resume (PDF or DOCX) *</label>
+            <input type="file" id="resume" name="resume" class="form-control" accept=".pdf,.doc,.docx" required>
+          </div>
+        {% endif %}
+
+        <!-- Pitch Field -->
+        <div class="form-group">
+          <label for="cover_note">Cover Note / Pitch (Optional)</label>
+          <textarea id="cover_note" name="cover_note" class="form-control" placeholder="Briefly tell the employer why you're a good fit..."></textarea>
+        </div>
+
+        <div class="action-row">
+          <a href="{% url 'dashboard' %}" class="btn-cancel">Cancel</a>
+          <button type="submit" class="btn-submit">
+            Submit Application <i class='bx bx-paper-plane'></i>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</main>
+
+<script>
+  function toggleUpload(show) {
+    const section = document.getElementById('file-upload-field');
+    const input = document.getElementById('resume');
+    if (section) {
+      section.style.display = show ? 'block' : 'none';
+      if (show && input) {
+        input.setAttribute('required', 'required');
+      } else if (input) {
+        input.removeAttribute('required');
+      }
+    }
+  }
+</script>
+
+<script src="{% static 'js/sidebar.js' %}"></script>
+<script src="{% static 'js/theme.js' %}"></script>
+
+</body>
+</html>

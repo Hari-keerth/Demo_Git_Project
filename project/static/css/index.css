@@ -13,15 +13,29 @@
   --bg-white: var(--card);
   --bg-light: var(--background);
   --bg-lavender: var(--surface-2);
-  --bg-page-gradient: linear-gradient(180deg, #f8f9ff 0%, #eef2ff 45%, #ffffff 100%);
+  --bg-page-gradient: linear-gradient(
+    180deg,
+    #f8f9ff 0%,
+    #eef2ff 45%,
+    #ffffff 100%
+  );
 
   /* Brand gradient */
   --indigo: #6366f1;
   --royal-blue: #5c8dff;
   --purple: #4f46e5;
   --violet: #5005ff;
-  --brand-gradient: linear-gradient(135deg, var(--royal-blue) 0%, var(--indigo) 55%, var(--violet) 100%);
-  --brand-gradient-soft: linear-gradient(135deg, rgba(92, 141, 255, 0.14), rgba(80, 5, 255, 0.14));
+  --brand-gradient: linear-gradient(
+    135deg,
+    var(--royal-blue) 0%,
+    var(--indigo) 55%,
+    var(--violet) 100%
+  );
+  --brand-gradient-soft: linear-gradient(
+    135deg,
+    rgba(92, 141, 255, 0.14),
+    rgba(80, 5, 255, 0.14)
+  );
 
   /* Glass panel */
   --glass-bg: var(--glass);
@@ -38,13 +52,13 @@
 
   --amber: #f5b461;
 
-  --font-display: "Poppins", sans-serif;
-  --font-body: "DM Sans", sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
+  --font-display: 'Poppins', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 
-  --radius-lg: 24px;   /* cards */
-  --radius-md: 16px;   /* inputs */
-  --radius-sm: 14px;   /* buttons */
+  --radius-lg: 24px; /* cards */
+  --radius-md: 16px; /* inputs */
+  --radius-sm: 14px; /* buttons */
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   --container-w: 1200px;
 
@@ -100,7 +114,9 @@ ul {
 .reveal {
   opacity: 0;
   transform: translateY(18px);
-  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+  transition:
+    opacity 0.7s var(--ease),
+    transform 0.7s var(--ease);
 }
 
 .reveal.in-view {
@@ -164,7 +180,10 @@ ul {
   font-family: var(--font-body);
   font-weight: 600;
   font-size: 15px;
-  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease), border-color 0.25s var(--ease);
+  transition:
+    transform 0.25s var(--ease),
+    box-shadow 0.25s var(--ease),
+    border-color 0.25s var(--ease);
 }
 
 .btn-primary {
@@ -280,7 +299,9 @@ ul {
   height: 2px;
   width: 100%;
   background: var(--text-primary);
-  transition: transform 0.25s var(--ease), opacity 0.25s var(--ease);
+  transition:
+    transform 0.25s var(--ease),
+    opacity 0.25s var(--ease);
 }
 
 .nav-overlay {
@@ -468,7 +489,10 @@ ul {
   border-radius: var(--radius-lg);
   padding: 28px 24px;
   box-shadow: var(--shadow-card);
-  transition: border-color 0.25s var(--ease), transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+  transition:
+    border-color 0.25s var(--ease),
+    transform 0.25s var(--ease),
+    box-shadow 0.25s var(--ease);
 }
 
 .feature-card:hover {
@@ -789,37 +813,35 @@ ul {
   }
 }
 
-
-
 /* ==========================================================
    GLOBAL DARK MODE SUPPORT
 ========================================================== */
 
-[data-theme="dark"] .site-header,
-[data-theme="dark"] .nav-links{
-    background:var(--glass);
-    border-color:var(--border);
+[data-theme='dark'] .site-header,
+[data-theme='dark'] .nav-links {
+  background: var(--glass);
+  border-color: var(--border);
 }
 
-[data-theme="dark"] .feature-card,
-[data-theme="dark"] .how-step,
-[data-theme="dark"] .testimonial-inner{
-    background:var(--glass);
-    border-color:var(--glass-border);
+[data-theme='dark'] .feature-card,
+[data-theme='dark'] .how-step,
+[data-theme='dark'] .testimonial-inner {
+  background: var(--glass);
+  border-color: var(--glass-border);
 }
 
-[data-theme="dark"] .stats,
-[data-theme="dark"] .site-footer{
-    background:var(--card);
-    border-color:var(--border);
+[data-theme='dark'] .stats,
+[data-theme='dark'] .site-footer {
+  background: var(--card);
+  border-color: var(--border);
 }
 
-[data-theme="dark"] .cta-panel{
-    box-shadow:0 30px 60px rgba(0,0,0,.35);
+[data-theme='dark'] .cta-panel {
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35);
 }
 
-[data-theme="dark"] .nav-links a,
-[data-theme="dark"] .footer-col a,
-[data-theme="dark"] .quote-author span{
-    color:var(--text-light);
+[data-theme='dark'] .nav-links a,
+[data-theme='dark'] .footer-col a,
+[data-theme='dark'] .quote-author span {
+  color: var(--text-light);
 }

@@ -1,0 +1,794 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>CareerGrowza | AI Mock Interview</title>
+
+    <link rel="stylesheet"
+          href="{% static 'css/common.css' %}">
+
+    <link rel="stylesheet"
+          href="{% static 'css/layout.css' %}">
+
+    <link rel="stylesheet"
+          href="{% static 'css/sidebar.css' %}">
+
+    <link rel="stylesheet"
+          href="{% static 'css/mock_interview.css' %}">
+
+</head>
+
+<body>
+
+{% include "navbar.html" with active_page="interview" %}
+
+<main class="main-content">
+
+<div class="interview-container">
+
+    <!-- ==========================================
+         TOP BAR
+    =========================================== -->
+
+    <section class="page-title">
+
+        <div>
+
+            <h1>
+                🤖 AI Mock Interview
+            </h1>
+
+            <p>
+                Practice AI-powered technical interviews
+                with instant AI feedback.
+            </p>
+
+        </div>
+
+        <div class="status-wrapper">
+
+            <div class="status-card">
+
+                <div class="status-title">
+                    Time Remaining
+                </div>
+
+                <div
+                    id="timer"
+                    class="status-value">
+
+                    30:00
+
+                </div>
+
+            </div>
+
+            <div class="status-card">
+
+                <div class="status-title">
+                    Difficulty
+                </div>
+
+                <div
+                    id="difficultyText"
+                    class="status-value">
+
+                    Medium
+
+                </div>
+
+            </div>
+
+            <div class="status-card">
+
+                <div class="status-title">
+                    Progress
+                </div>
+
+                <div
+                    id="progressText"
+                    class="status-value">
+
+                    0 / 10
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- ==========================================
+         INTERVIEW SETUP
+    =========================================== -->
+
+    <section
+        id="setupSection"
+        class="card interview-setup">
+
+        <div class="card-title">
+
+            <i class="fas fa-sliders-h"></i>
+
+            <h2>
+
+                Interview Setup
+
+            </h2>
+
+        </div>
+
+        <div class="setup-grid">
+
+            <div class="input-field">
+
+                <label>
+
+                    Job Role
+
+                </label>
+
+                <select id="jobRole">
+
+                    <option>
+                        Python Developer
+                    </option>
+
+                    <option>
+                        Django Developer
+                    </option>
+
+                    <option>
+                        Frontend Developer
+                    </option>
+
+                    <option>
+                        Data Scientist
+                    </option>
+
+                    <option>
+                        Machine Learning Engineer
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="input-field">
+
+                <label>
+
+                    Difficulty
+
+                </label>
+
+                <select id="difficulty">
+
+                    <option>
+
+                        Easy
+
+                    </option>
+
+                    <option selected>
+
+                        Medium
+
+                    </option>
+
+                    <option>
+
+                        Hard
+
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="input-field">
+
+                <label>
+
+                    Total Questions
+
+                </label>
+
+                <select id="totalQuestions">
+
+                    <option>5</option>
+
+                    <option selected>
+                        10
+                    </option>
+
+                    <option>15</option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+        <div class="button-group">
+
+            <button
+                id="startInterview"
+                class="primary-btn">
+
+                🚀 Start Interview
+
+            </button>
+
+        </div>
+
+    </section>
+
+    <!-- ==========================================
+         INTERVIEW SECTION
+    =========================================== -->
+
+    <section
+        id="interviewSection"
+        class="interview-layout"
+        style="display:none;">
+
+        <!-- ==============================
+             LEFT COLUMN
+        =============================== -->
+
+        <div class="interview-card">
+
+            <div class="question-header">
+
+                <div class="question-info">
+
+                    <div
+                        id="questionNo"
+                        class="question-number">
+
+                        Question 1 of 10
+
+                    </div>
+
+                    <div class="question-title">
+
+                        Technical Interview
+
+                    </div>
+
+                    <div class="question-meta">
+
+                        <span
+                            id="difficultyBadge"
+                            class="badge badge-primary">
+
+                            Medium
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Progress -->
+
+            <div class="progress-wrapper">
+
+                <div class="progress-header">
+
+                    <span>
+
+                        Interview Progress
+
+                    </span>
+
+                    <span
+                        id="progressPercent">
+
+                        0%
+
+                    </span>
+
+                </div>
+
+                <div class="progress-bar">
+
+                    <div
+                        id="progressFill"
+                        class="progress-fill">
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Question -->
+
+            <div class="question-box">
+
+                <div class="question-text">
+
+                    <h2 id="question">
+
+                        Loading Question...
+
+                    </h2>
+
+                </div>
+
+            </div>
+
+            <!-- ==========================================
+                 ANSWER SECTION
+            =========================================== -->
+
+            <div class="answer-section">
+
+                <div class="answer-title">
+
+                    <i class="fas fa-keyboard"></i>
+
+                    <h3>
+
+                        Your Answer
+
+                    </h3>
+
+                </div>
+
+                <textarea
+                    id="answer"
+                    class="answer-box"
+                    placeholder="Explain your answer in detail..."></textarea>
+
+                <div class="word-counter">
+
+                    <span id="wordCount">
+
+                        0 Words
+
+                    </span>
+
+                </div>
+
+                <!-- ==========================
+                     Voice Controls
+                =========================== -->
+
+                <div class="voice-controls">
+
+                    <button
+                        class="voice-btn listen"
+                        id="startRecording">
+
+                        🎤
+
+                    </button>
+
+                    <button
+                        class="voice-btn stop"
+                        id="stopRecording">
+
+                        ⏹
+
+                    </button>
+
+                    <button
+                        class="voice-btn"
+                        id="readQuestion">
+
+                        🔊
+
+                    </button>
+
+                </div>
+
+                <!-- ==========================
+                     Navigation
+                =========================== -->
+
+                <div class="interview-buttons">
+
+                    <button
+                        id="skipBtn"
+                        class="skip-btn">
+
+                        Skip
+
+                    </button>
+
+                    <button
+                        id="nextBtn"
+                        class="next-btn">
+
+                        Submit & Next →
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ==========================================
+             RIGHT SIDEBAR
+        =========================================== -->
+
+        <aside class="interview-sidebar">
+
+            <!-- Interview Info -->
+
+            <div class="sidebar-card">
+
+                <h3>
+
+                    Interview Details
+
+                </h3>
+
+                <div class="info-list">
+
+                    <div class="info-item">
+
+                        <span class="info-label">
+
+                            Role
+
+                        </span>
+
+                        <span
+                            id="roleText"
+                            class="info-value">
+
+                            Python Developer
+
+                        </span>
+
+                    </div>
+
+                    <div class="info-item">
+
+                        <span class="info-label">
+
+                            Difficulty
+
+                        </span>
+
+                        <span
+                            id="sidebarDifficulty"
+                            class="info-value">
+
+                            Medium
+
+                        </span>
+
+                    </div>
+
+                    <div class="info-item">
+
+                        <span class="info-label">
+
+                            Questions
+
+                        </span>
+
+                        <span
+                            id="sidebarQuestions"
+                            class="info-value">
+
+                            1 / 10
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Live Score -->
+
+            <div class="sidebar-card">
+
+                <h3>
+
+                    Estimated Score
+
+                </h3>
+
+                <div class="live-score">
+
+                    <div
+                        id="liveScore"
+                        class="live-circle">
+
+                        --
+
+                    </div>
+
+                    <div class="live-label">
+
+                        Updates after each answer
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- AI Tips -->
+
+            <div class="sidebar-card">
+
+                <h3>
+
+                    AI Tips
+
+                </h3>
+
+                <div class="ai-tips">
+
+                    <div class="tip">
+
+                        <i>💡</i>
+
+                        <p>
+
+                            Explain your reasoning clearly.
+
+                        </p>
+
+                    </div>
+
+                    <div class="tip">
+
+                        <i>🎯</i>
+
+                        <p>
+
+                            Mention practical examples whenever possible.
+
+                        </p>
+
+                    </div>
+
+                    <div class="tip">
+
+                        <i>⚡</i>
+
+                        <p>
+
+                            Keep your answer structured and concise.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Question Tracker -->
+
+            <div class="sidebar-card">
+
+                <h3>
+
+                    Question Tracker
+
+                </h3>
+
+                <div
+                    id="questionTracker"
+                    class="question-list">
+
+                </div>
+
+            </div>
+
+        </aside>
+
+    </section>
+
+    <!-- ==========================================
+         REPORT SECTION
+    =========================================== -->
+
+    <section
+        id="reportSection"
+        class="report-section"
+        style="display:none;">
+
+        <div class="report-header">
+
+            <div class="report-title">
+
+                <h1>
+
+                    🎉 Interview Completed
+
+                </h1>
+
+                <p>
+
+                    AI Performance Analysis
+
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- Overall Score -->
+
+        <div class="score-card">
+
+            <div
+                id="overallScore"
+                class="score-circle">
+
+                0
+
+            </div>
+
+            <div class="score-details">
+
+                <h2>
+
+                    Overall Performance
+
+                </h2>
+
+                <p>
+
+                    Your AI interview summary will appear here.
+
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- Strengths + Improvements -->
+
+        <div class="report-grid">
+
+            <div class="report-box strength-box">
+
+                <h3>
+
+                    ✅ Strengths
+
+                </h3>
+
+                <ul id="strengthList">
+
+                </ul>
+
+            </div>
+
+            <div class="report-box improvement-box">
+
+                <h3>
+
+                    📈 Areas to Improve
+
+                </h3>
+
+                <ul id="improvementList">
+
+                </ul>
+
+            </div>
+
+        </div>
+
+        <!-- Question Review -->
+
+        <div class="review-card">
+
+            <div class="review-header">
+
+                <h2>
+
+                    Question Review
+
+                </h2>
+
+            </div>
+
+            <table class="review-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>#</th>
+
+                        <th>Score</th>
+
+                        <th>Feedback</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="reviewTable">
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <!-- Study Plan -->
+
+        <div class="study-plan">
+
+            <h2>
+
+                📚 AI Study Plan
+
+            </h2>
+
+            <ul id="recommendationList">
+
+            </ul>
+
+        </div>
+
+        <!-- Actions -->
+
+        <div class="report-actions">
+
+            <button
+                id="downloadReport"
+                class="download-btn">
+
+                📄 Download PDF
+
+            </button>
+
+            <button
+                id="retakeInterview"
+                class="retry-btn">
+
+                🔄 Retake Interview
+
+            </button>
+
+            <button
+                class="home-btn"
+                onclick="window.location.href='/dashboard/'">
+
+                🏠 Dashboard
+
+            </button>
+
+        </div>
+
+    </section>
+
+</div>
+
+</main>
+
+<script src="{% static 'js/sidebar.js' %}"></script>
+<script src="{% static 'js/theme.js' %}"></script>
+<script src="{% static 'js/interview.js' %}"></script>
+
+</body>
+</html>

@@ -5,21 +5,17 @@
 <head>
 
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>CareerGrowza | Profile</title>
     <link rel="icon" type="image/png" sizes="128x128" href="{% static 'images/favicon/CareerGrowza_Favicon.png' %}">
     <link rel="shortcut icon" href="{% static 'images/favicon/favicon.ico' %}">
 
-    <link rel="stylesheet"
-          href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
-
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
     <link rel="stylesheet" href="{% static 'css/common.css' %}">
     <link rel="stylesheet" href="{% static 'css/layout.css' %}">
     <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
-    <link rel="stylesheet" href="{% static 'css/profile.css' %}">
+    <link rel="stylesheet" href="{% static 'css/profile.css' %}?v=2">
 
 </head>
 
@@ -35,11 +31,26 @@
 
         <div class="profile-header">
 
-            <div class="profile-image">
-                <i class='bx bx-user'></i>
+            <!-- Professional Top Right Edit Profile Button -->
+            <a href="{% url 'edit_profile' %}" class="header-edit-btn">
+                <i class='bx bx-edit'></i> Edit Profile
+            </a>
+
+            <!-- Clean Profile Picture Container -->
+            <div class="profile-image-container">
+                {% if profile.profile_picture %}
+                    <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" id="current-profile-img">
+                {% else %}
+                    <div class="profile-image-fallback">
+                        <i class='bx bx-user'></i>
+                    </div>
+                {% endif %}
             </div>
 
-            <h2>{{ profile.user }}</h2>
+            <!-- Full Name Display -->
+            <h2>
+                {% if profile.first_name %}{{ profile.first_name }} {{ profile.last_name }}{% else %}{{ profile.user }}{% endif %}
+            </h2>
 
             <p class="profile-email">
                 {{ profile.email }}
@@ -69,7 +80,7 @@
 
                 <div class="profile-item">
                     <label>Age</label>
-                    <p>{{ profile.age }}</p>
+                    <p>{{ profile.age|default:"--" }}</p>
                 </div>
 
                 <div class="profile-item">
@@ -78,18 +89,23 @@
                 </div>
 
                 <div class="profile-item">
+                    <label>Phone Number</label>
+                    <p>{{ profile.phone|default:"Not specified" }}</p>
+                </div>
+
+                <div class="profile-item">
                     <label>Address</label>
-                    <p>{{ profile.address }}</p>
+                    <p>{{ profile.address|default:"--" }}</p>
                 </div>
 
                 <div class="profile-item">
                     <label>City</label>
-                    <p>{{ profile.city }}</p>
+                    <p>{{ profile.city|default:"--" }}</p>
                 </div>
 
                 <div class="profile-item">
                     <label>Country</label>
-                    <p>{{ profile.country }}</p>
+                    <p>{{ profile.country|default:"--" }}</p>
                 </div>
 
                 <div class="profile-item">
@@ -101,60 +117,20 @@
 
         </div>
 
-        <!-- ================= Account ================= -->
-
-        <div class="profile-card">
-
-            <h3>
-
-                <i class='bx bx-cog'></i>
-
-                Account
-
-            </h3>
-
-            <div class="profile-buttons">
-
-                <button disabled>
-
-                    <a href="{% url 'edit_profile' %}" class="btn-primary">
-
-                        <i class='bx bx-edit'></i>
-
-                        Edit Profile
-
-                    </a>
-
-                </button>
-
-            </div>
-
-        </div>
-
-        <!-- ================= Resume ================= -->
+        <!-- ================= Resume Skills ================= -->
 
         <div class="profile-card">
 
             <div class="card-header">
-
                 <div>
-
                     <h3>
-
                         <i class='bx bx-upload'></i>
-
                         Resume Skills
-
                     </h3>
-
                     <p class="resume-text">
-
                         Upload your latest resume to automatically extract your skills.
-
                     </p>
-
                 </div>
-
             </div>
 
             <form
@@ -173,31 +149,18 @@
                     hidden
                     required>
 
-                <label
-                    for="resume"
-                    class="upload-btn">
-
+                <label for="resume" class="upload-btn">
                     <i class='bx bx-file'></i>
-
                     Choose Resume
-
                 </label>
 
-                <span
-                    id="file-name">
-
+                <span id="file-name">
                     No file selected
-
                 </span>
 
-                <button
-                    type="submit"
-                    class="extract-btn">
-
+                <button type="submit" class="extract-btn">
                     <i class='bx bx-upload'></i>
-
                     Extract Skills
-
                 </button>
 
             </form>
@@ -209,25 +172,10 @@
         <div class="profile-card">
 
             <div class="skills-header">
-
                 <h3>
-
                     <i class='bx bx-code-alt'></i>
-
                     Your Skills
-
                 </h3>
-
-                <a
-                    href="{% url 'edit_skills' %}"
-                    class="edit-btn">
-
-                    <i class='bx bx-edit'></i>
-
-                    Edit
-
-                </a>
-
             </div>
 
             {% if skills %}
@@ -235,184 +183,95 @@
             <div class="skills-grid">
 
                 <!-- Technical Skills -->
-
                 <div class="skill-box">
-
-                    <h4>
-
-                        <i class='bx bx-chip'></i>
-
-                        Technical Skills
-
-                    </h4>
-
+                    <h4><i class='bx bx-chip'></i> Technical Skills</h4>
                     <div class="skill-tags">
-
                         {% for skill in skills.technical_skills %}
                         <span class="skill-tag">{{ skill }}</span>
                         {% empty %}
                         <span class="no-skill">No technical skills</span>
                         {% endfor %}
-
                     </div>
-
                 </div>
 
                 <!-- Frameworks -->
-
                 <div class="skill-box">
-
-                    <h4>
-
-                        <i class='bx bx-layer'></i>
-
-                        Frameworks
-
-                    </h4>
-
+                    <h4><i class='bx bx-layer'></i> Frameworks</h4>
                     <div class="skill-tags">
-
                         {% for skill in skills.frameworks %}
                         <span class="skill-tag">{{ skill }}</span>
                         {% empty %}
                         <span class="no-skill">No frameworks</span>
                         {% endfor %}
-
                     </div>
-
                 </div>
 
                 <!-- Tools -->
-
                 <div class="skill-box">
-
-                    <h4>
-
-                        <i class='bx bx-wrench'></i>
-
-                        Tools
-
-                    </h4>
-
+                    <h4><i class='bx bx-wrench'></i> Tools</h4>
                     <div class="skill-tags">
-
                         {% for skill in skills.tools %}
                         <span class="skill-tag">{{ skill }}</span>
                         {% empty %}
                         <span class="no-skill">No tools</span>
                         {% endfor %}
-
                     </div>
-
                 </div>
 
                 <!-- Databases -->
-
                 <div class="skill-box">
-
-                    <h4>
-
-                        <i class='bx bx-data'></i>
-
-                        Databases
-
-                    </h4>
-
+                    <h4><i class='bx bx-data'></i> Databases</h4>
                     <div class="skill-tags">
-
                         {% for skill in skills.databases %}
                         <span class="skill-tag">{{ skill }}</span>
                         {% empty %}
                         <span class="no-skill">No databases</span>
                         {% endfor %}
-
                     </div>
-
                 </div>
 
                 <!-- Cloud -->
-
                 <div class="skill-box">
-
-                    <h4>
-
-                        <i class='bx bx-cloud'></i>
-
-                        Cloud Skills
-
-                    </h4>
-
+                    <h4><i class='bx bx-cloud'></i> Cloud Skills</h4>
                     <div class="skill-tags">
-
                         {% for skill in skills.cloud_skills %}
                         <span class="skill-tag">{{ skill }}</span>
                         {% empty %}
                         <span class="no-skill">No cloud skills</span>
                         {% endfor %}
-
                     </div>
-
                 </div>
 
                 <!-- Soft Skills -->
-
                 <div class="skill-box">
-
-                    <h4>
-
-                        <i class='bx bx-group'></i>
-
-                        Soft Skills
-
-                    </h4>
-
+                    <h4><i class='bx bx-group'></i> Soft Skills</h4>
                     <div class="skill-tags">
-
                         {% for skill in skills.soft_skills %}
                         <span class="skill-tag">{{ skill }}</span>
                         {% empty %}
                         <span class="no-skill">No soft skills</span>
                         {% endfor %}
-
                     </div>
-
                 </div>
 
             </div>
 
             <div class="skill-actions">
-
-
                 <div class="profile-buttons">
-
-                    <button disabled>
-
-                        <a href="{% url 'edit_skills' %}" class="btn-primary">
-
-                            <i class='bx bx-edit'></i>
-
-                            Edit Skills
-
-                        </a>
-
-                    </button>
-
+                    <a href="{% url 'edit_skills' %}" class="btn-primary">
+                        <i class='bx bx-edit'></i>
+                        Edit Skills
+                    </a>
                 </div>
-
             </div>
 
             {% else %}
 
             <div class="empty-state">
-
                 <i class='bx bx-file'></i>
-
                 <p>
-
                     Upload your resume to automatically extract your skills.
-
                 </p>
-
             </div>
 
             {% endif %}

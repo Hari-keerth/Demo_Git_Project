@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     creation_date = models.DateTimeField(auto_now_add=True)
-
+    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
     first_name = models.CharField(max_length=100)
 
     last_name  = models.CharField(max_length=100)
@@ -22,7 +22,7 @@ class Profile(models.Model):
     country    = models.CharField(max_length=100)
 
     def __str__(self):
-        return self.first_name + "   " + self.last_name
+        return f"{self.user.username}'s Profile"
     
 class GmailConnection(models.Model):
 
@@ -121,9 +121,13 @@ class UserSkillProfile(models.Model):
 class RecruiterJob(models.Model):
     recruiter = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'is_staff': True}) # Or extend via a profile type
     title = models.CharField(max_length=255)
-    company = models.CharField(max_length=255)
+    company_name = models.CharField(max_length=255)
     location = models.CharField(max_length=255)
     description = models.TextField()
+    
+    # NEW FIELDS:
+    salary = models.CharField(max_length=100, blank=True, null=True, help_text="e.g. ₹6,000,000 - ₹12,000,000 PA or $80k - $100k")
+    experience_required = models.CharField(max_length=100, blank=True, null=True, help_text="e.g. 2-4 Years or Entry Level")
      
     #zstore the req as list/json
     required_skills = models.JSONField(default=list, blank=True)
@@ -132,4 +136,18 @@ class RecruiterJob(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.title} at {self.company}"
+        return f"{self.title} at {self.company_name}"
+    
+
+class Application(models.Model):
+    job = models.ForeignKey(RecruiterJob, on_delete=models.CASCADE, related_name='applications')
+    applicant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='job_applications')
+    resume = models.FileField(upload_to='resumes/')
+    cover_note = models.TextField(blank=True, null=True)
+    applied_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('job', 'applicant')  # Prevents multiple application entries for the same job
+
+    def __str__(self):
+        return f"{self.applicant.username} - {self.job.title}"

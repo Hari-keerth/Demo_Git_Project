@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
+from . import password_views
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -194,7 +195,104 @@ urlpatterns = [
         views.delete_account,
         name="delete_account"
     ),
+
+    #----resume_builder-----
     
+    path(
+        "resume_builder/",
+        views.resume_builder,
+        name="resume_builder",
+    ),
+
+    path(
+        "generate-resume/",
+        views.generate_resume_view,
+        name="generate_resume",
+    ),
+
+    #----forgot_password------
+
+    path(
+        "forgot-password/",
+        password_views.forgot_password,
+        name="forgot_password",
+    ),
+
+    path(
+        "verify-otp/",
+        password_views.verify_otp,
+        name="verify_otp",
+    ),
+
+    path(
+        "reset-password/",
+        password_views.reset_password,
+        name="reset_password",
+    ),
+
+    path(
+        "resend-otp/",
+        password_views.resend_otp,
+        name="resend_otp",
+    ),
+
+    #--job----
+
+    path(
+        'jobs/apply/<int:job_id>/', 
+        views.apply_job_view, 
+        name='apply_job'
+    ),
+    
+  
+    path(
+        'recruiter/job/<int:job_id>/applications/', 
+        views.job_applications_view, 
+        name='job_applications'
+    ),
+
+    
+    path(
+        'dashboard/', 
+        views.dashboard_all_jobs_view, 
+        name='dashboard'
+    ),
+
+    path(
+        'applied-jobs/', 
+        views.applied_jobs_view, 
+        name='applied_jobs'
+    ),
+
+    #---------------
+
+    # -----------------------------
+    # Mock Interview Page
+    # -----------------------------
+    path(
+        "mock-interview/",
+        views.mock_interview,
+        name="mock_interview",
+    ),
+
+    # -----------------------------
+    # Generate AI Question
+    # -----------------------------
+    path(
+        "interview/question/",
+        views.interview_question,
+        name="interview_question",
+    ),
+
+    # -----------------------------
+    # Evaluate Interview
+    # -----------------------------
+    path(
+        "interview/evaluate/",
+        views.interview_evaluate,
+        name="interview_evaluate",
+    ),
+
 
 ]
 

@@ -1,0 +1,58 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CareerGrowza | Applied Jobs</title>
+  <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+  <link rel="stylesheet" href="{% static 'css/common.css' %}">
+  <link rel="stylesheet" href="{% static 'css/layout.css' %}">
+  <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+<body>
+
+<!-- Renders Sidebar & Wrapper Div -->
+{% include "navbar.html" with active_page="applied_jobs" %}
+
+<main class="main-content" style="padding: 30px;">
+    <div class="topbar">
+        <div class="topbar-left">
+            <h1><i class='bx bx-briefcase-alt-2'></i> Your Job Applications</h1>
+            <p class="dashboard-subtitle"> Track the status of all jobs you have applied for.</p>
+        </div>
+    </div>
+
+    {% if applications %}
+    <div class="cards" style="margin-top: 20px;">
+        {% for app in applications %}
+        <div class="job-card">
+            <div class="job-header">
+                <div class="job-info">
+                    <h2 class="job-title">{{ app.job.title }}</h2>
+                    <p class="company-name">{{ app.job.company_name }}</p>
+                </div>
+                <span class="job-type" style="background: #e0e7ff; color: #4338ca; padding: 4px 10px; border-radius: 6px; font-weight: 600;">Applied</span>
+            </div>
+            <div class="job-meta" style="margin-top: 15px;">
+                <span><i class='bx bx-calendar'></i> Applied on: {{ app.applied_at|date:"M d, Y" }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="no-jobs-box" style="text-align: center; padding: 50px; background: #fff; border-radius: 12px; margin-top: 20px;">
+        <i class='bx bx-send' style="font-size: 3rem; color: #94a3b8;"></i>
+        <h2>No Applications Found</h2>
+        <p>You haven't applied to any jobs yet. Head over to the dashboard to start applying!</p>
+        <a href="{% url 'dashboard' %}" class="apply-btn" style="display: inline-block; margin-top: 15px; text-decoration: none;">Browse Jobs</a>
+    </div>
+    {% endif %}
+</main>
+
+</div> <!-- Closes .dashboard wrapper opened inside sidebar.html -->
+
+<script src="{% static 'js/sidebar.js' %}"></script>
+</body>
+</html>
