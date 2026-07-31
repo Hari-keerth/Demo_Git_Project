@@ -1,0 +1,231 @@
+/* ==========================================================
+   RECRUITER APPLICATIONS VIEW (job_applications.css)
+========================================================== */
+
+.applications-container {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+/* Header Card */
+.app-header-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 22px;
+    padding: 30px 35px;
+    box-shadow: 0 15px 35px rgba(80, 90, 180, 0.08);
+    margin-bottom: 30px;
+}
+
+.back-dashboard-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #6366f1;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    margin-bottom: 20px;
+    transition: 0.3s;
+}
+
+.back-dashboard-btn:hover {
+    color: #4f46e5;
+    transform: translateX(-3px);
+}
+
+.job-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #eef2ff;
+    color: #6366f1;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.job-app-title {
+    font-size: 32px;
+    color: #1c1c32;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.job-app-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.job-app-meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Applicants List Section */
+.applicants-section-header h2 {
+    font-size: 22px;
+    color: #1c1c32;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.applicants-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.applicant-card {
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 22px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.04);
+    border: 1px solid #eef2ff;
+    transition: 0.3s;
+}
+
+.applicant-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(99, 102, 241, 0.12);
+    border-color: #d8def7;
+}
+
+.applicant-info-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.applicant-avatar {
+    width: 55px;
+    height: 55px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #6366f1, #5c8dff);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    flex-shrink: 0;
+}
+
+.applicant-details h3 {
+    font-size: 18px;
+    color: #1c1c32;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.applicant-email, .applicant-date {
+    font-size: 13px;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.applicant-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.download-btn {
+    background: #eef2ff;
+    color: #6366f1;
+}
+
+.download-btn:hover {
+    background: #6366f1;
+    color: #ffffff;
+}
+
+.email-btn {
+    background: linear-gradient(135deg, #6366f1, #5c8dff);
+    color: #ffffff;
+}
+
+.email-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25);
+}
+
+.no-resume-tag {
+    font-size: 13px;
+    color: #9ca3af;
+    background: #f3f4f6;
+    padding: 8px 14px;
+    border-radius: 10px;
+}
+
+/* Empty State Card */
+.applications-empty-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 24px;
+    padding: 60px 20px;
+    text-align: center;
+    box-shadow: 0 15px 35px rgba(80, 90, 180, 0.08);
+}
+
+.empty-icon-circle {
+    width: 80px;
+    height: 80px;
+    background: #eef2ff;
+    color: #6366f1;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    margin: 0 auto 20px;
+}
+
+.applications-empty-card h2 {
+    font-size: 22px;
+    color: #1c1c32;
+    margin-bottom: 8px;
+}
+
+.applications-empty-card p {
+    color: #6b7280;
+    font-size: 15px;
+}
+
+@media(max-width: 768px) {
+    .applicant-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    
+    .applicant-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+}

@@ -1,112 +1,111 @@
 {% load static %}
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CareerGrowza | AI Smart Recommendations</title>
-    <link rel="icon" type="image/png" sizes="128x128" href="{% static 'images/favicon/CareerGrowza_Favicon.png' %}">
-    <link rel="shortcut icon" href="{% static 'images/favicon/favicon.ico' %}">
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="128x128"
+      href="{% static 'images/favicon/CareerGrowza_Favicon.png' %}"
+    />
+    <link
+      rel="shortcut icon"
+      href="{% static 'images/favicon/favicon.ico' %}"
+    />
 
-    <link rel="stylesheet" href="{% static 'css/common.css' %}">
-    <link rel="stylesheet" href="{% static 'css/layout.css' %}">
-    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
-    <link rel="stylesheet" href="{% static 'css/recommended_jobs.css' %}">
-    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-</head>
-<body>
+    <link rel="stylesheet" href="{% static 'css/common.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/layout.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/recommended_jobs.css' %}" />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    {% include "navbar.html" with active_page="recomend_jobs" %}
 
-{% include "navbar.html" with active_page="recomend_jobs" %}
+    <main class="main-content">
+      <div class="recommended-wrapper">
+        <header class="page-header">
+          <span class="badge">AI Powered</span>
+          <h1>Your Top 10 Job Matches</h1>
+          <p>
+            We've analyzed your resume against database records using machine
+            learning cosine similarity matrix parameters.
+          </p>
+        </header>
 
+        {% if recommendations %}
 
-<main class="main-content">
+        <div class="jobs-list">
+          {% for job in recommendations %}
 
-<div class="recommended-wrapper">
+          <div class="job-item">
+            <div class="job-details">
+              <h2 class="job-title">{{ job.title }}</h2>
 
-<header class="page-header">
-    <span class="badge">AI Powered</span>
-    <h1>Your Top 10 Job Matches</h1>
-    <p>We've analyzed your resume against database records using machine learning cosine similarity matrix parameters.</p>
-</header>
+              <div class="job-company">
+                <span><i class="bx bx-buildings"></i>{{ job.company }}</span>
 
-{% if recommendations %}
+                <span><i class="bx bx-map"></i>{{ job.location }}</span>
+              </div>
 
-<div class="jobs-list">
+              {% if job.Matched_Skills %}
+              <p class="skills-title">Matched Skills</p>
 
-{% for job in recommendations %}
+              <div class="skills">
+                <span class="skill-chip">{{ job.Matched_Skills }}</span>
+              </div>
+              {% endif %} {% if job.Missing_Skills %}
+              <p class="skills-title">Missing Skills</p>
 
-<div class="job-item">
+              <div class="skills">
+                {% for skill in job.Missing_Skills.split|default_if_none:"" %}
+                {% if skill %}
+                <a
+                  href="https://www.youtube.com/results?search_query={{ skill|urlencode }}+tutorial"
+                  target="_blank"
+                  class="skill-chip"
+                  >{{ skill }}</a
+                >
+                {% endif %} {% endfor %}
+              </div>
+              {% endif %}
+            </div>
 
-    <div class="job-details">
+            <div class="score-panel">
+              <div class="score-label">Match Score</div>
 
-        <h2 class="job-title">{{ job.title }}</h2>
+              <div class="score-value">{{ job.match_percentage }}%</div>
 
-        <div class="job-company">
+              <a
+                href="{{ job.redirect_url }}"
+                target="_blank"
+                class="apply-btn"
+              >
+                Apply Now
+              </a>
+            </div>
+          </div>
 
-            <span><i class='bx bx-buildings'></i>{{ job.company }}</span>
-
-            <span><i class='bx bx-map'></i>{{ job.location }}</span>
-
+          {% endfor %}
         </div>
 
-        {% if job.Matched_Skills %}
-        <p class="skills-title">Matched Skills</p>
+        {% else %}
 
-        <div class="skills">
-            <span class="skill-chip">{{ job.Matched_Skills }}</span>
+        <div class="no-jobs-box">
+          <h2>No Recommendations Found</h2>
+          <p>Please upload your latest resume and try again.</p>
         </div>
+
         {% endif %}
+      </div>
+    </main>
 
-        {% if job.Missing_Skills %}
-        <p class="skills-title">Missing Skills</p>
-
-        <div class="skills">
-            {% for skill in job.Missing_Skills.split|default_if_none:"" %}
-            {% if skill %}
-            <a href="https://www.youtube.com/results?search_query={{ skill|urlencode }}+tutorial"
-               target="_blank"
-               class="skill-chip">{{ skill }}</a>
-            {% endif %}
-            {% endfor %}
-        </div>
-        {% endif %}
-
-    </div>
-
-    <div class="score-panel">
-
-        <div class="score-label">Match Score</div>
-
-        <div class="score-value">{{ job.match_percentage }}%</div>
-
-        <a href="{{ job.redirect_url }}"
-           target="_blank"
-           class="apply-btn">
-           Apply Now
-        </a>
-
-    </div>
-
-</div>
-
-{% endfor %}
-
-</div>
-
-{% else %}
-
-<div class="no-jobs-box">
-    <h2>No Recommendations Found</h2>
-    <p>Please upload your latest resume and try again.</p>
-</div>
-
-{% endif %}
-
-</div>
-
-</main>
-
-<script src="{% static 'js/sidebar.js' %}"></script>
-
-</body>
+    <script src="{% static 'js/sidebar.js' %}"></script>
+  </body>
 </html>

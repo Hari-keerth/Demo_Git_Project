@@ -1,0 +1,161 @@
+
+
+
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CareerGrowza | Dashboard</title>
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="128x128"
+      href="{% static 'images/favicon/CareerGrowza_Favicon.png' %}"
+    />
+    <link
+      rel="shortcut icon"
+      href="{% static 'images/favicon/favicon.ico' %}"
+    />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=Playfair+Display:ital,wght@0,700;1,600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+    />
+
+    <link rel="stylesheet" href="{% static 'css/common.css' %}">
+    <link rel="stylesheet" href="{% static 'css/layout.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/resume_builder.css' %}">
+  </head>
+
+  <body>
+    {% include "navbar.html" with active_page="resume_builder" %}
+
+    <main class="main-content">
+      <!-- ================= Dashboard Header ================= -->
+
+      <div class="page-header">
+          <div class="header-icon">
+              <i class="bx bx-file"></i>
+          </div>
+
+          <div>
+              <h1>AI Resume Builder</h1>
+              <p>Create ATS-Optimized Professional Resumes with AI.</p>
+          </div>
+      </div>
+
+      <div class="builder-grid">
+
+          <div class="card">
+
+              <div class="input-field">
+                  <label for="resumeType">Resume Type</label>
+                  <select id="resumeType">
+                      <option value="software">Software Engineer</option>
+                      <option value="data">Data Scientist</option>
+                      <option value="product">Product Manager</option>
+                      <option value="designer">UI/UX Designer</option>
+                  </select>
+              </div>
+
+              <div class="input-field">
+                  <label for="personalInfo">Personal Information</label>
+                  <textarea id="personalInfo"
+                      placeholder="Name, Email, Phone, LinkedIn, GitHub, Portfolio"></textarea>
+              </div>
+
+              <div class="input-field">
+                  <label for="education">Education</label>
+                  <textarea id="education"></textarea>
+              </div>
+
+              <div class="input-field">
+                  <label for="experience">Experience</label>
+                  <textarea id="experience"></textarea>
+              </div>
+
+              <div class="input-field">
+                  <label for="projects">Projects</label>
+                  <textarea id="projects"></textarea>
+              </div>
+
+              <div class="input-field">
+                  <label for="skills">Technical Skills</label>
+                  <textarea id="skills"></textarea>
+              </div>
+
+              <div class="input-field">
+                  <label for="extracurricular">Leadership / Extracurricular</label>
+                  <textarea id="extracurricular"></textarea>
+              </div>
+
+              <button id="generateBtn" class="primary-btn">
+                  ✨ Generate Resume
+              </button>
+
+              <div id="loading" class="loading">
+                  <div class="spinner"></div>
+                  <p>Generating your resume...</p>
+              </div>
+
+          </div>
+
+          <div class="preview-card">
+
+              <h2>Resume Preview</h2>
+
+              <div id="resumePreview" class="preview-content">
+
+                  <div class="placeholder">
+
+                      <i class="bx bx-file"></i>
+
+                      <h3>Ready to Generate</h3>
+
+                      <p>
+                          Fill in the form and click
+                          <strong>Generate Resume</strong>.
+                      </p>
+
+                  </div>
+
+              </div>
+
+              <div class="preview-actions">
+
+                  <button id="downloadBtn">
+                      Download PDF
+                  </button>
+
+                  <button id="copyBtn">
+                      Copy HTML
+                  </button>
+
+              </div>
+
+          </div>
+
+      </div>
+
+
+
+    </main>
+    <script src="{% static 'js/resume_builder.js' %}"></script>
+    <script src="{% static 'js/sidebar.js' %}"></script>
+    <script src="{% static 'js/theme.js' %}"></script>
+    <script>
+        window.addEventListener("load", function () {
+            window.scrollTo(0, 0);
+        });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,326 @@
+/* ==========================================
+   Loading
+========================================== */
+
+.loading{
+  display:none;
+  text-align:center;
+  margin:20px 0;
+  color:#6366f1;
+}
+
+.loading.active{
+  display:block;
+}
+
+.spinner{
+  width:40px;
+  height:40px;
+  margin:0 auto 10px;
+  border:3px solid #f3f3f3;
+  border-top:3px solid #6366f1;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+
+@keyframes spin{
+  from{transform:rotate(0deg);}
+  to{transform:rotate(360deg);}
+}
+
+/* ==========================================
+   CareerGrowza Layout
+========================================== */
+
+.page-header{
+  display:flex;
+  align-items:center;
+  gap:20px;
+  margin-bottom:30px;
+}
+
+.header-icon{
+  width:70px;
+  height:70px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:18px;
+  background:linear-gradient(135deg,#6366f1,#5c8dff);
+  color:#fff;
+  font-size:34px;
+}
+
+.builder-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:30px;
+  align-items:start;
+}
+
+.card,
+.preview-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:24px;
+  padding:30px;
+  box-shadow:0 12px 30px rgba(0,0,0,.08);
+}
+
+.input-field{
+  margin-bottom:22px;
+}
+
+.input-field label{
+  display:block;
+  margin-bottom:10px;
+  font-weight:600;
+}
+
+.input-field textarea,
+.input-field select{
+  width:100%;
+  padding:16px;
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:var(--surface-2);
+  font:inherit;
+}
+
+.input-field textarea{
+  min-height:130px;
+  resize:vertical;
+}
+
+.primary-btn{
+  width:100%;
+  padding:16px;
+  border:none;
+  border-radius:16px;
+  background:linear-gradient(135deg,#6366f1,#5c8dff);
+  color:#fff;
+  font-weight:600;
+  cursor:pointer;
+  transition:.25s;
+}
+
+.primary-btn:hover{
+  transform:translateY(-2px);
+}
+
+.preview-content{
+  min-height:850px;
+  padding:30px;
+  border-radius:18px;
+  background:var(--surface);
+  overflow:auto;
+}
+
+.placeholder{
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+  color:var(--text-light);
+}
+
+.placeholder i{
+  font-size:70px;
+  color:#6366f1;
+  margin-bottom:20px;
+}
+
+.preview-actions{
+  display:flex;
+  gap:15px;
+  margin-top:25px;
+}
+
+.preview-actions button{
+  flex:1;
+  padding:15px;
+  border:none;
+  border-radius:16px;
+  cursor:pointer;
+  color:#fff;
+  background:linear-gradient(135deg,#6366f1,#5c8dff);
+}
+
+/* ==========================================
+   Generated Resume Styling
+========================================== */
+
+#resumePreview{
+  background:#fff;
+  padding:40px;
+  font-family:"Computer Modern","Times New Roman",serif;
+  font-size:11pt;
+  line-height:1.4;
+  min-height:400px;
+}
+
+.resume-header{
+  text-align:center;
+  margin-bottom:15px;
+  padding-bottom:10px;
+  border-bottom:1px solid #000;
+}
+
+.resume-name{
+  font-size:28pt;
+  font-variant:small-caps;
+  letter-spacing:3px;
+  margin-bottom:5px;
+}
+
+.resume-contact{
+  margin:5px 0;
+  font-size:10pt;
+}
+
+.resume-contact a{
+  color:#000;
+  text-decoration:none;
+  margin:0 10px;
+}
+
+.resume-section{
+  margin:15px 0;
+}
+
+.resume-section-title{
+  margin:12px 0 8px;
+  padding-bottom:2px;
+  font-size:14pt;
+  font-weight:bold;
+  border-bottom:1px solid #000;
+}
+
+.resume-item{
+  margin:10px 0;
+}
+
+.resume-item-header{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:2px;
+  font-weight:bold;
+}
+
+.resume-item-subtitle{
+  margin-bottom:5px;
+  font-style:italic;
+}
+
+.resume-item-location{
+  text-align:right;
+  font-size:10pt;
+  font-style:italic;
+}
+
+.resume-list{
+  margin:5px 0 0 20px;
+  list-style:none;
+}
+
+.resume-list li{
+  margin:3px 0;
+  padding-left:20px;
+  text-indent:-20px;
+}
+
+.resume-list li::before{
+  content:"• ";
+}
+
+.coursework-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:5px;
+  margin-left:20px;
+  list-style:none;
+}
+
+.coursework-grid li::before{
+  content:"• ";
+}
+
+.skills-section{
+  margin-left:0;
+}
+
+.skill-item{
+  margin:5px 0;
+}
+
+.skill-label{
+  font-weight:bold;
+}
+
+/* ==========================================
+   Responsive
+========================================== */
+
+@media (max-width:992px){
+
+  .builder-grid{
+    grid-template-columns:1fr;
+  }
+
+  .preview-content {
+      height: calc(100vh - 260px);
+      min-height: 600px;
+      overflow-y: auto;
+  }
+
+}
+
+@media print{
+
+  .page-header,
+  .preview-actions,
+  .primary-btn,
+  .loading{
+    display:none!important;
+  }
+
+  #resumePreview{
+    padding:0;
+    box-shadow:none;
+  }
+
+}
+
+
+/* ==========================================
+   Resume Preview Light Theme
+========================================== */
+
+#resumePreview {
+    background: #ffffff;
+    color: #111827;
+    font-family: "Times New Roman", serif;
+}
+
+#resumePreview * {
+    color: #111827 !important;
+}
+
+#resumePreview a {
+    color: #2563eb !important;
+}
+
+#resumePreview h1,
+#resumePreview h2,
+#resumePreview h3,
+#resumePreview h4,
+#resumePreview h5,
+#resumePreview h6 {
+    color: #000000 !important;
+}
+
+#resumePreview hr {
+    border-color: #222 !important;
+}

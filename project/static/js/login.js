@@ -1,21 +1,4 @@
-const form = document.querySelector("form");
 
-const emailField = form.querySelector(".email-field");
-const emailInput = form.querySelector(".email");
-
-const passField = form.querySelector(".create-password");
-const passInput = form.querySelector(".password");
-
-// Email Validation
-function checkEmail() {
-    const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
-
-    if (!emailInput.value.match(emailPattern)) {
-        emailField.classList.add("invalid");
-    } else {
-        emailField.classList.remove("invalid");
-    }
-}
 
 // Password Validation
 function checkPassword() {

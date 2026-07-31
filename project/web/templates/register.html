@@ -1,216 +1,246 @@
 {% load static %}
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CareerGrowza | Registration</title>
-    <link rel="icon" type="image/png" sizes="128x128" href="{% static 'images/favicon/CareerGrowza_Favicon.png' %}">
-    <link rel="shortcut icon" href="{% static 'images/favicon/favicon.ico' %}">
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="128x128"
+      href="{% static 'images/favicon/CareerGrowza_Favicon.png' %}"
+    />
+    <link
+      rel="shortcut icon"
+      href="{% static 'images/favicon/favicon.ico' %}"
+    />
 
-    <link rel="stylesheet" href = "{% static 'css/common.css' %}">
-    <link rel="stylesheet" href = "{% static 'css/layout.css' %}">
-    <link rel="stylesheet" href = "{% static 'css/login.css' %}">
-    <link rel="stylesheet" href="{% static 'css/index.css' %}">
+    <link rel="stylesheet" href="{% static 'css/common.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/layout.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/login.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/index.css' %}" />
 
     <!-- Boxicons -->
-    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+    />
     <link rel="stylesheet" href="templatemo-622-clearwave.css" />
 
     <!-- Overrides to ensure visible placeholders and typed text -->
     <style>
-        .input-field input {
-            color: #111827 !important;
-        }
-        .input-field input::placeholder {
-            color: #6b7280 !important;
-            opacity: 1 !important;
-        }
-        .input-field input::-webkit-input-placeholder {
-            color: #6b7280 !important;
-        }
-        .input-field input::-moz-placeholder {
-            color: #6b7280 !important;
-            opacity: 1 !important;
-        }
-        .input-field input:-ms-input-placeholder {
-            color: #6b7280 !important;
-        }
+      .input-field input {
+        color: #111827 !important;
+      }
+      .input-field input::placeholder {
+        color: #6b7280 !important;
+        opacity: 1 !important;
+      }
+      .input-field input::-webkit-input-placeholder {
+        color: #6b7280 !important;
+      }
+      .input-field input::-moz-placeholder {
+        color: #6b7280 !important;
+        opacity: 1 !important;
+      }
+      .input-field input:-ms-input-placeholder {
+        color: #6b7280 !important;
+      }
     </style>
-</head>
+  </head>
 
-<body class="auth-body">
+  <body class="auth-body">
+    <!-- ============ NAV (TOP — unchanged structure) ============ -->
+    <header class="site-header" id="siteHeader">
+      <div class="container nav-inner">
+        <a href="{% url 'index' %}" class="logo">
+          <span class="logo-dot"></span>
+          CareerGrowza
+        </a>
 
+        <button
+          class="menu-toggle"
+          id="menuToggle"
+          aria-label="Toggle menu"
+          aria-expanded="false"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
 
-  <!-- ============ NAV (TOP — unchanged structure) ============ -->
-  <header class="site-header" id="siteHeader">
-    <div class="container nav-inner">
-      <a href="{% url 'index' %}" class="logo">
-        <span class="logo-dot"></span>
-        CareerGrowza
-      </a>
-
-      <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu" aria-expanded="false">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
-
-      <nav class="nav-links" id="navLinks">
-        <a href="#features">Product</a>
-        <a href="#how-it-works">How it works</a>
-        <a href="#stories">Stories</a>
-        <a href="{% url 'login' %}" class="nav-login">Log in</a>
-        <a href="{% url 'register' %}" class="btn btn-primary btn-small">Sign Up</a>
-      </nav>
-    </div>
-    <div class="nav-overlay" id="navOverlay"></div>
-  </header>
-
-
-
+        <nav class="nav-links" id="navLinks">
+          <a href="#features">Product</a>
+          <a href="#how-it-works">How it works</a>
+          <a href="#stories">Stories</a>
+          <a href="{% url 'login' %}" class="nav-login">Log in</a>
+          <a href="{% url 'register' %}" class="btn btn-primary btn-small"
+            >Sign Up</a
+          >
+        </nav>
+      </div>
+      <div class="nav-overlay" id="navOverlay"></div>
+    </header>
 
     <div class="wrapper register-wrapper">
+      <form method="POST" autocomplete="off">
+        {% csrf_token %}
 
-        <form method="POST" autocomplete="off">
-
-          {% csrf_token %}
-
-          <!-- Header -->
-          <div class="login-header">
-
-              <div class="login-icon">
-                  <i class="bx bx-user"></i>
-              </div>
-
-              <h2>Register</h2>
-
-              <p class="subtitle">
-                  Create your CareerGrowza account
-              </p>
-
-              <!-- Role Selector Tabs -->
-              <div class="role-selector" style="display: flex; background: #f3f4f6; padding: 4px; margin: 15px 0 25px 0; border-radius: 8px;">
-                  <button type="button" id="btn-candidate" class="role-tab" onclick="switchRole('candidate')" style="flex: 1; text-align: center; padding: 10px; border-radius: 6px; font-weight: 600; font-size: 14px; border: none; cursor: pointer; transition: all 0.2s;">
-                      Candidate
-                  </button>
-                  <button type="button" id="btn-recruiter" class="role-tab" onclick="switchRole('recruiter')" style="flex: 1; text-align: center; padding: 10px; border-radius: 6px; font-weight: 600; font-size: 14px; border: none; cursor: pointer; transition: all 0.2s;">
-                      Recruiter
-                  </button>
-              </div>
-
-              <!-- Hidden input to pass role value to Django views -->
-              <input type="hidden" id="selected_role" name="role" value="candidate">
-
+        <!-- Header -->
+        <div class="login-header">
+          <div class="login-icon">
+            <i class="bx bx-user"></i>
           </div>
 
-          <!-- Username & Email -->
-          <div class="input-field">
-              {{ user_form.username }}
+          <h2>Register</h2>
+
+          <p class="subtitle">Create your CareerGrowza account</p>
+
+          <!-- Role Selector Tabs -->
+          <div
+            class="role-selector"
+            style="
+              display: flex;
+              background: #f3f4f6;
+              padding: 4px;
+              margin: 15px 0 25px 0;
+              border-radius: 8px;
+            "
+          >
+            <button
+              type="button"
+              id="btn-candidate"
+              class="role-tab"
+              onclick="switchRole('candidate')"
+              style="
+                flex: 1;
+                text-align: center;
+                padding: 10px;
+                border-radius: 6px;
+                font-weight: 600;
+                font-size: 14px;
+                border: none;
+                cursor: pointer;
+                transition: all 0.2s;
+              "
+            >
+              Candidate
+            </button>
+            <button
+              type="button"
+              id="btn-recruiter"
+              class="role-tab"
+              onclick="switchRole('recruiter')"
+              style="
+                flex: 1;
+                text-align: center;
+                padding: 10px;
+                border-radius: 6px;
+                font-weight: 600;
+                font-size: 14px;
+                border: none;
+                cursor: pointer;
+                transition: all 0.2s;
+              "
+            >
+              Recruiter
+            </button>
           </div>
 
-          <div class="input-field">
-              {{ profile_form.email }}
-          </div>
+          <!-- Hidden input to pass role value to Django views -->
+          <input
+            type="hidden"
+            id="selected_role"
+            name="role"
+            value="candidate"
+          />
+        </div>
 
+        <!-- Username & Email -->
+        <div class="input-field">{{ user_form.username }}</div>
 
-          <!-- First & Last Name -->
+        <div class="input-field">{{ profile_form.email }}</div>
+
+        <!-- First & Last Name -->
+        <div class="form-row">
+          <div class="input-field">{{ profile_form.first_name }}</div>
+          <div class="input-field">{{ profile_form.last_name }}</div>
+        </div>
+
+        <!-- CANDIDATE ONLY FIELDS SECTION (Using contents layout to keep CSS structure unbroken) -->
+        <div id="candidate-fields" style="display: contents">
+          <!-- Phone & Age -->
           <div class="form-row">
-              <div class="input-field">
-                  {{ profile_form.first_name }}
-              </div>
-              <div class="input-field">
-                  {{ profile_form.last_name }}
-              </div>
+            <div class="input-field">{{ profile_form.phone }}</div>
+            <div class="input-field">{{ profile_form.age }}</div>
           </div>
 
+          <!-- Address -->
+          <div class="input-field full-width">{{ profile_form.address }}</div>
 
-          <!-- CANDIDATE ONLY FIELDS SECTION (Using contents layout to keep CSS structure unbroken) -->
-          <div id="candidate-fields" style="display: contents;">
-              <!-- Phone & Age -->
-              <div class="form-row">
-                  <div class="input-field">
-                      {{ profile_form.phone }}
-                  </div>
-                  <div class="input-field">
-                      {{ profile_form.age }}
-                  </div>
-              </div>
-
-              <!-- Address -->
-              <div class="input-field full-width">
-                  {{ profile_form.address }}
-              </div>
-
-              <!-- City & Country -->
-              <div class="form-row">
-                  <div class="input-field">
-                      {{ profile_form.city }}
-                  </div>
-                  <div class="input-field">
-                      {{ profile_form.country }}
-                  </div>
-              </div>
-          </div>
-
-
-          <!-- RECRUITER ONLY FIELDS SECTION -->
-          <div id="recruiter-fields" style="display: none;">
-              <!-- Company Name -->
-              <div class="input-field full-width">
-                  <input type="text" name="company_name" id="id_company_name" placeholder="Enter Company Name">
-              </div>
-          </div>
-
-
-          <!-- Password (Required for both Roles) -->
+          <!-- City & Country -->
           <div class="form-row">
-              <div class="input-field password-field">
-                  {{ user_form.password1 }}
-                  <i class="bx bx-hide show-hide"></i>
-              </div>
+            <div class="input-field">{{ profile_form.city }}</div>
+            <div class="input-field">{{ profile_form.country }}</div>
+          </div>
+        </div>
 
-              <div class="input-field password-field">
-                  {{ user_form.password2 }}
-                  <i class="bx bx-hide show-hide"></i>
-              </div>
+        <!-- RECRUITER ONLY FIELDS SECTION -->
+        <div id="recruiter-fields" style="display: none">
+          <!-- Company Name -->
+          <div class="input-field full-width">
+            <input
+              type="text"
+              name="company_name"
+              id="id_company_name"
+              placeholder="Enter Company Name"
+            />
+          </div>
+        </div>
+
+        <!-- Password (Required for both Roles) -->
+        <div class="form-row">
+          <div class="input-field password-field">
+            {{ user_form.password1 }}
+            <i class="bx bx-hide show-hide"></i>
           </div>
 
-
-          <!-- Form Errors -->
-          {% if user_form.errors or profile_form.errors %}
-              <div class="form-errors">
-                  {{ user_form.non_field_errors }}
-                  {{ profile_form.non_field_errors }}
-              </div>
-          {% endif %}
-
-          <!-- Submit -->
-          <button type="submit">
-              Sign Up
-              <i class="bx bx-right-arrow-alt"></i>
-          </button>
-
-          <!-- Login Link -->
-          <div class="register">
-              <p>
-                  Already have an account?
-                  <a href="{% url 'login' %}">
-                      Login
-                  </a>
-              </p>
+          <div class="input-field password-field">
+            {{ user_form.password2 }}
+            <i class="bx bx-hide show-hide"></i>
           </div>
+        </div>
 
+        <!-- Form Errors -->
+        {% if user_form.errors or profile_form.errors %}
+        <div class="form-errors">
+          {{ user_form.non_field_errors }} {{ profile_form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        <!-- Submit -->
+        <button type="submit">
+          Sign Up
+          <i class="bx bx-right-arrow-alt"></i>
+        </button>
+
+        <!-- Login Link -->
+        <div class="register">
+          <p>
+            Already have an account?
+            <a href="{% url 'login' %}"> Login </a>
+          </p>
+        </div>
       </form>
-
     </div>
 
     <script src="{% static 'js/reg.js' %}"></script>
 
     <!-- Corrected Role Toggling Controller -->
     <script>
-    function switchRole(role) {
+      function switchRole(role) {
         const candidateDiv = document.getElementById('candidate-fields');
         const recruiterDiv = document.getElementById('recruiter-fields');
         const roleInput = document.getElementById('selected_role');
@@ -219,66 +249,67 @@
         const companyInput = document.getElementById('id_company_name');
 
         const candidateChildren = candidateDiv.children;
-        const candidateInputs = candidateDiv.querySelectorAll('input, select, textarea');
+        const candidateInputs = candidateDiv.querySelectorAll(
+          'input, select, textarea'
+        );
 
         if (role === 'recruiter') {
-            // Hide candidate fields safely without breaking parents
-            for (let child of candidateChildren) {
-                child.style.display = 'none';
-            }
-            recruiterDiv.style.display = 'block';
-            roleInput.value = 'recruiter';
-            
-            if(companyInput) companyInput.required = true;
+          // Hide candidate fields safely without breaking parents
+          for (let child of candidateChildren) {
+            child.style.display = 'none';
+          }
+          recruiterDiv.style.display = 'block';
+          roleInput.value = 'recruiter';
 
-            // Remove browser-level dynamic required tags so it can submit
-            candidateInputs.forEach(input => {
-                input.required = false;
-            });
+          if (companyInput) companyInput.required = true;
 
-            // UI Tab Styling
-            btnRecruiter.style.background = '#ffffff';
-            btnRecruiter.style.boxShadow = '0 2px 4px rgba(0,0,0,0.08)';
-            btnRecruiter.style.color = '#111827';
-            
-            btnCandidate.style.background = 'transparent';
-            btnCandidate.style.boxShadow = 'none';
-            btnCandidate.style.color = '#6b7280';
+          // Remove browser-level dynamic required tags so it can submit
+          candidateInputs.forEach((input) => {
+            input.required = false;
+          });
+
+          // UI Tab Styling
+          btnRecruiter.style.background = '#ffffff';
+          btnRecruiter.style.boxShadow = '0 2px 4px rgba(0,0,0,0.08)';
+          btnRecruiter.style.color = '#111827';
+
+          btnCandidate.style.background = 'transparent';
+          btnCandidate.style.boxShadow = 'none';
+          btnCandidate.style.color = '#6b7280';
         } else {
-            // Restore original native flex/block display to matching rows
-            for (let child of candidateChildren) {
-                if (child.classList.contains('form-row')) {
-                    child.style.display = 'flex'; 
-                } else {
-                    child.style.display = 'block';
-                }
+          // Restore original native flex/block display to matching rows
+          for (let child of candidateChildren) {
+            if (child.classList.contains('form-row')) {
+              child.style.display = 'flex';
+            } else {
+              child.style.display = 'block';
             }
-            recruiterDiv.style.display = 'none';
-            roleInput.value = 'candidate';
-            
-            if(companyInput) companyInput.required = false;
+          }
+          recruiterDiv.style.display = 'none';
+          roleInput.value = 'candidate';
 
-            // Restore required rules when switching back to candidate
-            candidateInputs.forEach(input => {
-                input.required = true; 
-            });
+          if (companyInput) companyInput.required = false;
 
-            // UI Tab Styling
-            btnCandidate.style.background = '#ffffff';
-            btnCandidate.style.boxShadow = '0 2px 4px rgba(0,0,0,0.08)';
-            btnCandidate.style.color = '#111827';
-            
-            btnRecruiter.style.background = 'transparent';
-            btnRecruiter.style.boxShadow = 'none';
-            btnRecruiter.style.color = '#6b7280';
+          // Restore required rules when switching back to candidate
+          candidateInputs.forEach((input) => {
+            input.required = true;
+          });
+
+          // UI Tab Styling
+          btnCandidate.style.background = '#ffffff';
+          btnCandidate.style.boxShadow = '0 2px 4px rgba(0,0,0,0.08)';
+          btnCandidate.style.color = '#111827';
+
+          btnRecruiter.style.background = 'transparent';
+          btnRecruiter.style.boxShadow = 'none';
+          btnRecruiter.style.color = '#6b7280';
         }
-    }
+      }
 
-    // Initialize clean state on page load
-    document.addEventListener("DOMContentLoaded", function() {
+      // Initialize clean state on page load
+      document.addEventListener('DOMContentLoaded', function () {
         switchRole('candidate');
-    });
+      });
     </script>
-
-</body>
+  </body>
 </html>

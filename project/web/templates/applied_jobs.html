@@ -1,0 +1,87 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CareerGrowza | Applied Jobs</title>
+  <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+  <link rel="stylesheet" href="{% static 'css/common.css' %}">
+  <link rel="stylesheet" href="{% static 'css/layout.css' %}">
+  <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+<body>
+
+<!-- Renders Sidebar & Wrapper Div -->
+{% include "navbar.html" with active_page="applied_jobs" %}
+
+<main class="main-content" style="padding: 30px;">
+    
+    <!-- Hero Banner Section -->
+    <div style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); padding: 32px 35px; border-radius: 20px; color: #ffffff; margin-bottom: 25px; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.25);">
+        <h1 style="font-size: 28px; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 12px; color: #ffffff;">
+            <i class='bx bx-briefcase-alt-2' style="font-size: 32px;"></i> Your Job Applications
+        </h1>
+        <p style="margin: 8px 0 0 0; color: #e0e7ff; font-size: 14px; opacity: 0.9;">
+            Track the status of all jobs you have applied for and monitor your hiring process.
+        </p>
+    </div>
+
+    {% if applications %}
+    <div class="cards" style="margin-top: 20px; display: flex; flex-direction: column; gap: 16px;">
+        {% for app in applications %}
+        <div class="job-card" style="background: #ffffff; padding: 24px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); border: 1px solid #f1f5f9;">
+            <div class="job-header" style="display: flex; justify-content: space-between; align-items: center;">
+                
+                <!-- Job Details -->
+                <div class="job-info">
+                    <h2 class="job-title" style="font-size: 20px; font-weight: 700; color: #1e293b; margin: 0 0 6px 0;">{{ app.job.title }}</h2>
+                    <p class="company-name" style="font-size: 14px; color: #6366f1; font-weight: 600; margin: 0;">{{ app.job.company_name }}</p>
+                </div>
+
+                <!-- Status Card Box -->
+                <div style="background: #ffffff; border: 1px solid #e2e8f0; padding: 10px 18px; border-radius: 12px; text-align: center; min-width: 140px; box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
+                    <span style="display: block; font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.8px; margin-bottom: 6px;">STATUS</span>
+                    
+                    {% if app.status == 'Shortlisted' %}
+                        <!-- Professional Green Badge -->
+                        <span style="background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; padding: 5px 12px; border-radius: 20px; font-weight: 700; font-size: 12px; display: inline-flex; align-items: center; gap: 5px;">
+                            <i class='bx bx-check-circle' style="font-size: 14px;"></i> Shortlisted
+                        </span>
+                    {% elif app.status == 'Rejected' %}
+                        <!-- Professional Red Badge -->
+                        <span style="background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; padding: 5px 12px; border-radius: 20px; font-weight: 700; font-size: 12px; display: inline-flex; align-items: center; gap: 5px;">
+                            <i class='bx bx-x-circle' style="font-size: 14px;"></i> Rejected
+                        </span>
+                    {% else %}
+                        <!-- Theme-Matching Blue/Indigo Badge (Pending) -->
+                        <span style="background: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe; padding: 5px 12px; border-radius: 20px; font-weight: 700; font-size: 12px; display: inline-flex; align-items: center; gap: 5px;">
+                            <i class='bx bx-time-five' style="font-size: 14px;"></i> Pending
+                        </span>
+                    {% endif %}
+                </div>
+
+            </div>
+
+            <div class="job-meta" style="margin-top: 18px; pt: 12px; border-top: 1px solid #f1f5f9; font-size: 13px; color: #94a3b8; display: flex; align-items: center; gap: 6px;">
+                <i class='bx bx-calendar' style="font-size: 16px;"></i> Applied on: {{ app.applied_at|date:"M d, Y" }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="no-jobs-box" style="text-align: center; padding: 50px; background: #fff; border-radius: 16px; margin-top: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
+        <i class='bx bx-send' style="font-size: 3.5rem; color: #94a3b8;"></i>
+        <h2 style="margin-top: 15px; color: #1e293b;">No Applications Found</h2>
+        <p style="color: #64748b;">You haven't applied to any jobs yet. Head over to the dashboard to start applying!</p>
+        <a href="{% url 'dashboard' %}" class="apply-btn" style="display: inline-block; margin-top: 15px; text-decoration: none; background: #6366f1; color: #fff; padding: 10px 20px; border-radius: 8px; font-weight: 600;">Browse Jobs</a>
+    </div>
+    {% endif %}
+</main>
+
+</div> <!-- Closes .dashboard wrapper opened inside sidebar.html -->
+
+<script src="{% static 'js/sidebar.js' %}"></script>
+</body>
+</html>

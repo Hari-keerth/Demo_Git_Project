@@ -17,25 +17,25 @@ import requests
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import authenticate, login
-from django.contrib.auth import login as auth_login, authenticate
-from django.contrib.auth import authenticate, update_session_auth_hash
+from django.contrib.auth import (
+    authenticate,
+    login as auth_login,
+    logout,
+    update_session_auth_hash,
+)
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import auth
+from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.core.mail import EmailMessage
+from django.db.models import Q,Count , Sum
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-from django.db.models import Q
-from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import logout
 
 
-from .models import Profile
-from .forms import CreateUserForm, ProfileForm
-from .models import RecruiterJob
 # ==========================================================
 # Google Gmail API
 # ==========================================================
@@ -49,7 +49,6 @@ from googleapiclient.discovery import build
 # ==========================================================
 
 from pypdf import PdfReader
-
 from reportlab.lib.enums import TA_LEFT
 from reportlab.lib.styles import (
     ParagraphStyle,
@@ -63,7 +62,7 @@ from reportlab.platypus import (
 
 
 # ==========================================================
-# Forms
+# Local App: Forms
 # ==========================================================
 
 from .forms import (
@@ -74,19 +73,21 @@ from .forms import (
 
 
 # ==========================================================
-# Models
+# Local App: Models
 # ==========================================================
 
 from .models import (
     ATSResult,
+    Application,
     GmailConnection,
     Profile,
+    RecruiterJob,
     UserSkillProfile,
 )
 
 
 # ==========================================================
-# Gmail Services
+# Local App: Gmail Services
 # ==========================================================
 
 from .services.gmail_service import (
@@ -97,7 +98,7 @@ from .services.gmail_service import (
 
 
 # ==========================================================
-# Resume & ATS Utilities
+# Local App: Resume & ATS Utilities
 # ==========================================================
 
 from .utils.ats_engine import calculate_ats
@@ -109,7 +110,14 @@ from .utils.pdf_parser import extract_resume_text
 
 
 # ==========================================================
-# Job Recommendation Engine
+# Local App: Resume Builder
+# ==========================================================
+
+from .resume_builder.resume_builder import generate_resume
+
+
+# ==========================================================
+# Local App: Job Recommendation Engine
 # ==========================================================
 
 from web.recommendation.recc_engine import (
@@ -117,21 +125,26 @@ from web.recommendation.recc_engine import (
     normalize_jobs,
     search_jobs,
 )
-from .models import ATSResult, UserSkillProfile, RecruiterJob
+
 
 # ==========================================================
-# Chatbot
+# Local App: Chatbot
 # ==========================================================
-
 
 from web.AI_chatbot.chatbot import chatbot_response
 
 
+# ==========================================================
+# Core / Static Pages
+# ==========================================================
+
 def index(request):
         return render(request, "index.html")
 
+
 def ai_email(request):
         return render(request, "ai_email.html")
+
 
 def dashboard(request):
     profile, created = Profile.objects.get_or_create(user=request.user)
@@ -139,762 +152,10 @@ def dashboard(request):
     return render(request, "dashboard.html", context = context)
 
 
-@login_required
-def profile(request):
+# ==========================================================
+# Authentication
+# ==========================================================
 
-    # Get or create user profile
-    profile, created = Profile.objects.get_or_create(
-        user=request.user
-    )
-
-    # Get saved skills
-    skills = UserSkillProfile.objects.filter(
-        profile=profile
-    ).first()
-
-    context = {
-
-        "profile": profile,
-
-        "skills": skills
-
-    }
-
-    return render(
-        request,
-        "profile.html",
-        context
-    )
-
-@login_required
-def disconnect_gmail(request):
-
-    gmail = GmailConnection.objects.get(
-
-        user=request.user
-
-    )
-
-    gmail.connected = False
-
-    gmail.access_token = ""
-
-    gmail.refresh_token = ""
-
-    gmail.save()
-
-    return redirect("settings")
-
-
-
-@csrf_exempt
-def generate_documents(request):
-
-        if request.method != "POST":
-            return JsonResponse(
-                {"error": "POST request required"},
-                status=400
-            )
-
-        try:
-
-            job_description = request.POST.get(
-                "job_description",
-                ""
-            )
-
-            resume_file = request.FILES.get(
-                "resume"
-            )
-
-            if not resume_file:
-
-                return JsonResponse(
-                    {
-                        "error": "Resume PDF is required."
-                    },
-                    status=400
-                )
-
-            resume = extract_resume_text(
-                resume_file
-            )
-
-            # ------ temp storage
-
-            resume_file.seek(0)
-
-            resume_path = default_storage.save(
-                f"resumes/{resume_file.name}",
-                resume_file
-            )
-
-            request.session["resume_path"] = resume_path
-
-            # ------ temp storage
-            input_text = f"""
-    Job Description:
-    {job_description}
-
-    Resume:
-    {resume}
-    """
-
-            headers = {
-                "x-api-key": "sk-7IUtrMADNCiy2i5f_2Xqb8XW6VXPChN6QxPT9ybLITk"
-            }
-
-            response = requests.post(
-                "http://localhost:7860/api/v1/run/a22d35d3-9187-4f90-be18-6ca1c9f5b8b6",
-                headers=headers,
-                json={
-                    "input_value": input_text,
-                    "output_type": "chat",
-                    "input_type": "chat"
-                },
-                timeout=60
-            )
-
-            response.raise_for_status()
-
-            result = response.json()
-
-            text = (
-                result["outputs"][0]
-                ["outputs"][0]
-                ["results"]["message"]["text"]
-            )
-
-            try:
-
-                parsed = json.loads(text)
-
-                request.session["email_subject"] = parsed.get(
-                    "email_subject",
-                    ""
-                )
-
-                request.session["email_body"] = parsed.get(
-                    "email_body",
-                    ""
-                )
-
-                request.session["cover_letter"] = parsed.get(
-                    "cover_letter",
-                    ""
-                )
-
-                return JsonResponse(parsed)
-
-            except json.JSONDecodeError:
-
-                return JsonResponse({
-                    "error": "Invalid JSON returned from Langflow",
-                    "raw_output": text
-                })
-
-        except Exception as e:
-
-            return JsonResponse({
-                "error": str(e)
-            }, status=500)
-
-
-def download_cover_letter(request):
-
-        cover_letter = request.session.get(
-            "cover_letter",
-            ""
-        )
-
-        if not cover_letter:
-            return HttpResponse(
-                "No cover letter available."
-            )
-
-        print("COVER LETTER:")
-        print(repr(cover_letter))
-
-        buffer = io.BytesIO()
-
-        pdf = SimpleDocTemplate(
-            buffer,
-            rightMargin=50,
-            leftMargin=50,
-            topMargin=50,
-            bottomMargin=50
-        )
-
-        styles = getSampleStyleSheet()
-
-        title_style = ParagraphStyle(
-            "TitleStyle",
-            parent=styles["Title"],
-            fontSize=18,
-            spaceAfter=20
-        )
-
-        body_style = ParagraphStyle(
-            "BodyStyle",
-            parent=styles["Normal"],
-            fontSize=11,
-            leading=18,
-            spaceAfter=12,
-            alignment=TA_LEFT
-        )
-
-        content = []
-
-        content.append(
-            Paragraph(
-                "Cover Letter",
-                title_style
-            )
-        )
-
-        today = datetime.now().strftime(
-            "%d %B %Y"
-        )
-
-        content.append(
-            Paragraph(
-                today,
-                body_style
-            )
-        )
-
-        content.append(
-            Spacer(1, 20)
-        )
-
-        paragraphs = [
-            p.strip()
-            for p in cover_letter.split("\n\n")
-            if p.strip()
-        ]
-
-        for para in paragraphs:
-
-            content.append(
-                Paragraph(
-                    para.replace(
-                        "\n",
-                        "<br/>"
-                    ),
-                    body_style
-                )
-            )
-
-            content.append(
-                Spacer(1, 12)
-            )
-
-        pdf.build(content)
-
-        buffer.seek(0)
-
-        response = HttpResponse(
-            buffer,
-            content_type="application/pdf"
-        )
-
-        response[
-            "Content-Disposition"
-        ] = (
-            'attachment; filename="Cover_Letter.pdf"'
-        )
-
-        return response
-
-
-def download_email(request):
-
-        subject = request.session.get(
-            "email_subject",
-            ""
-        )
-
-        body = request.session.get(
-            "email_body",
-            ""
-        )
-
-        if not body:
-            return HttpResponse(
-                "No email available."
-            )
-
-        buffer = io.BytesIO()
-
-        pdf = SimpleDocTemplate(
-            buffer,
-            rightMargin=50,
-            leftMargin=50,
-            topMargin=50,
-            bottomMargin=50
-        )
-
-        styles = getSampleStyleSheet()
-
-        title_style = ParagraphStyle(
-            "TitleStyle",
-            parent=styles["Title"],
-            fontSize=18,
-            spaceAfter=20
-        )
-
-        body_style = ParagraphStyle(
-            "BodyStyle",
-            parent=styles["Normal"],
-            fontSize=11,
-            leading=18,
-            spaceAfter=12,
-            alignment=TA_LEFT
-        )
-
-        content = []
-
-        content.append(
-            Paragraph(
-                "Application Email",
-                title_style
-            )
-        )
-
-        content.append(
-            Paragraph(
-                f"<b>Subject:</b> {subject}",
-                body_style
-            )
-        )
-
-        content.append(
-            Spacer(1, 20)
-        )
-
-        paragraphs = [
-            p.strip()
-            for p in body.split("\n\n")
-            if p.strip()
-        ]
-
-        for para in paragraphs:
-
-            content.append(
-                Paragraph(
-                    para.replace(
-                        "\n",
-                        "<br/>"
-                    ),
-                    body_style
-                )
-            )
-
-            content.append(
-                Spacer(1, 12)
-            )
-
-        pdf.build(content)
-
-        buffer.seek(0)
-
-        response = HttpResponse(
-            buffer,
-            content_type="application/pdf"
-        )
-
-        response[
-            "Content-Disposition"
-        ] = (
-            'attachment; filename="Application_Email.pdf"'
-        )
-
-        return response
-
-
-def create_cover_letter_pdf(cover_letter):
-
-        buffer = io.BytesIO()
-
-        pdf = SimpleDocTemplate(buffer)
-
-        styles = getSampleStyleSheet()
-
-        content = []
-
-        content.append(
-            Paragraph(
-                "Cover Letter",
-                styles["Title"]
-            )
-        )
-
-        content.append(
-            Spacer(1, 20)
-        )
-
-        paragraphs = [
-            p.strip()
-            for p in cover_letter.split("\n\n")
-            if p.strip()
-        ]
-
-        for para in paragraphs:
-
-            content.append(
-                Paragraph(
-                    para.replace(
-                        "\n",
-                        "<br/>"
-                    ),
-                    styles["Normal"]
-                )
-            )
-
-            content.append(
-                Spacer(1, 10)
-            )
-
-        pdf.build(content)
-
-        buffer.seek(0)
-
-        return buffer.getvalue()
-
-@csrf_exempt
-def send_application(request):
-
-    if request.method != "POST":
-        return JsonResponse(
-            {"error": "POST request required"},
-            status=400
-        )
-
-    try:
-
-        data = json.loads(request.body)
-
-        recruiter_email = data.get(
-            "recruiter_email",
-            ""
-        ).strip()
-
-        if not recruiter_email:
-
-            return JsonResponse(
-                {
-                    "error":
-                    "Recruiter email is required"
-                },
-                status=400
-            )
-
-        subject = data.get(
-            "email_subject",
-            ""
-        )
-
-        email_body = data.get(
-            "email_body",
-            ""
-        )
-
-        cover_letter = data.get(
-            "cover_letter",
-            ""
-        )
-
-        if not subject or not email_body:
-
-            return JsonResponse(
-                {
-                    "error":
-                    "Generate documents first"
-                },
-                status=400
-            )
-
-        # Get temporary resume path
-        resume_path = request.session.get(
-            "resume_path"
-        )
-
-        if not resume_path:
-
-            return JsonResponse(
-                {
-                    "error":
-                    "Resume not found. Please generate again."
-                },
-                status=400
-            )
-
-        # Create Cover Letter PDF
-        cover_pdf = create_cover_letter_pdf(
-            cover_letter
-        )
-
-        
-        resume_full_path = os.path.join(
-            settings.MEDIA_ROOT,
-            resume_path
-        )
-
-        with tempfile.NamedTemporaryFile(
-            delete=False,
-            suffix=".pdf"
-        ) as temp_cover:
-
-            temp_cover.write(cover_pdf)
-
-            cover_path = temp_cover.name
-
-        send_gmail(
-
-            user=request.user,
-
-            to_email=recruiter_email,
-
-            subject=subject,
-
-            body=email_body,
-
-            attachments=[
-
-                resume_full_path,
-
-                cover_path
-
-            ]
-
-        )
-
-        os.remove(cover_path)
-
-        # Delete Temporary Resume
-        resume_full_path = os.path.join(
-            settings.MEDIA_ROOT,
-            resume_path
-        )
-
-        if os.path.exists(
-            resume_full_path
-        ):
-            os.remove(
-                resume_full_path
-            )
-
-        # Remove session entry
-        if "resume_path" in request.session:
-            del request.session["resume_path"]
-
-        return JsonResponse(
-            {
-                "message":
-                f"Application sent successfully to {recruiter_email}"
-            }
-        )
-
-    except Exception as e:
-
-        return JsonResponse(
-            {
-                "error": str(e)
-            },
-            status=500
-        )
-        
-
-@csrf_exempt
-def send_email_api(request):
-
-    if request.method != "POST":
-        return JsonResponse(
-            {"error": "POST required"},
-            status=400
-        )
-    
-    try:
-
-        gmail = GmailConnection.objects.get(
-
-            user=request.user,
-
-            connected=True
-
-        )
-
-    except GmailConnection.DoesNotExist:
-
-        return JsonResponse({
-
-            "error":"Please connect Gmail first."
-
-        }, status=400)
-
-    try:
-
-        data = json.loads(request.body)
-
-        to_email = data.get("to")
-        subject = data.get("subject")
-        body = data.get("body")
-
-        send_gmail(
-            user=request.user,
-            to_email=to_email,
-            subject=subject,
-            body=body
-        )
-
-        return JsonResponse({
-            "status": "success"
-        })
-
-    except Exception as e:
-
-        return JsonResponse({
-            "error": str(e)
-        }, status=500)
-    
-@csrf_exempt
-def download_email_pdf(request):
-
-        if request.method != "POST":
-            return HttpResponse(
-                "POST request required"
-            )
-
-        data = json.loads(request.body)
-
-        subject = data.get(
-            "email_subject",
-            ""
-        )
-
-        body = data.get(
-            "email_body",
-            ""
-        )
-
-        buffer = io.BytesIO()
-
-        pdf = SimpleDocTemplate(buffer)
-
-        styles = getSampleStyleSheet()
-
-        content = []
-
-        content.append(
-            Paragraph(
-                "Application Email",
-                styles["Title"]
-            )
-        )
-
-        content.append(
-            Paragraph(
-                f"<b>Subject:</b> {subject}",
-                styles["Normal"]
-            )
-        )
-
-        content.append(
-            Spacer(1, 20)
-        )
-
-        content.append(
-            Paragraph(
-                body.replace(
-                    "\n",
-                    "<br/>"
-                ),
-                styles["Normal"]
-            )
-        )
-
-        pdf.build(content)
-
-        buffer.seek(0)
-
-        response = HttpResponse(
-            buffer,
-            content_type="application/pdf"
-        )
-
-        response[
-            "Content-Disposition"
-        ] = (
-            'attachment; filename="Application_Email.pdf"'
-        )
-
-        return response
-
-@csrf_exempt
-def download_cover_letter_pdf(request):
-
-        if request.method != "POST":
-            return HttpResponse(
-                "POST request required"
-            )
-
-        data = json.loads(request.body)
-
-        cover_letter = data.get(
-            "cover_letter",
-            ""
-        )
-
-        buffer = io.BytesIO()
-
-        pdf = SimpleDocTemplate(buffer)
-
-        styles = getSampleStyleSheet()
-
-        content = []
-
-        content.append(
-            Paragraph(
-                "Cover Letter",
-                styles["Title"]
-            )
-        )
-
-        content.append(
-            Spacer(1, 20)
-        )
-
-        content.append(
-            Paragraph(
-                cover_letter.replace(
-                    "\n",
-                    "<br/>"
-                ),
-                styles["Normal"]
-            )
-        )
-
-        pdf.build(content)
-
-        buffer.seek(0)
-
-        response = HttpResponse(
-            buffer,
-            content_type="application/pdf"
-        )
-
-        response[
-            "Content-Disposition"
-        ] = (
-            'attachment; filename="Cover_Letter.pdf"'
-        )
-
-        return response
-
-
-
-
-# register a user
 def register(request):
     if request.method == "POST":
         user_form = CreateUserForm(request.POST)
@@ -962,6 +223,7 @@ def register(request):
 
 #-- login a user
 
+
 def login(request):
     form =LoginForm()
     if request.method == "POST":
@@ -973,6 +235,15 @@ def login(request):
             
             if user is not None:
                 auth_login(request, user)
+
+                # Remember Me
+                if request.POST.get("remember_me"):
+                    # Keep user logged in for 30 days
+                    request.session.set_expiry(60 * 60 * 24 * 30)
+                else:
+                    # Logout when browser closes
+                    request.session.set_expiry(0)
+
                 messages.success(request, 'Logged in')
 
                 if user.is_staff:
@@ -987,12 +258,18 @@ def login(request):
 
 # user logout
 
+
 def user_logout(request):
     auth.logout(request)
-    messages.success(request ,'Logout Successful')
+    messages.success(request, 'Logout Successful')
     return redirect("login")
 
 #--gmail
+
+
+# ==========================================================
+# Google Gmail Integration
+# ==========================================================
 
 def google_login(request):
 
@@ -1057,8 +334,237 @@ def google_callback(request):
     return redirect("settings")
 
 
+@login_required
+def disconnect_gmail(request):
+
+    gmail = GmailConnection.objects.get(
+
+        user=request.user
+
+    )
+
+    gmail.connected = False
+
+    gmail.access_token = ""
+
+    gmail.refresh_token = ""
+
+    gmail.save()
+
+    return redirect("settings")
 
 
+# ==========================================================
+# Profile & Account Settings
+# ==========================================================
+
+@login_required
+def profile(request):
+
+    # Get or create user profile
+    profile, created = Profile.objects.get_or_create(
+        user=request.user
+    )
+
+    # Get saved skills
+    skills = UserSkillProfile.objects.filter(
+        profile=profile
+    ).first()
+
+    context = {
+
+        "profile": profile,
+
+        "skills": skills
+
+    }
+
+    return render(
+        request,
+        "profile.html",
+        context
+    )
+
+
+@login_required
+def edit_profile(request):
+
+    profile = Profile.objects.get(user=request.user)
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        # Handle Delete Action
+        if action == "delete":
+            if profile.image:
+                profile.image.delete(save=False)
+                profile.image = None
+                profile.save()
+                messages.success(request, "Profile picture deleted.")
+            return redirect("profile")
+
+        form = ProfileForm(
+
+            request.POST,
+
+            request.FILES,
+
+            instance=profile
+
+        )
+
+        if form.is_valid():
+
+            form.save()
+
+            messages.success(
+
+                request,
+
+                "Profile updated successfully."
+
+            )
+
+            return redirect("profile")
+
+    else:
+
+        form = ProfileForm(
+
+            instance=profile
+
+        )
+
+    return render(
+
+        request,
+
+        "edit_profile.html",
+
+        {
+
+            "form": form
+
+        }
+
+    )
+
+#-----chatbot---
+
+
+@login_required
+def settings_view(request):
+
+    gmail = GmailConnection.objects.filter(
+
+        user=request.user,
+
+        connected=True
+
+    ).first()
+
+    context = {
+
+        "gmail_connected": gmail is not None,
+
+        "gmail_email":
+
+            gmail.gmail_email if gmail else ""
+
+    }
+
+    return render(
+
+        request,
+
+        "settings.html",
+
+        context
+
+    )
+
+
+@login_required
+def change_password_view(request):
+
+    if request.method == "POST":
+
+        current = request.POST["current_password"]
+
+        new = request.POST["new_password"]
+
+        confirm = request.POST["confirm_password"]
+
+        if not request.user.check_password(current):
+
+            messages.error(
+                request,
+                "Current password is incorrect."
+            )
+
+            return redirect("settings")
+
+        if new != confirm:
+
+            messages.error(
+                request,
+                "Passwords do not match."
+            )
+
+            return redirect("settings")
+
+        request.user.set_password(new)
+
+        request.user.save()
+
+        update_session_auth_hash(
+            request,
+            request.user
+        )
+
+        messages.success(
+            request,
+            "Password updated successfully."
+        )
+
+    return redirect("settings")
+
+
+@login_required
+def delete_account(request):
+
+    if request.method == "POST":
+
+        password = request.POST["password"]
+
+        if not request.user.check_password(password):
+
+            messages.error(
+                request,
+                "Incorrect password."
+            )
+
+            return redirect("settings")
+
+        user = request.user
+
+        logout(request)
+
+        user.delete()
+
+        messages.success(
+            request,
+            "Account deleted."
+        )
+
+        return redirect("login")
+
+    return redirect("settings")
+
+
+# ==========================================================
+# Resume & ATS Analysis
+# ==========================================================
 
 def resume_analyzer(request):
         return render(request, "resume_analyzer.html")
@@ -1115,6 +621,7 @@ def save_user_skills(user, resume_json):
         }
 
     )
+
 
 @require_POST
 @login_required
@@ -1447,7 +954,7 @@ def calculate_ats_score(request):
 
 
         }, status=500)
-    
+
 
 @login_required
 @require_POST
@@ -1492,6 +999,7 @@ def extract_skills(request):
         )
 
     return redirect("profile")
+
 
 @login_required
 def edit_skills(request):
@@ -1577,58 +1085,767 @@ def edit_skills(request):
         context
     )
 
-@login_required
-def edit_profile(request):
 
-    profile = Profile.objects.get(user=request.user)
+# ==========================================================
+# Resume Builder
+# ==========================================================
 
-    if request.method == "POST":
-
-        form = ProfileForm(
-
-            request.POST,
-
-            instance=profile
-
-        )
-
-        if form.is_valid():
-
-            form.save()
-
-            messages.success(
-
-                request,
-
-                "Profile updated successfully."
-
-            )
-
-            return redirect("profile")
-
-    else:
-
-        form = ProfileForm(
-
-            instance=profile
-
-        )
+def resume_builder(request):
 
     return render(
-
         request,
-
-        "edit_profile.html",
-
-        {
-
-            "form": form
-
-        }
-
+        "resume_builder.html"
     )
 
-#-----chatbot---
+
+@require_POST
+def generate_resume_view(request):
+
+    try:
+
+        data = json.loads(request.body)
+
+        resume_html = generate_resume(data)
+
+        return JsonResponse({
+
+            "success": True,
+
+            "resume_html": resume_html
+
+        })
+
+    except Exception as e:
+
+        return JsonResponse({
+
+            "success": False,
+
+            "error": str(e)
+
+        }, status=500)
+
+
+# ==========================================================
+# Document Generation & Email
+# ==========================================================
+
+@csrf_exempt
+def generate_documents(request):
+
+        if request.method != "POST":
+            return JsonResponse(
+                {"error": "POST request required"},
+                status=400
+            )
+
+        try:
+
+            job_description = request.POST.get(
+                "job_description",
+                ""
+            )
+
+            resume_file = request.FILES.get(
+                "resume"
+            )
+
+            if not resume_file:
+
+                return JsonResponse(
+                    {
+                        "error": "Resume PDF is required."
+                    },
+                    status=400
+                )
+
+            resume = extract_resume_text(
+                resume_file
+            )
+
+            # ------ temp storage
+
+            resume_file.seek(0)
+
+            resume_path = default_storage.save(
+                f"resumes/{resume_file.name}",
+                resume_file
+            )
+
+            request.session["resume_path"] = resume_path
+
+            # ------ temp storage
+            input_text = f"""
+    Job Description:
+    {job_description}
+
+    Resume:
+    {resume}
+    """
+
+            headers = {
+                "x-api-key": "sk-7IUtrMADNCiy2i5f_2Xqb8XW6VXPChN6QxPT9ybLITk"
+            }
+
+            response = requests.post(
+                "http://localhost:7860/api/v1/run/472e1392-4d71-4175-8ba5-ef833f0e9eae",
+                headers=headers,
+                json={
+                    "input_value": input_text,
+                    "output_type": "chat",
+                    "input_type": "chat"
+                },
+                timeout=60
+            )
+
+            response.raise_for_status()
+
+            result = response.json()
+
+            text = (
+                result["outputs"][0]
+                ["outputs"][0]
+                ["results"]["message"]["text"]
+            )
+
+            try:
+
+                parsed = json.loads(text)
+
+                request.session["email_subject"] = parsed.get(
+                    "email_subject",
+                    ""
+                )
+
+                request.session["email_body"] = parsed.get(
+                    "email_body",
+                    ""
+                )
+
+                request.session["cover_letter"] = parsed.get(
+                    "cover_letter",
+                    ""
+                )
+
+                return JsonResponse(parsed)
+
+            except json.JSONDecodeError:
+
+                return JsonResponse({
+                    "error": "Invalid JSON returned from Langflow",
+                    "raw_output": text
+                })
+
+        except Exception as e:
+
+            return JsonResponse({
+                "error": str(e)
+            }, status=500)
+
+
+def download_cover_letter(request):
+
+        cover_letter = request.session.get(
+            "cover_letter",
+            ""
+        )
+
+        if not cover_letter:
+            return HttpResponse(
+                "No cover letter available."
+            )
+
+        print("COVER LETTER:")
+        print(repr(cover_letter))
+
+        buffer = io.BytesIO()
+
+        pdf = SimpleDocTemplate(
+            buffer,
+            rightMargin=50,
+            leftMargin=50,
+            topMargin=50,
+            bottomMargin=50
+        )
+
+        styles = getSampleStyleSheet()
+
+        title_style = ParagraphStyle(
+            "TitleStyle",
+            parent=styles["Title"],
+            fontSize=18,
+            spaceAfter=20
+        )
+
+        body_style = ParagraphStyle(
+            "BodyStyle",
+            parent=styles["Normal"],
+            fontSize=11,
+            leading=18,
+            spaceAfter=12,
+            alignment=TA_LEFT
+        )
+
+        content = []
+
+        content.append(
+            Paragraph(
+                "Cover Letter",
+                title_style
+            )
+        )
+
+        today = datetime.now().strftime(
+            "%d %B %Y"
+        )
+
+        content.append(
+            Paragraph(
+                today,
+                body_style
+            )
+        )
+
+        content.append(
+            Spacer(1, 20)
+        )
+
+        paragraphs = [
+            p.strip()
+            for p in cover_letter.split("\n\n")
+            if p.strip()
+        ]
+
+        for para in paragraphs:
+
+            content.append(
+                Paragraph(
+                    para.replace(
+                        "\n",
+                        "<br/>"
+                    ),
+                    body_style
+                )
+            )
+
+            content.append(
+                Spacer(1, 12)
+            )
+
+        pdf.build(content)
+
+        buffer.seek(0)
+
+        response = HttpResponse(
+            buffer,
+            content_type="application/pdf"
+        )
+
+        response[
+            "Content-Disposition"
+        ] = (
+            'attachment; filename="Cover_Letter.pdf"'
+        )
+
+        return response
+
+
+def download_email(request):
+
+        subject = request.session.get(
+            "email_subject",
+            ""
+        )
+
+        body = request.session.get(
+            "email_body",
+            ""
+        )
+
+        if not body:
+            return HttpResponse(
+                "No email available."
+            )
+
+        buffer = io.BytesIO()
+
+        pdf = SimpleDocTemplate(
+            buffer,
+            rightMargin=50,
+            leftMargin=50,
+            topMargin=50,
+            bottomMargin=50
+        )
+
+        styles = getSampleStyleSheet()
+
+        title_style = ParagraphStyle(
+            "TitleStyle",
+            parent=styles["Title"],
+            fontSize=18,
+            spaceAfter=20
+        )
+
+        body_style = ParagraphStyle(
+            "BodyStyle",
+            parent=styles["Normal"],
+            fontSize=11,
+            leading=18,
+            spaceAfter=12,
+            alignment=TA_LEFT
+        )
+
+        content = []
+
+        content.append(
+            Paragraph(
+                "Application Email",
+                title_style
+            )
+        )
+
+        content.append(
+            Paragraph(
+                f"<b>Subject:</b> {subject}",
+                body_style
+            )
+        )
+
+        content.append(
+            Spacer(1, 20)
+        )
+
+        paragraphs = [
+            p.strip()
+            for p in body.split("\n\n")
+            if p.strip()
+        ]
+
+        for para in paragraphs:
+
+            content.append(
+                Paragraph(
+                    para.replace(
+                        "\n",
+                        "<br/>"
+                    ),
+                    body_style
+                )
+            )
+
+            content.append(
+                Spacer(1, 12)
+            )
+
+        pdf.build(content)
+
+        buffer.seek(0)
+
+        response = HttpResponse(
+            buffer,
+            content_type="application/pdf"
+        )
+
+        response[
+            "Content-Disposition"
+        ] = (
+            'attachment; filename="Application_Email.pdf"'
+        )
+
+        return response
+
+
+def create_cover_letter_pdf(cover_letter):
+
+        buffer = io.BytesIO()
+
+        pdf = SimpleDocTemplate(buffer)
+
+        styles = getSampleStyleSheet()
+
+        content = []
+
+        content.append(
+            Paragraph(
+                "Cover Letter",
+                styles["Title"]
+            )
+        )
+
+        content.append(
+            Spacer(1, 20)
+        )
+
+        paragraphs = [
+            p.strip()
+            for p in cover_letter.split("\n\n")
+            if p.strip()
+        ]
+
+        for para in paragraphs:
+
+            content.append(
+                Paragraph(
+                    para.replace(
+                        "\n",
+                        "<br/>"
+                    ),
+                    styles["Normal"]
+                )
+            )
+
+            content.append(
+                Spacer(1, 10)
+            )
+
+        pdf.build(content)
+
+        buffer.seek(0)
+
+        return buffer.getvalue()
+
+
+@csrf_exempt
+def send_application(request):
+
+    if request.method != "POST":
+        return JsonResponse(
+            {"error": "POST request required"},
+            status=400
+        )
+
+    try:
+
+        data = json.loads(request.body)
+
+        recruiter_email = data.get(
+            "recruiter_email",
+            ""
+        ).strip()
+
+        if not recruiter_email:
+
+            return JsonResponse(
+                {
+                    "error":
+                    "Recruiter email is required"
+                },
+                status=400
+            )
+
+        subject = data.get(
+            "email_subject",
+            ""
+        )
+
+        email_body = data.get(
+            "email_body",
+            ""
+        )
+
+        cover_letter = data.get(
+            "cover_letter",
+            ""
+        )
+
+        if not subject or not email_body:
+
+            return JsonResponse(
+                {
+                    "error":
+                    "Generate documents first"
+                },
+                status=400
+            )
+
+        # Get temporary resume path
+        resume_path = request.session.get(
+            "resume_path"
+        )
+
+        if not resume_path:
+
+            return JsonResponse(
+                {
+                    "error":
+                    "Resume not found. Please generate again."
+                },
+                status=400
+            )
+
+        # Create Cover Letter PDF
+        cover_pdf = create_cover_letter_pdf(
+            cover_letter
+        )
+
+        
+        resume_full_path = os.path.join(
+            settings.MEDIA_ROOT,
+            resume_path
+        )
+
+        with tempfile.NamedTemporaryFile(
+            delete=False,
+            suffix=".pdf"
+        ) as temp_cover:
+
+            temp_cover.write(cover_pdf)
+
+            cover_path = temp_cover.name
+
+        send_gmail(
+
+            user=request.user,
+
+            to_email=recruiter_email,
+
+            subject=subject,
+
+            body=email_body,
+
+            attachments=[
+
+                resume_full_path,
+
+                cover_path
+
+            ]
+
+        )
+
+        os.remove(cover_path)
+
+        # Delete Temporary Resume
+        resume_full_path = os.path.join(
+            settings.MEDIA_ROOT,
+            resume_path
+        )
+
+        if os.path.exists(
+            resume_full_path
+        ):
+            os.remove(
+                resume_full_path
+            )
+
+        # Remove session entry
+        if "resume_path" in request.session:
+            del request.session["resume_path"]
+
+        return JsonResponse(
+            {
+                "message":
+                f"Application sent successfully to {recruiter_email}"
+            }
+        )
+
+    except Exception as e:
+
+        return JsonResponse(
+            {
+                "error": str(e)
+            },
+            status=500
+        )
+
+
+@csrf_exempt
+def send_email_api(request):
+
+    if request.method != "POST":
+        return JsonResponse(
+            {"error": "POST required"},
+            status=400
+        )
+    
+    try:
+
+        gmail = GmailConnection.objects.get(
+
+            user=request.user,
+
+            connected=True
+
+        )
+
+    except GmailConnection.DoesNotExist:
+
+        return JsonResponse({
+
+            "error":"Please connect Gmail first."
+
+        }, status=400)
+
+    try:
+
+        data = json.loads(request.body)
+
+        to_email = data.get("to")
+        subject = data.get("subject")
+        body = data.get("body")
+
+        send_gmail(
+            user=request.user,
+            to_email=to_email,
+            subject=subject,
+            body=body
+        )
+
+        return JsonResponse({
+            "status": "success"
+        })
+
+    except Exception as e:
+
+        return JsonResponse({
+            "error": str(e)
+        }, status=500)
+
+
+@csrf_exempt
+def download_email_pdf(request):
+
+        if request.method != "POST":
+            return HttpResponse(
+                "POST request required"
+            )
+
+        data = json.loads(request.body)
+
+        subject = data.get(
+            "email_subject",
+            ""
+        )
+
+        body = data.get(
+            "email_body",
+            ""
+        )
+
+        buffer = io.BytesIO()
+
+        pdf = SimpleDocTemplate(buffer)
+
+        styles = getSampleStyleSheet()
+
+        content = []
+
+        content.append(
+            Paragraph(
+                "Application Email",
+                styles["Title"]
+            )
+        )
+
+        content.append(
+            Paragraph(
+                f"<b>Subject:</b> {subject}",
+                styles["Normal"]
+            )
+        )
+
+        content.append(
+            Spacer(1, 20)
+        )
+
+        content.append(
+            Paragraph(
+                body.replace(
+                    "\n",
+                    "<br/>"
+                ),
+                styles["Normal"]
+            )
+        )
+
+        pdf.build(content)
+
+        buffer.seek(0)
+
+        response = HttpResponse(
+            buffer,
+            content_type="application/pdf"
+        )
+
+        response[
+            "Content-Disposition"
+        ] = (
+            'attachment; filename="Application_Email.pdf"'
+        )
+
+        return response
+
+
+@csrf_exempt
+def download_cover_letter_pdf(request):
+
+        if request.method != "POST":
+            return HttpResponse(
+                "POST request required"
+            )
+
+        data = json.loads(request.body)
+
+        cover_letter = data.get(
+            "cover_letter",
+            ""
+        )
+
+        buffer = io.BytesIO()
+
+        pdf = SimpleDocTemplate(buffer)
+
+        styles = getSampleStyleSheet()
+
+        content = []
+
+        content.append(
+            Paragraph(
+                "Cover Letter",
+                styles["Title"]
+            )
+        )
+
+        content.append(
+            Spacer(1, 20)
+        )
+
+        content.append(
+            Paragraph(
+                cover_letter.replace(
+                    "\n",
+                    "<br/>"
+                ),
+                styles["Normal"]
+            )
+        )
+
+        pdf.build(content)
+
+        buffer.seek(0)
+
+        response = HttpResponse(
+            buffer,
+            content_type="application/pdf"
+        )
+
+        response[
+            "Content-Disposition"
+        ] = (
+            'attachment; filename="Cover_Letter.pdf"'
+        )
+
+        return response
+
+
+
+
+# register a user
+
+
+# ==========================================================
+# AI Chatbot
+# ==========================================================
 
 def chatbot(request):
     response =''
@@ -1643,7 +1860,7 @@ def chatbot(request):
         }
     )
 
-   
+
 def ask_ai(request):
 
     question = request.GET.get('question',"")
@@ -1656,6 +1873,7 @@ def ask_ai(request):
         }
     )
 
+
 def clear_chat(request):
     request.session['conversation']=[]
     return JsonResponse(
@@ -1664,55 +1882,116 @@ def clear_chat(request):
         }
     )
 
-login_required(login_url='login')
+
+# ==========================================================
+# Job Listings & Recommendations
+# ==========================================================
+
+@login_required
 def dashboard_all_jobs_view(request):
-    # 🟢 SECURITY FIX: Stop recruiters from seeing the candidate view![cite: 3]
+    profile, created = Profile.objects.get_or_create(user=request.user)
+    
+    # SECURITY FIX: Stop recruiters from seeing the candidate view!
     if request.user.is_staff:
         return redirect('recruiter_dashboard')
 
+    # -------------------------------------------------------------
+    # 1. CALCULATE PROFILE COMPLETION & JOBS APPLIED METRICS
+    # -------------------------------------------------------------
+    user = request.user
+    total_fields = 4
+    completed_fields = 0
+
+    if user.first_name and user.last_name:
+        completed_fields += 1
+    if user.email:
+        completed_fields += 1
+    if getattr(profile, 'bio', None) or getattr(profile, 'phone', None) or getattr(profile, 'headline', None):
+        completed_fields += 1
+    if getattr(profile, 'resume', None) or getattr(profile, 'skills', None):
+        completed_fields += 1
+
+    profile_completion = int((completed_fields / total_fields) * 100)
+
+    # Fetch total jobs applied by this candidate
+    applied_count = Application.objects.filter(applicant=user).count()
+
+    # -------------------------------------------------------------
+    # 2. JOB SEARCH & QUERY LOGIC
+    # -------------------------------------------------------------
     query = request.GET.get('q', '').strip()
+    location_query = request.GET.get('location', '').strip()
+
     search_query = query if query else "Python Developer"
 
     # db recruiters job
-    local_recruiter_jobs = []
-    if query:
-        db_jobs = RecruiterJob.objects.filter(
-            Q(title__icontains=query) | 
-            Q(company__icontains=query) |
-            Q(description__icontains=query)
-        ).order_by('-created_at')
-    else:
-        db_jobs = RecruiterJob.objects.all().order_by('-created_at')[:5]
+    db_jobs = RecruiterJob.objects.all().order_by('-created_at')
 
+    if query:
+        db_jobs = db_jobs.filter(
+            Q(title__icontains=query) | 
+            Q(company_name__icontains=query) |
+            Q(description__icontains=query)
+        )
+    
+    if location_query:
+        db_jobs = db_jobs.filter(
+            Q(location__icontains=location_query)
+        )
+
+    # Limit results to 5 if no search filter was applied
+    if not query and not location_query:
+        db_jobs = db_jobs[:5]
+
+    local_recruiter_jobs = []
     for r_job in db_jobs:
+        if isinstance(r_job.required_skills, list):
+            skills_list = r_job.required_skills
+        elif isinstance(r_job.required_skills, str):
+            skills_list = [s.strip() for s in r_job.required_skills.split(',') if s.strip()]
+        else:
+            skills_list = []
+
         local_recruiter_jobs.append({
             'title': r_job.title,
-            'company': f"{r_job.company} (Featured)",  # Visual tag for native jobs
+            'company': f"{r_job.company_name} (Featured)",
             'location': r_job.location,
             'description': r_job.description,
-            # Point to an application page if no external URL exists
-            'redirect_url': r_job.redirect_url if r_job.redirect_url else f"/jobs/apply/{r_job.id}/",
-            'contract_time': "Full Time"
+            'salary': r_job.salary,
+            'experience_required': r_job.experience_required,
+            'redirect_url': f"/jobs/apply/{r_job.id}/",
+            'contract_time': "Full Time",
+            'skills': skills_list,
+            'is_local': True,
         })
 
     try:
-        raw_adzuna_jobs = search_jobs(search_query)
+        raw_adzuna_jobs = search_jobs(search_query, location=location_query) if location_query else search_jobs(search_query)
         cleaned_adzuna_jobs = normalize_jobs(raw_adzuna_jobs)
     except Exception as e:
         print(f"API Error: {e}")
         cleaned_adzuna_jobs = []
     
-    # Combine listings (native recruiter positions sit at the top!)
+    # Combine listings
     combined_job_listings = local_recruiter_jobs + cleaned_adzuna_jobs
 
+    # -------------------------------------------------------------
+    # 3. PASS TO CONTEXT
+    # -------------------------------------------------------------
     context = {
+        'profile': profile,
         'adzuna_jobs': combined_job_listings,
-        'current_query': query
+        'current_query': query,
+        'current_location': location_query,
+        'applied_count': applied_count,              
+        'profile_completion': profile_completion,  
     }
     return render(request, 'dashboard.html', context)
 
 
 # 2. RECOMMENDATION VIEW: Dynamic Live Matching based on teammate's model database data
+
+
 @login_required
 def recommendations_page_view(request):
     # 1. 🟢 Grab the latest ATSResult record to verify they have uploaded a resume
@@ -1755,6 +2034,11 @@ def recommendations_page_view(request):
     }
     return render(request, 'recomend_jobs.html', context)
 
+
+# ==========================================================
+# Recruiter Job Management
+# ==========================================================
+
 @login_required
 def post_job_view(request):
     # Only allow recruiters (is_staff = True) to post jobs
@@ -1764,10 +2048,12 @@ def post_job_view(request):
 
     if request.method == 'POST':
         title = request.POST.get('title')
-        company = request.POST.get('company')
+        company = request.POST.get('company_name')
         location = request.POST.get('location')
         description = request.POST.get('description')
-        redirect_url = request.POST.get('redirect_url') or None
+        redirect_url = request.POST.get('redirect_url') 
+        salary = request.POST.get('salary', '')
+        experience_required = request.POST.get('experience_required', '') or None
         
         # Get raw skills input, split by comma, and clean up empty spaces
         raw_skills = request.POST.get('required_skills', '')
@@ -1777,8 +2063,10 @@ def post_job_view(request):
         RecruiterJob.objects.create(
             recruiter=request.user,
             title=title,
-            company=company,
+            company_name=company,
             location=location,
+            salary=salary,                         
+            experience_required=experience_required,
             description=description,
             required_skills=required_skills_list,  # Saves beautifully as a JSON list
             redirect_url=redirect_url
@@ -1789,19 +2077,24 @@ def post_job_view(request):
 
     return render(request, 'post_job.html')
 
-
-@login_required
+login_required
 def recruiter_dashboard_view(request):
     # Security Check: Redirect non-recruiters back to candidate dashboard
     if not request.user.is_staff:
         return redirect('dashboard')
         
     # Fetch all jobs posted by this specific recruiter[cite: 1]
-    my_jobs = RecruiterJob.objects.filter(recruiter=request.user).order_by('-created_at')
+    my_jobs = RecruiterJob.objects.filter(recruiter=request.user).annotate(
+        app_count=Count('applications')
+    ).order_by('-created_at')
+
+    total_jobs = my_jobs.count()
+    total_applications_count = sum(job.app_count for job in my_jobs)
     
     context = {
         'my_jobs': my_jobs,
-        'total_jobs': my_jobs.count()
+        'total_jobs': total_jobs,
+        'total_applications_count': total_applications_count
     }
     return render(request, 'recruiter_dashboard.html', context)
 
@@ -1817,12 +2110,15 @@ def edit_job_view(request, job_id):
 
     if request.method == 'POST':
         job.title = request.POST.get('title')
-        job.company = request.POST.get('company')
+        job.company_name = request.POST.get('company_name')
         job.location = request.POST.get('location')
+        job.salary_range = request.POST.get('salary_range')
+        job.experience = request.POST.get('experience')
+        job.external_link = request.POST.get('external_link')
         job.description = request.POST.get('description')
         job.redirect_url = request.POST.get('redirect_url') or None
         
-        raw_skills = request.POST.get('required_skills', '')
+        raw_skills = request.POST.get('skills', '')
         job.required_skills = [skill.strip() for skill in raw_skills.split(',') if skill.strip()]
         
         job.save()
@@ -1833,8 +2129,6 @@ def edit_job_view(request, job_id):
     skills_string = ", ".join(job.required_skills) if job.required_skills else ""
     
     return render(request, 'edit_job.html', {'job': job, 'skills_string': skills_string})
-
-
 @login_required
 def delete_job_view(request, job_id):
     job = get_object_or_404(RecruiterJob, id=job_id)
@@ -1849,110 +2143,273 @@ def delete_job_view(request, job_id):
     return redirect('recruiter_dashboard')
 #----settings----
 
+
+# ==========================================================
+# Job Applications
+# ==========================================================
+
 @login_required
-def settings_view(request):
+def apply_job_view(request, job_id):
+    job = get_object_or_404(RecruiterJob, id=job_id)
 
-    gmail = GmailConnection.objects.filter(
+    # Prevent Duplicate Applications
+    existing_application = Application.objects.filter(job=job, applicant=request.user).exists()
+    if existing_application:
+        messages.warning(request, f"You have already applied for '{job.title}'.")
+        return redirect('dashboard')
 
-        user=request.user,
+    # Get user profile & latest ATS result
+    user_profile = getattr(request.user, 'profile', None)
+    latest_ats_result = ATSResult.objects.filter(user=request.user).order_by('-created_at').first()
 
-        connected=True
+    latest_resume = None
+    if latest_ats_result and latest_ats_result.resume:
+        latest_resume = latest_ats_result.resume
+    elif user_profile and hasattr(user_profile, 'resume') and user_profile.resume:
+        latest_resume = user_profile.resume
 
-    ).first()
+    if request.method == 'POST':
+        uploaded_resume = request.FILES.get('resume')
+        cover_note = request.POST.get('cover_note', '')
+        use_existing = request.POST.get('use_existing_resume') == 'true'
+
+        application = Application(
+            job=job,
+            applicant=request.user,
+            cover_note=cover_note
+        )
+
+        if uploaded_resume:
+            application.resume = uploaded_resume
+            application.save()
+        elif use_existing and latest_resume:
+            try:
+                latest_resume.open()
+                application.resume.save(
+                    latest_resume.name.split('/')[-1],
+                    ContentFile(latest_resume.read()),
+                    save=True
+                )
+            except FileNotFoundError:
+                messages.error(request, "Your saved resume file could not be found. Please upload a new resume.")
+                return render(request, 'apply_job.html', {'job': job, 'latest_resume': None})
+        else:
+            messages.error(request, "Please upload or attach a resume to submit your application.")
+            return render(request, 'apply_job.html', {'job': job, 'latest_resume': latest_resume})
+
+        messages.success(request, f"Application for '{job.title}' submitted successfully!")
+        return redirect('dashboard')
+
+    return render(request, 'apply_job.html', {'job': job, 'latest_resume': latest_resume})
+
+# views.py
+
+
+login_required
+def job_applications_view(request, job_id):
+    # Security: Ensure only staff/recruiters can access
+    if not request.user.is_staff:
+        messages.error(request, "Access denied.")
+        return redirect('dashboard')
+
+    job = get_object_or_404(RecruiterJob, id=job_id)
+
+    # Security: Ensure recruiter owns this job post
+    if job.recruiter != request.user:
+        messages.error(request, "You do not have permission to view applications for this job.")
+        return redirect('recruiter_dashboard')
+
+    # Fetch all applications for this job
+    applications = Application.objects.filter(job=job).select_related('applicant', 'applicant__profile').order_by('-applied_at')
 
     context = {
-
-        "gmail_connected": gmail is not None,
-
-        "gmail_email":
-
-            gmail.gmail_email if gmail else ""
-
+        'job': job,
+        'applications': applications,
+        'total_applications': applications.count()
     }
-
-    return render(
-
-        request,
-
-        "settings.html",
-
-        context
-
-    )
+    return render(request, 'job_applications.html', context)
 
 @login_required
-def change_password_view(request):
+def applied_jobs_view(request):
+    # Fetch all job applications for the logged-in candidate
+    applications = Application.objects.filter(applicant=request.user).select_related('job').order_by('-applied_at')
+    
+    context = {
+        'applications': applications,
+        'active_page': 'applied_jobs'
+    }
+    return render(request, 'applied_jobs.html', context)
 
-    if request.method == "POST":
 
-        current = request.POST["current_password"]
+#---------mock_test----
 
-        new = request.POST["new_password"]
+from .langflow import generate_question
 
-        confirm = request.POST["confirm_password"]
+def mock_interview(request):
+    return render(request, "mock_interview.html")
 
-        if not request.user.check_password(current):
 
-            messages.error(
-                request,
-                "Current password is incorrect."
-            )
+def interview_question(request):
+    return JsonResponse({
+        "question": "What is Python?"
+    })
 
-            return redirect("settings")
+import json
 
-        if new != confirm:
+from django.http import JsonResponse
+from django.shortcuts import render
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
 
-            messages.error(
-                request,
-                "Passwords do not match."
-            )
+from .langflow import generate_question, evaluate_interview
 
-            return redirect("settings")
 
-        request.user.set_password(new)
+def mock_interview(request):
+    return render(request, "mock_interview.html")
 
-        request.user.save()
 
-        update_session_auth_hash(
-            request,
-            request.user
+@require_POST
+@csrf_exempt
+def interview_question(request):
+
+    try:
+        body = json.loads(request.body)
+
+        role = body.get("role")
+        difficulty = body.get("difficulty")
+        asked_questions = body.get("asked_questions", [])
+
+        question = generate_question(
+            role=role,
+            difficulty=difficulty,
+            asked_questions=asked_questions,
         )
 
-        messages.success(
-            request,
-            "Password updated successfully."
+        return JsonResponse({
+            "success": True,
+            "question": question
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            "success": False,
+            "error": str(e)
+        }, status=500)
+
+
+@require_POST
+@csrf_exempt
+def interview_evaluate(request):
+
+    try:
+        body = json.loads(request.body)
+
+        role = body.get("role")
+        interview_data = body.get("interview_data", [])
+
+        result = evaluate_interview(
+            role=role,
+            interview_data=interview_data,
         )
 
-    return redirect("settings")
+        # If Langflow returns a JSON string,
+        # uncomment the next line.
+        # result = json.loads(result)
+
+        if isinstance(result, str):
+            return JsonResponse({
+                "success": True,
+                "raw_result": result
+            })
+
+        result["success"] = True
+        return JsonResponse(result)
+
+    except Exception as e:
+        return JsonResponse({
+            "success": False,
+            "error": str(e)
+        }, status=500)
+
+#company Profile
+
 
 @login_required
-def delete_account(request):
+def company_profile_view(request):
+    if not request.user.is_staff:
+        return redirect('dashboard')
+    
+    # Get or create the Profile instance for the HR Manager / Recruiter
+    profile, created = Profile.objects.get_or_create(user=request.user)
+    
+    # Fetch existing company_name from recruiter's posted jobs
+    latest_job = RecruiterJob.objects.filter(recruiter=request.user).order_by('-created_at').first()
+    company_name = latest_job.company_name if latest_job else ""
 
-    if request.method == "POST":
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            
+            # Update User instance (HR Manager details)
+            request.user.first_name = form.cleaned_data.get('first_name')
+            request.user.last_name = form.cleaned_data.get('last_name')
+            request.user.email = form.cleaned_data.get('email')
+            request.user.save()
 
-        password = request.POST["password"]
+            # Sync Company Name across job listings
+            new_company_name = request.POST.get('company_name')
+            if new_company_name:
+                RecruiterJob.objects.filter(recruiter=request.user).update(company_name=new_company_name)
 
-        if not request.user.check_password(password):
+            messages.success(request, 'Company & HR Manager Profile updated successfully!')
+            return redirect('company_profile')
+    else:
+        form = ProfileForm(instance=profile)
 
-            messages.error(
-                request,
-                "Incorrect password."
-            )
+    context = {
+        'form': form,
+        'profile': profile,
+        'company_name': company_name,
+    }
+    return render(request, 'company_profile.html', context)
 
-            return redirect("settings")
+@login_required
+def recruiter_applicants_view(request):
+    my_jobs = RecruiterJob.objects.filter(recruiter=request.user).order_by('-created_at')
+    selected_job_id = request.GET.get('job_id')
+    selected_status = request.GET.get('status')
+    
+    # Query applications for this recruiter
+    applications = Application.objects.filter(job__recruiter=request.user).order_by('-applied_at')
 
-        user = request.user
+    selected_job = None
+    if selected_job_id:
+        applications = applications.filter(job__id=selected_job_id)
+        selected_job = my_jobs.filter(id=selected_job_id).first()
 
-        logout(request)
+    if selected_status:
+        applications = applications.filter(status=selected_status)
 
-        user.delete()
+    context = {
+        'my_jobs': my_jobs,
+        'applications': applications,
+        'selected_job_id': selected_job_id,
+        'selected_job': selected_job,
+        'selected_status': selected_status,
+    }
+    return render(request, 'recruiter_applicants.html', context)
 
-        messages.success(
-            request,
-            "Account deleted."
-        )
 
-        return redirect("login")
-
-    return redirect("settings")
-
+@login_required
+def update_applicant_status_view(request, app_id):
+    application = get_object_or_404(Application, id=app_id, job__recruiter=request.user)
+    
+    if request.method == 'POST':
+        new_status = request.POST.get('status')
+        if new_status:
+            application.status = new_status
+            application.save()
+            messages.success(request, f"Application status updated to {new_status}.")
+            
+    return redirect(request.META.get('HTTP_REFERER', 'recruiter_applicants'))

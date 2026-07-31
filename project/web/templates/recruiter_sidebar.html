@@ -1,0 +1,73 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/recruiter_sidebar.css' %}?v=2.0">
+
+<aside class="recruiter-sidebar">
+    <!-- BRAND LOGO HEADER -->
+    <div class="recruiter-sidebar-brand">
+        <a href="{% url 'recruiter_dashboard' %}" class="recruiter-brand-link">
+            <div class="brand-title">
+                <span class="brand-main" style="font-weight: 800; font-size: 20px; color: #0f172a;">Career<span style="color: #6366f1;">Growza</span></span>
+            </div>
+        </a>
+    </div>
+
+    <!-- MAIN NAVIGATION CONTAINER -->
+    <div class="recruiter-sidebar-body">
+        <div class="sidebar-section">
+            <ul class="sidebar-menu-list">
+                <li class="sidebar-item {% if request.resolver_match.url_name == 'recruiter_dashboard' %}active{% endif %}">
+                    <a href="{% url 'recruiter_dashboard' %}" class="sidebar-link">
+                        <i class='bx bx-grid-alt'></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+
+                <li class="sidebar-item {% if request.resolver_match.url_name == 'post_job' %}active{% endif %}">
+                    <a href="{% url 'post_job' %}" class="sidebar-link">
+                        <i class='bx bx-plus-circle'></i>
+                        <span>Post a Job</span>
+                    </a>
+                </li>
+
+                <li class="sidebar-item {% if request.resolver_match.url_name == 'job_applications' %}active{% endif %}">
+                    <a href="{% url 'recruiter_applicants' %}" class="sidebar-link {% if request.resolver_match.url_name == 'recruiter_applicants' %}active{% endif %}">
+                        <i class='bx bx-user-check'></i>
+                        <span>Applicants & Candidates</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="sidebar-section mt-auto">
+            <ul class="sidebar-menu-list">
+                <li class="sidebar-item {% if request.resolver_match.url_name == 'company_profile' %}active{% endif %}">
+                    <a href="{% url 'company_profile' %}" class="sidebar-link">
+                        <i class='bx bx-building-house'></i>
+                        <span>Company Profile</span>
+                    </a>
+                </li>
+
+                <li class="sidebar-item">
+                    <form action="{% url 'user-logout' %}" method="POST" style="width: 100%; margin: 0;">
+                        {% csrf_token %}
+                        <button type="submit" class="sidebar-link logout-btn">
+                            <i class='bx bx-log-out-circle'></i>
+                            <span>Sign Out</span>
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- RECRUITER USER BADGE -->
+    <div class="recruiter-sidebar-footer">
+        <div class="recruiter-avatar">
+            <i class='bx bx-user-check'></i>
+        </div>
+        <div class="recruiter-info">
+            <span class="recruiter-name">{{ request.user.first_name|default:request.user.username }}</span>
+            <span class="recruiter-tag">Hiring Manager</span>
+        </div>
+    </div>
+</aside>

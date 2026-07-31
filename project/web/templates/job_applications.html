@@ -1,0 +1,111 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Applications - {{ job.title }} | Career Growza</title>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+    
+    <!-- Project Stylesheets -->
+    <link rel="stylesheet" href="{% static 'css/layout.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/job_applications.css' %}">
+</head>
+<body>
+
+    <div class="main-content">
+        <div class="applications-container">
+            
+            <!-- HEADER SECTION -->
+            <div class="app-header-card">
+                <a href="{% url 'recruiter_dashboard' %}" class="back-dashboard-btn">
+                    <i class='bx bx-left-arrow-alt'></i> Back to Dashboard
+                </a>
+
+                <div class="header-main-info">
+                    <div class="job-badge"><i class='bx bx-briefcase-alt-2'></i> Active Position</div>
+                    <h1 class="job-app-title">{{ job.title }}</h1>
+                    
+                    <div class="job-app-meta">
+                        {% if job.location %}
+                            <span><i class='bx bx-map'></i> {{ job.location }}</span>
+                        {% endif %}
+                        <span><i class='bx bx-calendar'></i> Posted on {{ job.created_at|date:"M d, Y" }}</span>
+                        <span><i class='bx bx-group'></i> {{ applications|default_if_none:0|length }} Total Candidates</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- APPLICANTS LIST OR EMPTY STATE -->
+            {% if applications %}
+                <div class="applicants-section-header">
+                    <h2>Received Applications ({{ applications|length }})</h2>
+                </div>
+
+                <div class="applicants-grid">
+                    {% for app in applications %}
+                        <div class="applicant-card">
+                            <div class="applicant-info-wrapper">
+                                <div class="applicant-avatar">
+                                    <i class='bx bx-user'></i>
+                                </div>
+                                <div class="applicant-details">
+                                    <h3>
+                                        {% if app.applicant.get_full_name %}
+                                            {{ app.applicant.get_full_name }}
+                                        {% else %}
+                                            {{ app.applicant.username }}
+                                        {% endif %}
+                                    </h3>
+                                    <p class="applicant-email"><i class='bx bx-envelope'></i> {{ app.applicant.email }}</p>
+                                    <p class="applicant-date"><i class='bx bx-time'></i> Applied: {{ app.applied_at|date:"M d, Y - H:i" }}</p>
+                                    
+                                    {% if app.cover_note %}
+                                        <div class="cover-note-box" style="margin-top: 10px;">
+                                            <strong>Cover Note:</strong>
+                                            <p style="margin: 4px 0 0 0;">{{ app.cover_note }}</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="applicant-actions">
+                                {% if app.resume %}
+                                    <a href="{{ app.resume.url }}" target="_blank" class="action-btn download-btn">
+                                        <i class='bx bx-file'></i> Download / View Resume
+                                    </a>
+                                {% else %}
+                                    <span class="no-resume-tag"><i class='bx bx-info-circle'></i> No Resume</span>
+                                {% endif %}
+    
+                                <a href="https://mail.google.com/mail/?view=cm&fs=1&to={{ app.applicant.email }}&su=Regarding your application for {{ job.title }}&body=Hi {{ app.applicant.get_full_name|default:app.applicant.username }},%0D%0A%0D%0AThank you for applying for the {{ job.title }} position. We reviewed your profile and would like to connect with you regarding the next steps.%0D%0A%0D%0ABest regards,%0D%0A{{ request.user.get_full_name|default:request.user.username }}" 
+                                    target="_blank" 
+                                    class="action-btn email-btn" 
+                                    title="Send Email via Gmail">
+                                        <i class='bx bx-paper-plane'></i> Contact
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+            {% else %}
+                <!-- EMPTY STATE -->
+                <div class="applications-empty-card">
+                    <div class="empty-icon-circle">
+                        <i class='bx bx-user-x'></i>
+                    </div>
+                    <h2>No applications received yet</h2>
+                    <p>Candidates who apply for <strong>"{{ job.title }}"</strong> will appear here.</p>
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+</body>
+</html>

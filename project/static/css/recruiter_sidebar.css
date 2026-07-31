@@ -1,0 +1,273 @@
+/* ==========================================================================
+   Recruiter Sidebar Styling (With Collapsible State Support)
+   ========================================================================== */
+
+/* Fixed Sidebar Container */
+.recruiter-sidebar {
+    width: 260px;
+    min-width: 260px;
+    height: 100vh;
+    background-color: #ffffff;
+    border-right: 1px solid #e2e8f0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 24px 16px;
+    box-sizing: border-box;
+    z-index: 1000;
+    /* Smooth transition when collapsing */
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s ease;
+}
+
+/* Brand / Logo Header */
+.recruiter-sidebar-brand {
+    padding: 0 8px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.recruiter-brand-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    overflow: hidden;
+}
+
+.brand-logo-icon {
+    background: #6366f1;
+    color: #ffffff;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+}
+
+.brand-title {
+    display: flex;
+    flex-direction: column;
+    white-space: nowrap;
+}
+
+.brand-main {
+    font-weight: 800;
+    font-size: 18px;
+    color: #0f172a;
+    line-height: 1.1;
+}
+
+.brand-badge {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6366f1;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Sidebar Toggle Icon Button */
+.sidebar-toggle-btn {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    font-size: 20px;
+    padding: 4px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.sidebar-toggle-btn:hover {
+    background-color: #f1f5f9;
+    color: #4f46e5;
+}
+
+/* Main Body & Sections */
+.recruiter-sidebar-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+.sidebar-section {
+    margin-bottom: 24px;
+}
+
+.sidebar-section.mt-auto {
+    margin-top: auto;
+}
+
+.section-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0 12px;
+    margin-bottom: 10px;
+    white-space: nowrap;
+}
+
+/* Navigation Menu */
+.sidebar-menu-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-item {
+    margin-bottom: 4px;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    color: #64748b;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: none;
+    background: transparent;
+    width: 100%;
+    box-sizing: border-box;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.sidebar-link i {
+    font-size: 18px;
+    min-width: 18px;
+}
+
+.sidebar-link:hover {
+    background-color: #f1f5f9;
+    color: #4f46e5;
+}
+
+/* Active Menu Item */
+.sidebar-item.active .sidebar-link {
+    background-color: #e0e7ff;
+    color: #4f46e5;
+    font-weight: 700;
+}
+
+/* Quick Action Button */
+.create-job-btn {
+    border: 1px dashed #6366f1;
+    background-color: #f5f3ff;
+    color: #4f46e5;
+    font-weight: 700;
+}
+
+.create-job-btn:hover {
+    background-color: #6366f1;
+    color: #ffffff;
+}
+
+/* Logout Button */
+.logout-btn {
+    color: #ef4444;
+}
+
+.logout-btn:hover {
+    background-color: #fee2e2;
+    color: #dc2626;
+}
+
+/* Bottom User Footer */
+.recruiter-sidebar-footer {
+    border-top: 1px solid #f1f5f9;
+    padding-top: 16px;
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    overflow: hidden;
+}
+
+.recruiter-avatar {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    border-radius: 50%;
+    background: #e0e7ff;
+    color: #4f46e5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.recruiter-info {
+    display: flex;
+    flex-direction: column;
+    white-space: nowrap;
+}
+
+.recruiter-name {
+    font-weight: 700;
+    font-size: 13px;
+    color: #0f172a;
+}
+
+.recruiter-tag {
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+/* ==========================================================================
+   COLLAPSED STATE OVERRIDES (Triggered via JS)
+   ========================================================================== */
+
+.recruiter-sidebar.collapsed {
+    width: 72px !important;
+    min-width: 72px !important;
+    padding: 24px 10px !important;
+}
+
+/* Hide text elements in collapsed view */
+.recruiter-sidebar.collapsed .brand-title,
+.recruiter-sidebar.collapsed .section-label,
+.recruiter-sidebar.collapsed .sidebar-link span,
+.recruiter-sidebar.collapsed .recruiter-info {
+    display: none !important;
+}
+
+/* Center icons in collapsed view */
+.recruiter-sidebar.collapsed .recruiter-sidebar-brand {
+    justify-content: center;
+    padding: 0;
+}
+
+.recruiter-sidebar.collapsed .recruiter-brand-link {
+    display: none; /* Keep toggle button prominent */
+}
+
+.recruiter-sidebar.collapsed .sidebar-link {
+    justify-content: center;
+    padding: 10px 0;
+}
+
+.recruiter-sidebar.collapsed .recruiter-sidebar-footer {
+    justify-content: center;
+    padding-top: 12px;
+}

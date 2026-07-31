@@ -1,0 +1,166 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Applicant Management | Career Growza</title>
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/recruiter_sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/recruiter_dashboard.css' %}">
+</head>
+<body>
+
+    <div class="wrapper">
+        <!-- Recruiter Sidebar Include -->
+        {% include 'recruiter_sidebar.html' %}
+
+        <div class="main">
+            <div class="page-content">
+                <div class="dashboard-wrapper">
+
+                    <!-- FLASH MESSAGES -->
+                    {% if messages %}
+                        <div style="margin-bottom: 20px;">
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }}" style="padding: 12px 16px; border-radius: 8px; font-weight: 600; font-size: 14px; margin-bottom: 8px; {% if message.tags == 'error' %}background: #fee2e2; color: #dc2626;{% else %}background: #dcfce7; color: #166534;{% endif %}">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <!-- HEADER BANNER -->
+                    <div class="welcome-banner" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                        <div class="hero-text">
+                            <h1>Job Applicants 👥</h1>
+                            <p>Review candidate applications and manage hiring pipelines.</p>
+                        </div>
+                        
+                        <!-- FILTER FORM -->
+                        <form method="GET" action="" style="margin: 0; display: flex; gap: 10px; align-items: center;">
+    
+                            <!-- JOB FILTER -->
+                            <select name="job_id" onchange="this.form.submit()" style="padding: 10px 14px; border-radius: 8px; border: 1px solid #cbd5e1; font-weight: 600; background: #ffffff; color: #334155; cursor: pointer; outline: none;">
+                                <option value="">All Job Postings</option>
+                                {% for job in my_jobs %}
+                                    <option value="{{ job.id }}" {% if selected_job_id == job.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ job.title }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+
+                            <!-- STATUS FILTER -->
+                            <select name="status" onchange="this.form.submit()" style="padding: 10px 14px; border-radius: 8px; border: 1px solid #cbd5e1; font-weight: 600; background: #ffffff; color: #334155; cursor: pointer; outline: none;">
+                                <option value="">All Statuses</option>
+                                <option value="Pending" {% if selected_status == "Pending" %}selected{% endif %}>Pending</option>
+                                <option value="Shortlisted" {% if selected_status == "Shortlisted" %}selected{% endif %}>Shortlisted</option>
+                                <option value="Rejected" {% if selected_status == "Rejected" %}selected{% endif %}>Rejected</option>
+                            </select>
+
+                        </form>
+                    </div>
+
+                    <!-- APPLICANTS LIST TABLE -->
+                    <div class="dashboard-section-card">
+                        <div class="section-header-title">
+                            <h2>
+                                {% if selected_job %}
+                                    Candidates for "{{ selected_job.title }}"
+                                {% else %}
+                                    All Candidates
+                                {% endif %}
+                            </h2>
+                        </div>
+
+                        {% if applications %}
+                            <div class="recruiter-table-wrapper">
+                                <table class="recruiter-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Applicant Name</th>
+                                            <th>Applied For</th>
+                                            <th>Applied Date</th>
+                                            <th>Resume</th>
+                                            <th>Status</th>
+                                            <th style="text-align: right;">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for app in applications %}
+                                            <tr>
+                                                <td>
+                                                   <span class="job-title-cell">{{ app.applicant.get_full_name|default:app.applicant.username }}</span>
+                                                    <span class="job-subtext">{{ app.applicant.email }}</span>
+                                                <td>
+                                                    <span style="font-weight: 600; color: #334155;">{{ app.job.title }}</span>
+                                                </td>
+                                                <td>{{ app.applied_at|date:"M d, Y" }}</td>
+                                                <td>
+                                                    {% if app.resume %}
+                                                        <a href="{{ app.resume.url }}" target="_blank" style="color: #6366f1; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                                                            <i class='bx bx-file'></i> View Resume
+                                                        </a>
+                                                    {% elif app.applicant.profile.resume %}
+                                                        <a href="{{ app.applicant.profile.resume.url }}" target="_blank" style="color: #6366f1; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                                                            <i class='bx bx-file'></i> View Profile Resume
+                                                        </a>
+                                                    {% else %}
+                                                        <span class="text-muted" style="font-size: 13px;">No resume attached</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if app.status == 'Pending' %}
+                                                        <span class="badge-pill" style="background: #fef3c7; color: #d97706;">Pending</span>
+                                                    {% elif app.status == 'Shortlisted' %}
+                                                        <span class="badge-pill" style="background: #dcfce7; color: #15803d;">Shortlisted</span>
+                                                    {% elif app.status == 'Rejected' %}
+                                                        <span class="badge-pill" style="background: #fee2e2; color: #b91c1c;">Rejected</span>
+                                                    {% else %}
+                                                        <span class="badge-pill badge-active">{{ app.status|default:"Applied" }}</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <!-- UPDATE STATUS FORM -->
+                                                    <form method="POST" action="{% url 'update_applicant_status' app.id %}" style="display: inline-flex; gap: 6px; justify-content: flex-end; width: 100%;">
+                                                        {% csrf_token %}
+                                                        <select name="status" style="padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px; font-weight: 500;">
+                                                            <option value="Pending" {% if app.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                                            <option value="Shortlisted" {% if app.status == 'Shortlisted' %}selected{% endif %}>Shortlist</option>
+                                                            <option value="Rejected" {% if app.status == 'Rejected' %}selected{% endif %}>Reject</option>
+                                                        </select>
+                                                        <button type="submit" class="btn-icon-action" title="Update Status" style="border: none; cursor: pointer; background: #6366f1; color: white; border-radius: 6px; padding: 4px 8px;">
+                                                            <i class='bx bx-check'></i>
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <!-- EMPTY STATE -->
+                            <div style="text-align: center; padding: 50px 20px;">
+                                <i class='bx bx-group' style="font-size: 55px; color: #9ca3af; margin-bottom: 12px;"></i>
+                                <h3 style="color: #374151; font-size: 18px; margin-bottom: 6px;">No applications found</h3>
+                                <p style="color: #6b7280; font-size: 14px;">There are no candidates for this selection yet.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive JS Scripts -->
+    <script src="{% static 'js/recruiter_dashboard.js' %}"></script>
+</body>
+</html>

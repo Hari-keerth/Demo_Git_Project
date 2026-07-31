@@ -50,6 +50,7 @@ class ProfileForm(forms.ModelForm):
           "address",
           "city",
           "country",
+          "profile_picture",
         ]
 
         widgets = {
@@ -90,5 +91,9 @@ class ProfileForm(forms.ModelForm):
             'country': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Enter Country'
+            }),
+            'profile_picture': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': 'image/*',
             }),
         }

@@ -1,95 +1,57 @@
 {% load static %}
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
 
-<head>
-
-    <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>AI Job Assistant</title>
 
-    <link rel="stylesheet"
-          href="{% static 'css/chatbot.css' %}">
+    <link rel="stylesheet" href="{% static 'css/chatbot.css' %}" />
+  </head>
 
-</head>
-
-<body>
-
+  <body>
     <!-- Floating Chat Button -->
 
-    <button id="chat-button">
-
-        💬
-
-    </button>
-
+    <button id="chat-button">💬</button>
 
     <!-- ===========================
             CHAT WIDGET
     ============================ -->
 
     <div class="chat-window">
-
-        <!-- ===========================
+      <!-- ===========================
                 HEADER
         ============================ -->
 
-        <div class="chat-header">
+      <div class="chat-header">
+        <div class="header-left">
+          <h2>AI Job Assistant</h2>
 
-            <div class="header-left">
-
-                <h2>AI Job Assistant</h2>
-
-                <p>🟢 Online</p>
-
-            </div>
-
-            <button id="close-chat">
-
-                ✕
-
-            </button>
-
+          <p>🟢 Online</p>
         </div>
 
+        <button id="close-chat">✕</button>
+      </div>
 
-
-        <!-- ===========================
+      <!-- ===========================
                 WELCOME
         ============================ -->
 
-        <div id="welcome-section">
+      <div id="welcome-section">
+        <h3>Welcome!</h3>
 
-            <h3>
+        <p>How can I help you today?</p>
 
-                 Welcome!
+        <div class="feature-list"></div>
+      </div>
 
-            </h3>
-
-            <p>
-
-                How can I help you today?
-
-            </p>
-
-            <div class="feature-list">
-
-                
-
-            </div>
-
-        </div>
-
-
-
-        <!-- ===========================
+      <!-- ===========================
             QUICK ACTIONS
         ============================ -->
 
-        <!-- <div id="quick-actions">
+      <!-- <div id="quick-actions">
 
             <button class="quick-btn">
 
@@ -111,53 +73,25 @@
 
         </div> -->
 
-
-
-        <!-- ===========================
+      <!-- ===========================
                 CHAT AREA
         ============================ -->
 
-        <div class="chat-body">
+      <div class="chat-body"></div>
 
-        </div>
-
-
-
-        <!-- ===========================
+      <!-- ===========================
                 INPUT AREA
         ============================ -->
 
-        <div class="chat-input">
+      <div class="chat-input">
+        <input type="text" id="question" placeholder="Ask me anything..." />
 
-            <input
-
-                type="text"
-
-                id="question"
-
-                placeholder="Ask me anything..."
-
-            >
-
-            <button class="chat-send">
-
-                ➜
-
-            </button>
-
-        </div>
-
+        <button class="chat-send">➜</button>
+      </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-    
-
-
-
-
     <script src="{% static 'js/chatbot.js' %}"></script>
-
-</body>
-
+  </body>
 </html>
