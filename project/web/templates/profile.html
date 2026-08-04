@@ -3,7 +3,6 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -15,8 +14,7 @@
     <link rel="stylesheet" href="{% static 'css/common.css' %}">
     <link rel="stylesheet" href="{% static 'css/layout.css' %}">
     <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
-    <link rel="stylesheet" href="{% static 'css/profile.css' %}?v=2">
-
+    <link rel="stylesheet" href="{% static 'css/profile.css' %}?v=7">
 </head>
 
 <body>
@@ -25,256 +23,242 @@
 
 <main class="main-content">
 
-    <div class="profile-wrapper">
+    <!-- Main Grid Shell -->
+    <div class="dashboard-grid">
 
-        <!-- ================= Header ================= -->
+        <!-- ================= LEFT COLUMN ================= -->
+        <div class="grid-col-left">
 
-        <div class="profile-header">
-
-            <!-- Professional Top Right Edit Profile Button -->
-            <a href="{% url 'edit_profile' %}" class="header-edit-btn">
-                <i class='bx bx-edit'></i> Edit Profile
-            </a>
-
-            <!-- Clean Profile Picture Container -->
-            <div class="profile-image-container">
-                {% if profile.profile_picture %}
-                    <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" id="current-profile-img">
-                {% else %}
-                    <div class="profile-image-fallback">
-                        <i class='bx bx-user'></i>
+            <!-- MAIN TOP BANNER -->
+            <div class="profile-banner-header">
+                <div class="banner-user-info">
+                    <div class="profile-avatar-container">
+                        {% if profile.profile_picture %}
+                            <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" id="current-profile-img">
+                        {% else %}
+                            <div class="profile-avatar-fallback">
+                                <i class='bx bx-user'></i>
+                            </div>
+                        {% endif %}
                     </div>
+                    <div class="profile-user-text">
+                        <h2>{% if profile.first_name %}{{ profile.first_name }} {{ profile.last_name }}{% else %}{{ profile.user }}{% endif %}</h2>
+                        {% if profile.headline %}
+                            <p class="profile-headline">{{ profile.headline }}</p>
+                        {% else %}
+                            <p class="profile-email">{{ profile.email }}</p>
+                        {% endif %}
+                        <span class="badge-active-banner">Active Member</span>
+                    </div>
+                </div>
+
+                <a href="{% url 'edit_profile' %}" class="banner-edit-btn">
+                    <i class='bx bx-edit'></i> Edit Profile
+                </a>
+            </div>
+
+            <!-- Side-by-Side: Personal Info (Left) & Location (Right) -->
+            <div class="sub-grid-2col">
+
+                <!-- Personal Information -->
+                <div class="dash-card">
+                    <div class="card-title">
+                        <i class='bx bx-id-card'></i>
+                        <h3>Personal Information</h3>
+                    </div>
+                    <div class="info-split-row">
+                        <div class="info-block labels">
+                            <span class="label">Username</span>
+                            <span class="label">Age</span>
+                            <span class="label">Phone</span>
+                            <span class="label">Member Since</span>
+                        </div>
+                        <div class="info-block values">
+                            <span class="value">{{ profile.user }}</span>
+                            <span class="value">{{ profile.age|default:"--" }}</span>
+                            <span class="value">{{ profile.phone|default:"Not specified" }}</span>
+                            <span class="value">{{ profile.creation_date|date:"d M Y" }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location -->
+                <div class="dash-card">
+                    <div class="card-title">
+                        <i class='bx bx-map-pin'></i>
+                        <h3>Location</h3>
+                    </div>
+                    <div class="info-split-row">
+                        <div class="info-block labels">
+                            <span class="label">Country</span>
+                            <span class="label">City</span>
+                            <span class="label">Address</span>
+                        </div>
+                        <div class="info-block values">
+                            <span class="value">{{ profile.country|default:"--" }}</span>
+                            <span class="value">{{ profile.city|default:"--" }}</span>
+                            <span class="value">{{ profile.address|default:"--" }}</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Professional Details Section -->
+            <div class="dash-card">
+                <div class="card-title">
+                    <i class='bx bx-briefcase'></i>
+                    <h3>Professional Details</h3>
+                </div>
+                <div class="info-split-row">
+                    <div class="info-block labels">
+                        <span class="label">Education</span>
+                        <span class="label">Experience Level</span>
+                        {% if profile.experience_level != "fresher" and profile.years_of_experience %}
+                            <span class="label">Years of Experience</span>
+                        {% endif %}
+                    </div>
+                    <div class="info-block values">
+                        <span class="value">{{ profile.education|default:"Not specified" }}</span>
+                        <span class="value">{{ profile.experience_level|capfirst|default:"Fresher" }}</span>
+                        {% if profile.experience_level != "fresher" and profile.years_of_experience %}
+                            <span class="value">{{ profile.years_of_experience }} Year(s)</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- About / Bio Section -->
+            {% if profile.bio %}
+            <div class="dash-card">
+                <div class="card-title">
+                    <i class='bx bx-detail'></i>
+                    <h3>About / Summary</h3>
+                </div>
+                <p class="profile-bio-text">{{ profile.bio }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Skills & Expertise -->
+            <div class="dash-card">
+                <div class="card-title-between">
+                    <div class="card-title">
+                        <i class='bx bx-code-alt'></i>
+                        <h3>Skills & Expertise</h3>
+                    </div>
+                    <a href="{% url 'edit_skills' %}" class="link-btn">
+                        <i class='bx bx-edit'></i> Edit Skills
+                    </a>
+                </div>
+
+                {% if skills %}
+                <div class="skills-categorized-grid">
+
+                    <!-- Technical Skills -->
+                    <div class="skill-category-box">
+                        <span class="cat-title"><i class='bx bx-chip'></i> Technical Skills</span>
+                        <div class="skill-tags">
+                            {% for skill in skills.technical_skills %}
+                                <span class="skill-pill">{{ skill }}</span>
+                            {% empty %}
+                                <span class="no-skill">None</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Frameworks -->
+                    <div class="skill-category-box">
+                        <span class="cat-title"><i class='bx bx-layer'></i> Frameworks</span>
+                        <div class="skill-tags">
+                            {% for skill in skills.frameworks %}
+                                <span class="skill-pill light">{{ skill }}</span>
+                            {% empty %}
+                                <span class="no-skill">None</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Tools -->
+                    <div class="skill-category-box">
+                        <span class="cat-title"><i class='bx bx-wrench'></i> Tools</span>
+                        <div class="skill-tags">
+                            {% for skill in skills.tools %}
+                                <span class="skill-pill border">{{ skill }}</span>
+                            {% empty %}
+                                <span class="no-skill">None</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Databases -->
+                    <div class="skill-category-box">
+                        <span class="cat-title"><i class='bx bx-data'></i> Databases</span>
+                        <div class="skill-tags">
+                            {% for skill in skills.databases %}
+                                <span class="skill-pill border">{{ skill }}</span>
+                            {% empty %}
+                                <span class="no-skill">None</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Cloud -->
+                    <div class="skill-category-box">
+                        <span class="cat-title"><i class='bx bx-cloud'></i> Cloud</span>
+                        <div class="skill-tags">
+                            {% for skill in skills.cloud_skills %}
+                                <span class="skill-pill light">{{ skill }}</span>
+                            {% empty %}
+                                <span class="no-skill">None</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Soft Skills -->
+                    <div class="skill-category-box">
+                        <span class="cat-title"><i class='bx bx-group'></i> Soft Skills</span>
+                        <div class="skill-tags">
+                            {% for skill in skills.soft_skills %}
+                                <span class="skill-pill gray">{{ skill }}</span>
+                            {% empty %}
+                                <span class="no-skill">None</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                </div>
+                {% else %}
+                <p class="no-data">Upload your resume to automatically extract and populate skills.</p>
                 {% endif %}
             </div>
 
-            <!-- Full Name Display -->
-            <h2>
-                {% if profile.first_name %}{{ profile.first_name }} {{ profile.last_name }}{% else %}{{ profile.user }}{% endif %}
-            </h2>
-
-            <p class="profile-email">
-                {{ profile.email }}
-            </p>
-
-            <span class="status">
-                Active Member
-            </span>
-
         </div>
 
-        <!-- ================= Personal Information ================= -->
+        <!-- ================= RIGHT COLUMN ================= -->
+        <div class="grid-col-right">
 
-        <div class="profile-section">
-
-            <h3>
-                <i class='bx bx-id-card'></i>
-                Personal Information
-            </h3>
-
-            <div class="profile-info">
-
-                <div class="profile-item">
-                    <label>Username</label>
-                    <p>{{ profile.user }}</p>
-                </div>
-
-                <div class="profile-item">
-                    <label>Age</label>
-                    <p>{{ profile.age|default:"--" }}</p>
-                </div>
-
-                <div class="profile-item">
-                    <label>Email</label>
-                    <p>{{ profile.email }}</p>
-                </div>
-
-                <div class="profile-item">
-                    <label>Phone Number</label>
-                    <p>{{ profile.phone|default:"Not specified" }}</p>
-                </div>
-
-                <div class="profile-item">
-                    <label>Address</label>
-                    <p>{{ profile.address|default:"--" }}</p>
-                </div>
-
-                <div class="profile-item">
-                    <label>City</label>
-                    <p>{{ profile.city|default:"--" }}</p>
-                </div>
-
-                <div class="profile-item">
-                    <label>Country</label>
-                    <p>{{ profile.country|default:"--" }}</p>
-                </div>
-
-                <div class="profile-item">
-                    <label>Member Since</label>
-                    <p>{{ profile.creation_date|date:"d M Y" }}</p>
-                </div>
-
-            </div>
-
-        </div>
-
-        <!-- ================= Resume Skills ================= -->
-
-        <div class="profile-card">
-
-            <div class="card-header">
-                <div>
-                    <h3>
-                        <i class='bx bx-upload'></i>
-                        Resume Skills
-                    </h3>
-                    <p class="resume-text">
-                        Upload your latest resume to automatically extract your skills.
-                    </p>
-                </div>
-            </div>
-
-            <form
-                method="POST"
-                enctype="multipart/form-data"
-                action="{% url 'extract_skills' %}"
-                class="resume-form">
-
-                {% csrf_token %}
-
-                <input
-                    type="file"
-                    id="resume"
-                    name="resume"
-                    accept=".pdf"
-                    hidden
-                    required>
-
-                <label for="resume" class="upload-btn">
+            <!-- Resume Skills Card -->
+            <div class="dash-card">
+                <div class="card-title">
                     <i class='bx bx-file'></i>
-                    Choose Resume
-                </label>
+                    <h3>Resume Skills</h3>
+                </div>
+                <p class="resume-subtext">Upload your latest resume (PDF) to auto-extract skills.</p>
 
-                <span id="file-name">
-                    No file selected
-                </span>
+                <form method="POST" enctype="multipart/form-data" action="{% url 'extract_skills' %}" class="resume-form-compact">
+                    {% csrf_token %}
+                    <input type="file" id="resume" name="resume" accept=".pdf" hidden required>
+                    
+                    <label for="resume" class="dropzone-label">
+                        <i class='bx bx-cloud-upload'></i>
+                        <span id="file-name">Choose PDF File</span>
+                    </label>
 
-                <button type="submit" class="extract-btn">
-                    <i class='bx bx-upload'></i>
-                    Extract Skills
-                </button>
-
-            </form>
-
-        </div>
-
-        <!-- ================= Skills ================= -->
-
-        <div class="profile-card">
-
-            <div class="skills-header">
-                <h3>
-                    <i class='bx bx-code-alt'></i>
-                    Your Skills
-                </h3>
+                    <button type="submit" class="btn-extract-full">
+                        <i class='bx bx-upload'></i> Extract Skills
+                    </button>
+                </form>
             </div>
-
-            {% if skills %}
-
-            <div class="skills-grid">
-
-                <!-- Technical Skills -->
-                <div class="skill-box">
-                    <h4><i class='bx bx-chip'></i> Technical Skills</h4>
-                    <div class="skill-tags">
-                        {% for skill in skills.technical_skills %}
-                        <span class="skill-tag">{{ skill }}</span>
-                        {% empty %}
-                        <span class="no-skill">No technical skills</span>
-                        {% endfor %}
-                    </div>
-                </div>
-
-                <!-- Frameworks -->
-                <div class="skill-box">
-                    <h4><i class='bx bx-layer'></i> Frameworks</h4>
-                    <div class="skill-tags">
-                        {% for skill in skills.frameworks %}
-                        <span class="skill-tag">{{ skill }}</span>
-                        {% empty %}
-                        <span class="no-skill">No frameworks</span>
-                        {% endfor %}
-                    </div>
-                </div>
-
-                <!-- Tools -->
-                <div class="skill-box">
-                    <h4><i class='bx bx-wrench'></i> Tools</h4>
-                    <div class="skill-tags">
-                        {% for skill in skills.tools %}
-                        <span class="skill-tag">{{ skill }}</span>
-                        {% empty %}
-                        <span class="no-skill">No tools</span>
-                        {% endfor %}
-                    </div>
-                </div>
-
-                <!-- Databases -->
-                <div class="skill-box">
-                    <h4><i class='bx bx-data'></i> Databases</h4>
-                    <div class="skill-tags">
-                        {% for skill in skills.databases %}
-                        <span class="skill-tag">{{ skill }}</span>
-                        {% empty %}
-                        <span class="no-skill">No databases</span>
-                        {% endfor %}
-                    </div>
-                </div>
-
-                <!-- Cloud -->
-                <div class="skill-box">
-                    <h4><i class='bx bx-cloud'></i> Cloud Skills</h4>
-                    <div class="skill-tags">
-                        {% for skill in skills.cloud_skills %}
-                        <span class="skill-tag">{{ skill }}</span>
-                        {% empty %}
-                        <span class="no-skill">No cloud skills</span>
-                        {% endfor %}
-                    </div>
-                </div>
-
-                <!-- Soft Skills -->
-                <div class="skill-box">
-                    <h4><i class='bx bx-group'></i> Soft Skills</h4>
-                    <div class="skill-tags">
-                        {% for skill in skills.soft_skills %}
-                        <span class="skill-tag">{{ skill }}</span>
-                        {% empty %}
-                        <span class="no-skill">No soft skills</span>
-                        {% endfor %}
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="skill-actions">
-                <div class="profile-buttons">
-                    <a href="{% url 'edit_skills' %}" class="btn-primary">
-                        <i class='bx bx-edit'></i>
-                        Edit Skills
-                    </a>
-                </div>
-            </div>
-
-            {% else %}
-
-            <div class="empty-state">
-                <i class='bx bx-file'></i>
-                <p>
-                    Upload your resume to automatically extract your skills.
-                </p>
-            </div>
-
-            {% endif %}
 
         </div>
 

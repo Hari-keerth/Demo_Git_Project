@@ -388,66 +388,34 @@ def profile(request):
 
 @login_required
 def edit_profile(request):
-
-    profile = Profile.objects.get(user=request.user)
+    profile_obj = Profile.objects.get(user=request.user)
 
     if request.method == "POST":
         action = request.POST.get("action")
 
-        # Handle Delete Action
         if action == "delete":
-            if profile.image:
-                profile.image.delete(save=False)
-                profile.image = None
-                profile.save()
+            if profile_obj.profile_picture:
+                profile_obj.profile_picture.delete(save=False)
+                profile_obj.profile_picture = None
+                profile_obj.save()
                 messages.success(request, "Profile picture deleted.")
             return redirect("profile")
 
-        form = ProfileForm(
-
-            request.POST,
-
-            request.FILES,
-
-            instance=profile
-
-        )
-
+        form = ProfileForm(request.POST, request.FILES, instance=profile_obj)
         if form.is_valid():
-
             form.save()
+            user = request.user
+            user.first_name = form.cleaned_data.get('first_name', user.first_name)
+            user.last_name = form.cleaned_data.get('last_name', user.last_name)
+            user.email = form.cleaned_data.get('email', user.email)
+            user.save()
 
-            messages.success(
-
-                request,
-
-                "Profile updated successfully."
-
-            )
-
+            messages.success(request, "Profile updated successfully.")
             return redirect("profile")
-
     else:
+        form = ProfileForm(instance=profile_obj)
 
-        form = ProfileForm(
-
-            instance=profile
-
-        )
-
-    return render(
-
-        request,
-
-        "edit_profile.html",
-
-        {
-
-            "form": form
-
-        }
-
-    )
+    return render(request, "edit_profile.html", {"form": form, "profile": profile_obj})
 
 #-----chatbot---
 
@@ -959,131 +927,46 @@ def calculate_ats_score(request):
 @login_required
 @require_POST
 def extract_skills(request):
-
     resume = request.FILES.get("resume")
-
     if not resume:
-
-        messages.error(
-            request,
-            "Please upload a resume."
-        )
-
+        messages.error(request, "Please upload a resume.")
         return redirect("profile")
 
     try:
-
-        resume_text = extract_resume_text(
-            resume
-        )
-
-        resume_json = parse_resume(
-            resume_text
-        )
-
-        save_user_skills(
-            request.user,
-            resume_json
-        )
-
-        messages.success(
-            request,
-            "Skills extracted successfully."
-        )
-
+        resume_text = extract_resume_text(resume)
+        resume_json = parse_resume(resume_text)
+        save_user_skills(request.user, resume_json)
+        messages.success(request, "Skills extracted successfully.")
     except Exception as e:
-
-        messages.error(
-            request,
-            str(e)
-        )
+        messages.error(request, f"Failed to extract skills: {str(e)}")
 
     return redirect("profile")
 
 
+
+
 @login_required
 def edit_skills(request):
-
-    profile = Profile.objects.get(user=request.user)
-
-    skill_profile, created = UserSkillProfile.objects.get_or_create(
-        profile=profile
-    )
+    profile_obj = Profile.objects.get(user=request.user)
+    skill_profile, _ = UserSkillProfile.objects.get_or_create(profile=profile_obj)
 
     if request.method == "POST":
+        def parse_skills(key):
+            raw = request.POST.get(key, "")
+            return [s.strip() for s in raw.split(",") if s.strip()]
 
-        skill_profile.technical_skills = [
-            skill.strip()
-            for skill in request.POST.get(
-                "technical_skills",
-                ""
-            ).split(",")
-            if skill.strip()
-        ]
-
-        skill_profile.frameworks = [
-            skill.strip()
-            for skill in request.POST.get(
-                "frameworks",
-                ""
-            ).split(",")
-            if skill.strip()
-        ]
-
-        skill_profile.tools = [
-            skill.strip()
-            for skill in request.POST.get(
-                "tools",
-                ""
-            ).split(",")
-            if skill.strip()
-        ]
-
-        skill_profile.databases = [
-            skill.strip()
-            for skill in request.POST.get(
-                "databases",
-                ""
-            ).split(",")
-            if skill.strip()
-        ]
-
-        skill_profile.cloud_skills = [
-            skill.strip()
-            for skill in request.POST.get(
-                "cloud_skills",
-                ""
-            ).split(",")
-            if skill.strip()
-        ]
-
-        skill_profile.soft_skills = [
-            skill.strip()
-            for skill in request.POST.get(
-                "soft_skills",
-                ""
-            ).split(",")
-            if skill.strip()
-        ]
-
+        skill_profile.technical_skills = parse_skills("technical_skills")
+        skill_profile.frameworks = parse_skills("frameworks")
+        skill_profile.tools = parse_skills("tools")
+        skill_profile.databases = parse_skills("databases")
+        skill_profile.cloud_skills = parse_skills("cloud_skills")
+        skill_profile.soft_skills = parse_skills("soft_skills")
         skill_profile.save()
 
-        messages.success(
-            request,
-            "Skills updated successfully."
-        )
-
+        messages.success(request, "Skills updated successfully.")
         return redirect("profile")
 
-    context = {
-        "skills": skill_profile
-    }
-
-    return render(
-        request,
-        "edit_skills.html",
-        context
-    )
+    return render(request, "edit_skills.html", {"skills": skill_profile})
 
 
 # ==========================================================
