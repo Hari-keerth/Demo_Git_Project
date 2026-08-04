@@ -17,6 +17,11 @@
   <link rel="stylesheet" href="{% static 'css/layout.css' %}">
   <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
   <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+  <link rel="stylesheet"
+          href="{% static 'css/chatbot.css' %}">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   
   <style>
     .modal-overlay {
@@ -213,7 +218,7 @@
 </head>
 
 <body>
-
+{% include "chatbot.html" %}
 {% include "navbar.html" with active_page="dashboard" %}
 
     <main class="main-content">
@@ -503,6 +508,7 @@
     });
   });
 </script>
-
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="{% static 'js/chatbot.js' %}"></script>
 </body>
 </html>

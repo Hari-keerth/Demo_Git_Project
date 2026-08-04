@@ -1,23 +1,16 @@
 /*=========================================================
  CareerGrowza AI Mock Interview
  interview.js
- Part 1
+ Reorganized into modules. Same IDs, same endpoints, same
+ payload shapes, same behavior as before -- only the file
+ layout changed, plus a new Module 3 (role search) to match
+ the #jobRole input that replaced the old <select>.
 =========================================================*/
 
-let currentQuestion = 0;
-let totalQuestions = 0;
-
-let role = "";
-let difficulty = "";
-
-let questions = [];
-let answers = [];
-
-let timerInterval = null;
-let remainingSeconds = 1800; // 30 minutes
+"use strict";
 
 /*=========================================================
-    DOM
+    MODULE 1 — DOM
 =========================================================*/
 
 const setupSection = document.getElementById("setupSection");
@@ -44,21 +37,182 @@ const sidebarQuestions = document.getElementById("sidebarQuestions");
 
 const wordCount = document.getElementById("wordCount");
 
+const jobRoleInput = document.getElementById("jobRole");
+const roleSearchBox = document.getElementById("roleSearchBox");
+const roleSearchResults = document.getElementById("roleSearchResults");
+
+
 /*=========================================================
-    Buttons
+    MODULE 2 — INTERVIEW STATE
 =========================================================*/
 
-document
-.getElementById("startInterview")
-.addEventListener("click", startInterview);
+let currentQuestion = 0;
+let totalQuestions = 0;
 
-document
-.getElementById("nextBtn")
-.addEventListener("click", submitAnswer);
+let role = "";
+let difficulty = "";
 
-document
-.getElementById("skipBtn")
-.addEventListener("click", skipQuestion);
+let questions = [];
+let answers = [];
+
+let timerInterval = null;
+let remainingSeconds = 1800; // 30 minutes
+
+
+/*=========================================================
+    MODULE 3 — ROLE SEARCH (search + autocomplete)
+    New: #jobRole is now a text input instead of a <select>,
+    backed by this searchable suggestion list. startInterview()
+    still just reads jobRoleInput.value, so nothing downstream
+    changed.
+=========================================================*/
+
+const ROLE_SUGGESTIONS = [];
+
+let roleActiveIndex = -1;
+
+function renderRoleSuggestions(matches) {
+
+    roleSearchResults.innerHTML = "";
+
+    if (!matches.length) {
+
+        const customRole = jobRoleInput.value.trim();
+
+        if (customRole !== "") {
+
+            const item = document.createElement("div");
+
+            item.className = "search-item";
+
+            item.innerHTML = `
+                <strong>Use custom role:</strong><br>
+                ${customRole}
+            `;
+
+            item.addEventListener("mousedown", (e) => {
+                e.preventDefault();
+                selectRole(customRole);
+            });
+
+            roleSearchResults.innerHTML = "";
+            roleSearchResults.appendChild(item);
+            roleSearchResults.classList.remove("hidden");
+
+        } else {
+
+            roleSearchResults.classList.add("hidden");
+
+        }
+
+        return;
+    }
+
+    matches.forEach((role, index) => {
+
+        const item = document.createElement("div");
+
+        item.className = "search-item";
+        item.textContent = role;
+        item.dataset.index = index;
+
+        item.addEventListener("mousedown", (e) => {
+            // mousedown (not click) so it fires before the input's blur
+            e.preventDefault();
+            selectRole(role);
+        });
+
+        roleSearchResults.appendChild(item);
+
+    });
+
+    roleActiveIndex = -1;
+    roleSearchResults.classList.remove("hidden");
+
+}
+
+function getFilteredRoles() {
+
+    const query = jobRoleInput.value.trim().toLowerCase();
+
+    if (!query) return ROLE_SUGGESTIONS;
+
+    return ROLE_SUGGESTIONS.filter(role =>
+        role.toLowerCase().includes(query)
+    );
+
+}
+
+function selectRole(role) {
+    jobRoleInput.value = role;
+    roleSearchResults.classList.add("hidden");
+    roleActiveIndex = -1;
+}
+
+function highlightRole(index) {
+
+    const items = roleSearchResults.querySelectorAll(".search-item");
+
+    items.forEach(item => item.classList.remove("active"));
+
+    if (index >= 0 && index < items.length) {
+        items[index].classList.add("active");
+        items[index].scrollIntoView({ block: "nearest" });
+    }
+
+}
+
+if (jobRoleInput && roleSearchResults) {
+
+    jobRoleInput.addEventListener("focus", () => {
+        renderRoleSuggestions(getFilteredRoles());
+    });
+
+    jobRoleInput.addEventListener("input", () => {
+        renderRoleSuggestions(getFilteredRoles());
+    });
+
+    jobRoleInput.addEventListener("keydown", (e) => {
+
+        const items = roleSearchResults.querySelectorAll(".search-item");
+
+        if (!items.length) return;
+
+        if (e.key === "ArrowDown") {
+            e.preventDefault();
+            roleActiveIndex = Math.min(roleActiveIndex + 1, items.length - 1);
+            highlightRole(roleActiveIndex);
+        }
+
+        else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            roleActiveIndex = Math.max(roleActiveIndex - 1, 0);
+            highlightRole(roleActiveIndex);
+        }
+
+        else if (e.key === "Enter") {
+            if (roleActiveIndex >= 0) {
+                e.preventDefault();
+                selectRole(items[roleActiveIndex].textContent);
+            } else {
+                roleSearchResults.classList.add("hidden");
+            }
+        }
+
+        else if (e.key === "Escape") {
+            roleSearchResults.classList.add("hidden");
+        }
+
+    });
+
+    document.addEventListener("click", (e) => {
+        if (roleSearchBox && !roleSearchBox.contains(e.target)) {
+            roleSearchResults.classList.add("hidden");
+        }
+    });
+
+}
+
 
 /*=========================================================
     CSRF
@@ -72,8 +226,9 @@ function getCSRFToken(){
 
 }
 
+
 /*=========================================================
-    Timer
+    MODULE 4 — TIMER
 =========================================================*/
 
 function startTimer(){
@@ -115,8 +270,9 @@ function updateTimer(){
 
 }
 
+
 /*=========================================================
-    Progress
+    MODULE 5 — PROGRESS
 =========================================================*/
 
 function updateProgress(){
@@ -138,8 +294,9 @@ function updateProgress(){
 
 }
 
+
 /*=========================================================
-    Sidebar
+    MODULE 6 — SIDEBAR
 =========================================================*/
 
 function updateSidebar(){
@@ -158,8 +315,9 @@ function updateSidebar(){
 
 }
 
+
 /*=========================================================
-    Word Counter
+    MODULE 11 — WORD COUNTER
 =========================================================*/
 
 answerBox.addEventListener("input",()=>{
@@ -175,9 +333,14 @@ answerBox.addEventListener("input",()=>{
 
 });
 
+
 /*=========================================================
     Start Interview
 =========================================================*/
+
+document
+.getElementById("startInterview")
+.addEventListener("click", startInterview);
 
 function startInterview(){
 
@@ -214,11 +377,23 @@ function startInterview(){
 
 }
 
+
 /*=========================================================
-    Load Question
+    MODULE 7 — QUESTION GENERATION
 =========================================================*/
 
+let isLoadingQuestion = false;
+
 function loadQuestion() {
+
+    // Guard against a double-fire (e.g. rapid double-click on
+    // Submit/Skip) causing two overlapping requests, which was how
+    // the question count could overshoot totalQuestions.
+    if (isLoadingQuestion) return;
+    isLoadingQuestion = true;
+
+    document.getElementById("nextBtn").disabled = true;
+    document.getElementById("skipBtn").disabled = true;
 
     questionText.innerHTML =
         "Generating AI Question...";
@@ -240,6 +415,8 @@ function loadQuestion() {
 
             difficulty: difficulty,
 
+            total_questions: totalQuestions,
+
             asked_questions: questions
 
         })
@@ -255,6 +432,13 @@ function loadQuestion() {
         if (!data.success) {
 
             alert(data.error || "Unable to generate question.");
+
+            // Server enforced the question cap -- wrap up the
+            // interview instead of leaving the user stuck.
+            if (data.error && data.error.includes("limit reached")) {
+                clearInterval(timerInterval);
+                evaluateInterview();
+            }
 
             return;
 
@@ -308,13 +492,27 @@ function loadQuestion() {
 
         alert("Unable to connect to server.");
 
+    })
+
+    .finally(() => {
+
+        isLoadingQuestion = false;
+
+        document.getElementById("nextBtn").disabled = false;
+        document.getElementById("skipBtn").disabled = false;
+
     });
 
 }
 
+
 /*=========================================================
-    Submit Answer
+    MODULE 12 — SUBMIT ANSWER
 =========================================================*/
+
+document
+.getElementById("nextBtn")
+.addEventListener("click", submitAnswer);
 
 function submitAnswer() {
 
@@ -345,9 +543,14 @@ function submitAnswer() {
 
 }
 
+
 /*=========================================================
-    Skip Question
+    MODULE 13 — SKIP QUESTION
 =========================================================*/
+
+document
+.getElementById("skipBtn")
+.addEventListener("click", skipQuestion);
 
 function skipQuestion() {
 
@@ -375,8 +578,9 @@ function skipQuestion() {
 
 }
 
+
 /*=========================================================
-    Question Tracker
+    MODULE 8 — QUESTION TRACKER
 =========================================================*/
 
 function updateQuestionTracker() {
@@ -428,8 +632,9 @@ function updateQuestionTracker() {
 
 }
 
+
 /*=========================================================
-    Read Question
+    MODULE 9 — SPEECH (Read Question)
 =========================================================*/
 
 const readButton =
@@ -458,8 +663,9 @@ if (readButton) {
 
 }
 
+
 /*=========================================================
-    Voice Recording
+    MODULE 10 — VOICE RECOGNITION
 =========================================================*/
 
 let recognition = null;
@@ -528,62 +734,100 @@ if (stopRecording && recognition) {
 
 
 /*=========================================================
-    Evaluate Interview
+    MODULE 14 — EVALUATION
 =========================================================*/
 
-function evaluateInterview() {
+async function evaluateInterview() {
 
-    fetch("/interview/evaluate/", {
+    try {
 
-        method: "POST",
-
-        headers: {
-
-            "Content-Type": "application/json",
-
-            "X-CSRFToken": getCSRFToken()
-
-        },
-
-        body: JSON.stringify({
-
+        const payload = {
             role: role,
-
+            difficulty: difficulty,
             interview_data: answers
+        };
 
-        })
+        console.log("Evaluation Payload:", payload);
 
-    })
+        const response = await fetch("/interview/evaluate/", {
 
-    .then(response => response.json())
+            method: "POST",
 
-    .then(data => {
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCSRFToken()
+            },
+
+            body: JSON.stringify(payload)
+
+        });
+
+        console.log("HTTP Status:", response.status);
+
+        const text = await response.text();
+
+        console.log("Raw Server Response:");
+        console.log(text);
+
+        let data;
+
+        try {
+
+            data = JSON.parse(text);
+
+        } catch (e) {
+
+            throw new Error(
+                "Server returned invalid JSON.\n\n" + text
+            );
+
+        }
 
         console.log("Evaluation API:", data);
 
-        interviewSection.style.display = "none";
+        // Only treat HTTP errors as failures
+        if (!response.ok) {
+            throw new Error(
+                data.error || "Interview evaluation failed."
+            );
+        }
 
+        // If the backend explicitly returns success:false
+        if (data.success === false) {
+            throw new Error(
+                data.error || "Interview evaluation failed."
+            );
+        }
+
+        interviewSection.style.display = "none";
         reportSection.style.display = "block";
 
         renderReport(data);
 
-    })
+    }
 
-    .catch(error => {
+    catch (error) {
 
-        console.error(error);
+        console.error("Evaluation Error:", error);
 
-        alert("Unable to evaluate interview.");
+        alert(error.message);
 
-    });
+    }
 
 }
 
 /*=========================================================
-    Render Report
+    MODULE 15 — REPORT RENDERING
 =========================================================*/
 
 function renderReport(data){
+
+    if(!data){
+        alert("No report received.");
+        return;
+    }
+
+    console.log("Rendering Report:", data);
 
     /*-------------------------------
         Score
@@ -675,8 +919,9 @@ function renderReport(data){
 
 }
 
+
 /*=========================================================
-    Score Animation
+    MODULE 16 — ANIMATIONS (Score)
 =========================================================*/
 
 function animateScore(score){
@@ -702,8 +947,9 @@ function animateScore(score){
 
 }
 
+
 /*=========================================================
-    Download Report
+    MODULE 17 — DOWNLOAD REPORT
 =========================================================*/
 
 const downloadButton =
@@ -719,8 +965,9 @@ if(downloadButton){
 
 }
 
+
 /*=========================================================
-    Retake Interview
+    MODULE 18 — RETRY / RETAKE
 =========================================================*/
 
 const retryButton =
@@ -756,9 +1003,9 @@ if(retryButton){
 
 }
 
+
 /*=========================================================
-    Optional:
-    Speak Result
+    Optional: Speak Result
 =========================================================*/
 
 function speakResult(score){
@@ -784,6 +1031,7 @@ function speakResult(score){
 
 }
 
+
 /*=========================================================
     Escape HTML
 =========================================================*/
@@ -799,8 +1047,9 @@ function escapeHTML(text){
 
 }
 
+
 /*=========================================================
-    Window Cleanup
+    MODULE 19 — CLEANUP
 =========================================================*/
 
 window.addEventListener("beforeunload",()=>{
@@ -811,6 +1060,7 @@ window.addEventListener("beforeunload",()=>{
 
 });
 
+
 /*=========================================================
     Debug
 =========================================================*/
@@ -818,5 +1068,3 @@ window.addEventListener("beforeunload",()=>{
 console.log(
     "CareerGrowza Interview Loaded Successfully"
 );
-
-

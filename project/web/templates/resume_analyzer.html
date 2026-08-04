@@ -24,9 +24,17 @@
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
       rel="stylesheet"
     />
+    <link rel="stylesheet"
+          href="{% static 'css/chatbot.css' %}">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
   </head>
 
   <body>
+    {% include "chatbot.html" %}
+
     {% include "navbar.html" with active_page="resume-analyzer" %}
 
     <main class="main-content">
@@ -162,5 +170,7 @@
 
     <script src="{% static 'js/ats.js' %}"></script>
     <script src="{% static 'js/sidebar.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="{% static 'js/chatbot.js' %}"></script>
   </body>
 </html>

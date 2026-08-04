@@ -1,0 +1,679 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- ==========================================
+                    META
+    =========================================== -->
+
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>CareerGrowza | AI Email Agent</title>
+
+    <!-- ==========================================
+                    FAVICON
+    =========================================== -->
+
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="128x128"
+      href="{% static 'images/favicon/CareerGrowza_Favicon.png' %}"
+    />
+
+    <link
+      rel="shortcut icon"
+      href="{% static 'images/favicon/favicon.ico' %}"
+    />
+
+    <!-- ==========================================
+                    GOOGLE FONT
+    =========================================== -->
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- ==========================================
+                    BOXICONS
+    =========================================== -->
+
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+    />
+
+    <!-- ==========================================
+                    CSS
+    =========================================== -->
+
+    <link rel="stylesheet" href="{% static 'css/common.css' %}" />
+
+    <link rel="stylesheet" href="{% static 'css/layout.css' %}" />
+
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}" />
+
+    <link rel="stylesheet" href="{% static 'css/ai_mail.css' %}" />
+
+    <link rel="stylesheet"
+          href="{% static 'css/chatbot.css' %}">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  </head>
+
+  <body>
+    {% include "chatbot.html" %}
+
+    {% include "navbar.html" with active_page="ai_email" %}
+
+    <!-- ==========================================
+                    MAIN CONTENT
+        =========================================== -->
+
+    <main class="main-content">
+      <div class="ai-wrapper">
+        <div class="ai-page">
+          <!-- ==================================
+                        AI HEADER
+              =================================== -->
+
+          <header class="ai-header">
+            <div class="ai-header-content">
+              <h1>
+                <i class="bx bx-bot"></i>
+
+                AI Email Agent
+              </h1>
+
+              <p>
+                Upload your resume, provide a job description, and let the
+                AI generate a professional email and cover letter tailored
+                for the position.
+              </p>
+            </div>
+
+            <div class="ai-status">
+              <i class="bx bx-radio-circle-marker"></i>
+
+              AI Agent Ready
+            </div>
+          </header>
+
+          <!-- ==================================
+                        AGENT LAYOUT
+              =================================== -->
+
+          <div class="agent-layout">
+            <!-- ================================
+                            LEFT COLUMN
+                ================================= -->
+
+            <section class="agent-left">
+              <!-- ==============================
+                                INPUT CARD
+                  =============================== -->
+
+              <div class="agent-card">
+                <div class="agent-card-header">
+                  <h2 class="agent-card-title">
+                    <i class="bx bx-edit-alt"></i>
+
+                    Application Details
+                  </h2>
+
+                  <p class="agent-card-subtitle">
+                    Fill in the details below and let the AI Agent build
+                    your email and cover letter.
+                  </p>
+                </div>
+
+                <form id="agentForm" enctype="multipart/form-data">
+                  {% csrf_token %}
+
+                  <!-- ==========================
+                                    RESUME UPLOAD
+                      =========================== -->
+
+                  <div class="upload-card">
+                    <label for="resume" class="upload-box">
+                      <i class="bx bx-cloud-upload upload-icon"></i>
+
+                      <span class="upload-title"> Upload Your Resume </span>
+
+                      <span class="upload-subtitle">
+                        Click to browse or drag &amp; drop your file here
+                      </span>
+
+                      <small> Supported format: PDF (Max 5 MB) </small>
+
+                      <input
+                        type="file"
+                        id="resume"
+                        accept=".pdf,application/pdf"
+                        required
+                      />
+                    </label>
+
+                    <div class="file-preview" id="resumeFilePreview">
+                      <span class="empty-state"> No file selected yet </span>
+                    </div>
+                  </div>
+
+                  <!-- ==========================
+                                    JOB DESCRIPTION
+                      =========================== -->
+
+                  <div class="job-card">
+                    <label for="jobDescription"> Job Description </label>
+
+                    <textarea
+                      id="jobDescription"
+                      rows="16"
+                      placeholder="Paste the complete job description here..."
+                      required
+                    ></textarea>
+                  </div>
+
+                  <!-- ==========================
+                                    RECRUITER EMAIL
+                      =========================== -->
+
+                  <div class="email-section">
+                    <label for="email"> Recruiter Email </label>
+
+                    <input
+                      type="email"
+                      id="email"
+                      placeholder="recruiter@company.com"
+                      required
+                    />
+                  </div>
+
+                  <!-- ==========================
+                                    ACTION BUTTONS
+                      =========================== -->
+
+                  <div class="agent-actions">
+                    <button type="button" id="generateBtn">
+                      <i class="bx bx-play-circle"></i>
+
+                      Generate
+                    </button>
+
+                    <button type="button" id="sendBtn">
+                      <i class="bx bx-send"></i>
+
+                      Send Email
+                    </button>
+
+                    <button type="button" id="generateSendBtn">
+                      <i class="bx bx-paper-plane"></i>
+
+                      Generate &amp; Send
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- ==============================
+                                GENERATED EMAIL
+                  =============================== -->
+
+              <div class="output-card">
+                <div class="output-header">
+                  <h2>
+                    <i class="bx bx-envelope"></i>
+
+                    Generated Email
+                  </h2>
+
+                  <div class="output-toolbar">
+                    <button type="button" id="copySubject">
+                      <i class="bx bx-copy"></i>
+
+                      Copy Subject
+                    </button>
+
+                    <button type="button" id="copyEmail">
+                      <i class="bx bx-copy"></i>
+
+                      Copy Email
+                    </button>
+                  </div>
+                </div>
+
+                <div class="output-body">
+                  <div class="form-group">
+                    <label for="subject"> Email Subject </label>
+
+                    <input
+                      type="text"
+                      id="subject"
+                      class="editable-field"
+                      placeholder="Generated email subject..."
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="emailBody"> Email Body </label>
+
+                    <textarea
+                      id="emailBody"
+                      rows="12"
+                      class="editable-field"
+                      placeholder="Generated email will appear here..."
+                    ></textarea>
+                  </div>
+                </div>
+
+                <div class="output-footer">
+                  <span class="empty-state">
+                    Edits here are sent exactly as written when you click
+                    Send Email.
+                  </span>
+                </div>
+              </div>
+
+              <!-- ==============================
+                                COVER LETTER
+                  =============================== -->
+
+              <div class="output-card">
+                <div class="output-header">
+                  <h2>
+                    <i class="bx bx-file"></i>
+
+                    Cover Letter
+                  </h2>
+
+                  <div class="output-toolbar">
+                    <button type="button" id="copyCover">
+                      <i class="bx bx-copy"></i>
+
+                      Copy Cover Letter
+                    </button>
+                  </div>
+                </div>
+
+                <div class="cover-editor">
+                  <textarea
+                    id="coverLetter"
+                    rows="18"
+                    class="editable-field"
+                    placeholder="Generated cover letter..."
+                  ></textarea>
+                </div>
+              </div>
+            </section>
+
+            <!-- ================================
+                            RIGHT COLUMN
+                ================================= -->
+
+            <aside class="agent-right">
+              <!-- ==============================
+                                PROGRESS CARD
+                  =============================== -->
+
+              <div class="agent-card agent-progress">
+                <div class="agent-card-header">
+                  <h2 class="agent-card-title">
+                    <i class="bx bx-loader-circle"></i>
+
+                    AI Agent Progress
+                  </h2>
+
+                  <p class="agent-card-subtitle">
+                    Monitor every stage of the AI workflow in real-time.
+                  </p>
+                </div>
+
+                <!-- ============================
+                                    TIMELINE
+                    ============================= -->
+
+                <div class="agent-timeline">
+                  <h3>
+                    <i class="bx bx-git-branch"></i>
+
+                    Processing Timeline
+                  </h3>
+
+                  <!--
+                    Populated by Agent.buildTimeline() on load from the
+                    JS STEPS array. Left empty so the JS stays the single
+                    source of truth for step order and count.
+                  -->
+
+                  <ul id="progressList"></ul>
+                </div>
+
+                <!-- ============================
+                                    OVERALL PROGRESS
+                    ============================= -->
+
+                <div class="progress-track">
+                  <div class="progress">
+                    <div class="progress-fill" style="width: 0%"></div>
+                  </div>
+
+                  <div class="progress-footer">
+                    <span id="progressText" class="progress-text"> 0% </span>
+                  </div>
+                </div>
+
+                <!-- ============================
+                                    METRICS
+                    ============================= -->
+
+                <div class="metric-grid">
+                  <div class="metric-card">
+                    <div class="metric-icon">
+                      <i class="bx bx-medal"></i>
+                    </div>
+
+                    <div class="metric-content">
+                      <span> Quality Score </span>
+
+                      <h2 id="qualityScore">--</h2>
+                    </div>
+                  </div>
+
+                  <div class="metric-card">
+                    <div class="metric-icon">
+                      <i class="bx bx-target-lock"></i>
+                    </div>
+
+                    <div class="metric-content">
+                      <span> ATS Match </span>
+
+                      <h2 id="atsMatch">--</h2>
+                    </div>
+                  </div>
+
+                  <div class="metric-card">
+                    <div class="metric-icon">
+                      <i class="bx bx-refresh"></i>
+                    </div>
+
+                    <div class="metric-content">
+                      <span> Reflection Count </span>
+
+                      <h2 id="reflectionCount">0</h2>
+                    </div>
+                  </div>
+
+                  <div class="metric-card">
+                    <div class="metric-icon">
+                      <i class="bx bx-check-shield"></i>
+                    </div>
+
+                    <div class="metric-content">
+                      <span> AI Decision </span>
+
+                      <h2 id="decision" class="decision waiting">
+                        Waiting...
+                      </h2>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ============================
+                                    STATUS ROW
+                    ============================= -->
+
+                <div class="agent-summary">
+                  <div class="summary-item">
+                    <label> Status </label>
+
+                    <strong id="agentStatus"> Idle </strong>
+                  </div>
+
+                  <div class="summary-item">
+                    <label> Current Agent </label>
+
+                    <strong id="currentAgent"> Waiting... </strong>
+                  </div>
+
+                  <div class="summary-item">
+                    <label> Execution Time </label>
+
+                    <strong id="executionTime"> 0.0 s </strong>
+                  </div>
+                </div>
+
+                <!-- ============================
+                                    COMPANY SUMMARY
+                    ============================= -->
+
+                <div class="info-card">
+                  <h3>
+                    <i class="bx bx-buildings"></i>
+
+                    Company Summary
+                  </h3>
+
+                  <div id="companySummary" class="empty-state">
+                    Waiting...
+                  </div>
+                </div>
+
+                <!-- ============================
+                                    AI STRATEGY
+                    ============================= -->
+
+                <div class="info-card">
+                  <h3>
+                    <i class="bx bx-bulb"></i>
+
+                    AI Strategy
+                  </h3>
+
+                  <div id="strategy" class="empty-state">Waiting...</div>
+                </div>
+
+                <!-- ============================
+                                    AGENT LOG
+                    ============================= -->
+
+                <div class="agent-log">
+                  <div class="log-box">
+                    <div class="agent-log-header">
+                      <i class="bx bx-terminal"></i>
+
+                      <span> Live Agent Log </span>
+                    </div>
+
+                    <div id="agentLog" class="agent-log-body"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ==============================
+                                ATS ANALYSIS
+                  =============================== -->
+
+              <div class="agent-card analysis-section">
+                <div class="agent-card-header">
+                  <h2 class="agent-card-title">
+                    <i class="bx bx-target-lock"></i>
+
+                    ATS Analysis
+                  </h2>
+                </div>
+
+                <div class="score-grid">
+                  <div class="score-card">
+                    <label> ATS Match </label>
+
+                    <div class="progress">
+                      <div
+                        id="atsProgress"
+                        class="progress-fill"
+                        style="width: 0%"
+                      ></div>
+                    </div>
+
+                    <div id="atsPercentage" class="progress-text">0%</div>
+                  </div>
+                </div>
+
+                <!-- ============================
+                                    SKILLS
+                    ============================= -->
+
+                <div class="skill-grid">
+                  <div class="skill-group">
+                    <h3>
+                      <i class="bx bx-check-circle"></i>
+
+                      Matched Skills
+                    </h3>
+
+                    <ul id="matchedSkills" class="skill-tag-list">
+                      <li class="empty-state">No skills matched yet</li>
+                    </ul>
+                  </div>
+
+                  <div class="skill-group">
+                    <h3>
+                      <i class="bx bx-error-circle"></i>
+
+                      Missing Skills
+                    </h3>
+
+                    <ul id="missingSkills" class="skill-tag-list">
+                      <li class="empty-state">No missing skills yet</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ==============================
+                                APPLICATION STATUS
+                  =============================== -->
+
+              <div class="agent-card status-card">
+                <h3>
+                  <i class="bx bx-check-shield"></i>
+
+                  Application Status
+                </h3>
+
+                <div id="application_status" class="status-waiting">
+                  Waiting...
+                </div>
+              </div>
+
+              <!-- ==============================
+                                DOWNLOADS
+                  =============================== -->
+
+              <div class="agent-card download-section">
+                <h3>
+                  <i class="bx bx-download"></i>
+
+                  Downloads
+                </h3>
+
+                <div class="download-grid">
+                  <button type="button" id="downloadEmail" class="download-card">
+                    <i class="bx bx-envelope"></i>
+
+                    Download Email PDF
+                  </button>
+
+                  <button type="button" id="downloadCover" class="download-card">
+                    <i class="bx bx-file"></i>
+
+                    Download Cover Letter PDF
+                  </button>
+
+                  <button type="button" id="exportJson" class="download-card">
+                    <i class="bx bx-export"></i>
+
+                    Download JSON
+                  </button>
+
+                  <button
+                    type="button"
+                    class="download-card"
+                    onclick="Agent.exportTXT()"
+                  >
+                    <i class="bx bx-file-blank"></i>
+
+                    Download Report
+                  </button>
+                </div>
+              </div>
+
+              <!-- ==============================
+                                JSON VIEWER
+                  =============================== -->
+
+              <div class="json-card">
+                <div class="json-toolbar">
+                  <h3>
+                    <i class="bx bx-code-alt"></i>
+
+                    AI Response JSON
+                  </h3>
+
+                  <div class="json-actions">
+                    <button type="button" id="toggleJson">
+                      <i class="bx bx-show"></i>
+
+                      Show JSON
+                    </button>
+                  </div>
+                </div>
+
+                <pre id="rawJson" class="hidden">Waiting for AI response...</pre>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ==========================================
+                    LOADING OVERLAY
+        =========================================== -->
+
+    <div id="loadingOverlay" class="loading-overlay hidden">
+      <div class="loading-box">
+        <span class="spinner"></span>
+
+        <p>Working on it...</p>
+      </div>
+    </div>
+
+    <!-- ==========================================
+                    JAVASCRIPT
+    =========================================== -->
+
+    <!-- AI Agent -->
+
+    <script src="{% static 'js/ai_agent.js' %}"></script>
+
+    <!-- Sidebar -->
+
+    <script src="{% static 'js/sidebar.js' %}"></script>
+
+    <!-- Theme -->
+
+    <script src="{% static 'js/theme.js' %}"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="{% static 'js/chatbot.js' %}"></script>
+  </body>
+</html>

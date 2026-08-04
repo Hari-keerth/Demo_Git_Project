@@ -265,52 +265,29 @@ urlpatterns = [
     ),
 
     #---------------
+    #---------------------------------sravan------------------------------------------------
 
     # -----------------------------
     # Mock Interview Page
     # -----------------------------
-    path(
-        "mock-interview/",
-        views.mock_interview,
-        name="mock_interview",
-    ),
+    # Page
+    path("interview/", views.mock_interview_page, name="mock_interview"),
 
-    # -----------------------------
-    # Generate AI Question
-    # -----------------------------
-    path(
-        "interview/question/",
-        views.interview_question,
-        name="interview_question",
-    ),
+    # AI endpoints
+    path("interview/question/", views.generate_interview_question, name="interview_question"),
+    path("interview/evaluate/", views.evaluate_interview, name="interview_evaluate"),
 
-    # -----------------------------
-    # Evaluate Interview
-    # -----------------------------
-    path(
-        "interview/evaluate/",
-        views.interview_evaluate,
-        name="interview_evaluate",
-    ),
-    path(
-        'recruiter/company-profile/', 
-        views.company_profile_view, 
-        name='company_profile'
 
+    path(
+        "ai_agent/",
+        views.ai_agent_page,
+        name="ai_agent",
     ),
 
     path(
-        'recruiter/applicants/', 
-        views.recruiter_applicants_view, 
-        name='recruiter_applicants'
-
-    ),
-
-    path(
-        'recruiter/applicant/<int:app_id>/update-status/', 
-        views.update_applicant_status_view, 
-        name='update_applicant_status'
-
+        "ai-agent/run/",
+        views.run_ai_agent,
+        name="run_ai_agent",
     ),
 
 

@@ -1,97 +1,74 @@
-{% load static %}
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
+<div id="chatbot">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Floating Button -->
+    <button id="chat-button" type="button" aria-label="Open AI Assistant">
+        <i class="bx bx-message-rounded-dots"></i>
+    </button>
 
-    <title>AI Job Assistant</title>
-
-    <link rel="stylesheet" href="{% static 'css/chatbot.css' %}" />
-  </head>
-
-  <body>
-    <!-- Floating Chat Button -->
-
-    <button id="chat-button">💬</button>
-
-    <!-- ===========================
-            CHAT WIDGET
-    ============================ -->
-
+    <!-- Chat Window -->
     <div class="chat-window">
-      <!-- ===========================
-                HEADER
-        ============================ -->
 
-      <div class="chat-header">
-        <div class="header-left">
-          <h2>AI Job Assistant</h2>
+        <!-- Header -->
+        <div class="chat-header">
 
-          <p>🟢 Online</p>
+            <div class="header-left">
+
+                <div class="assistant-avatar">
+                    <i class="bx bx-bot"></i>
+                </div>
+
+                <div class="header-text">
+                    <h3>AI Job Assistant</h3>
+                    <span class="status">
+                        <span class="status-dot"></span>
+                        Online
+                    </span>
+                </div>
+
+            </div>
+
+            <button id="close-chat" type="button">
+                <i class="bx bx-x"></i>
+            </button>
+
         </div>
 
-        <button id="close-chat">✕</button>
-      </div>
+        <!-- Welcome -->
+        <div id="welcome-section">
 
-      <!-- ===========================
-                WELCOME
-        ============================ -->
+            <h3>Hello 👋</h3>
 
-      <div id="welcome-section">
-        <h3>Welcome!</h3>
+            <p>
+                I'm your CareerGrowza AI Assistant.
+                Ask me anything about resumes, interviews,
+                careers or jobs.
+            </p>
 
-        <p>How can I help you today?</p>
+        </div>
 
-        <div class="feature-list"></div>
-      </div>
+        <!-- Chat Messages -->
+        <div class="chat-body"></div>
 
-      <!-- ===========================
-            QUICK ACTIONS
-        ============================ -->
+        <!-- Input -->
+        <div class="chat-input">
 
-      <!-- <div id="quick-actions">
+            <input
+                id="question"
+                type="text"
+                placeholder="Ask anything..."
+                autocomplete="off"
+            >
 
-            <button class="quick-btn">
-
-                Recommend Jobs
-
+            <button
+                class="chat-send"
+                type="button"
+                aria-label="Send"
+            >
+                <i class="bx bx-send"></i>
             </button>
 
-            <button class="quick-btn">
+        </div>
 
-                Resume Review
-
-            </button>
-
-            <button class="quick-btn">
-
-                Interview Questions
-
-            </button>
-
-        </div> -->
-
-      <!-- ===========================
-                CHAT AREA
-        ============================ -->
-
-      <div class="chat-body"></div>
-
-      <!-- ===========================
-                INPUT AREA
-        ============================ -->
-
-      <div class="chat-input">
-        <input type="text" id="question" placeholder="Ask me anything..." />
-
-        <button class="chat-send">➜</button>
-      </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
-    <script src="{% static 'js/chatbot.js' %}"></script>
-  </body>
-</html>
+</div>

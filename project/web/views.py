@@ -1067,7 +1067,7 @@ def generate_documents(request):
     """
 
             headers = {
-                "x-api-key": "sk-7IUtrMADNCiy2i5f_2Xqb8XW6VXPChN6QxPT9ybLITk"
+                "x-api-key": "sk-vgfNFkS5PwNGGsSUaH8DY4BOb6aBpPar98cW8356VTA"
             }
 
             response = requests.post(
@@ -2296,3 +2296,325 @@ def update_applicant_status_view(request, app_id):
             messages.success(request, f"Application status updated to {new_status}.")
             
     return redirect(request.META.get('HTTP_REFERER', 'recruiter_applicants'))
+
+
+#---------------------------------sravan------------------------------------------------
+
+#---------mock_test----
+
+import json
+import requests
+from django.conf import settings
+from django.http import JsonResponse
+from django.shortcuts import render
+from django.views.decorators.http import require_POST
+
+# =====================================================================
+# CONFIG — swap these two flow IDs for your actual Langflow flow IDs
+# =====================================================================
+
+LANGFLOW_BASE_URL = "http://localhost:7860/api/v1/run"
+LANGFLOW_QUESTION_FLOW_ID = "52b22b25-40b1-4df5-8395-c7d4c8438904"
+LANGFLOW_EVALUATE_FLOW_ID = "82f52dc1-d94c-410e-b599-ffcd66fa8b03"
+
+# Move this to an environment variable / Django setting before deploying —
+# do not leave API keys hardcoded in source.
+LANGFLOW_API_KEY = "sk-vpYUZw85P4Y8BefM1lsCpfosfjXWOeH70zxjK4zb6-g"
+
+
+class LangflowError(Exception):
+    """
+    Raised when Langflow itself returns a non-2xx response. Carries the
+    actual response body, since Langflow puts the real failure reason
+    there (a bad/missing API key on one of the flow's components, a
+    misconfigured model, a Structured Output schema mismatch, etc.) --
+    response.raise_for_status() alone only gives you a generic
+    "500 Server Error ... for url: ..." with none of that detail.
+    """
+ 
+    def __init__(self, status_code, detail):
+        self.status_code = status_code
+        self.detail = detail
+        super().__init__(f"Langflow returned {status_code}: {detail}")
+ 
+ 
+def call_langflow(flow_id, input_text, timeout=60):
+    """
+    Shared helper for calling a Langflow flow and pulling the text
+    response out of its output shape. Raises LangflowError (with the
+    real error body attached) on a non-2xx response, or a
+    requests.RequestException on network-level failures (timeout,
+    connection refused, etc). Callers are expected to catch both and
+    convert to a JsonResponse.
+    """
+ 
+    response = requests.post(
+        f"{LANGFLOW_BASE_URL}/{flow_id}",
+        headers={"x-api-key": LANGFLOW_API_KEY},
+        json={
+            "input_value": input_text,
+            "output_type": "chat",
+            "input_type": "chat",
+        },
+        timeout=timeout,
+    )
+ 
+    if not response.ok:
+        try:
+            detail = response.json()
+        except ValueError:
+            detail = response.text
+        raise LangflowError(response.status_code, detail)
+ 
+    result = response.json()
+ 
+    return result["outputs"][0]["outputs"][0]["results"]["message"]["text"]
+ 
+ 
+# =====================================================================
+# PAGE
+# =====================================================================
+ 
+def mock_interview_page(request):
+    return render(request, "mock_interview.html")
+ 
+ 
+# =====================================================================
+# QUESTION GENERATION
+# =====================================================================
+ 
+@require_POST
+def generate_interview_question(request):
+ 
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "error": "Invalid JSON body."}, status=400)
+ 
+    role = (data.get("role") or "").strip()
+    difficulty = (data.get("difficulty") or "").strip()
+    total_questions = data.get("total_questions")
+    asked_questions = data.get("asked_questions", [])
+ 
+    if not role:
+        return JsonResponse({"success": False, "error": "Job role is required."}, status=400)
+ 
+    if not difficulty:
+        return JsonResponse({"success": False, "error": "Difficulty is required."}, status=400)
+ 
+    # ---- server-side cap enforcement (fixes the overshoot bug for real) ----
+    try:
+        total_questions = int(total_questions)
+    except (TypeError, ValueError):
+        return JsonResponse({"success": False, "error": "total_questions is required."}, status=400)
+ 
+    if len(asked_questions) >= total_questions:
+        return JsonResponse({
+            "success": False,
+            "error": "Question limit reached for this interview.",
+        }, status=400)
+ 
+    # ---- build the prompt input ----
+    if asked_questions:
+        asked_block = "\n".join(f"{i + 1}. {q}" for i, q in enumerate(asked_questions))
+    else:
+        asked_block = "(none yet -- this is the first question)"
+ 
+    input_text = (
+        f"Role: {role}\n"
+        f"Difficulty: {difficulty}\n"
+        f"Already Asked:\n{asked_block}\n"
+    )
+ 
+    try:
+        question = call_langflow(LANGFLOW_QUESTION_FLOW_ID, input_text).strip()
+    except requests.Timeout:
+        return JsonResponse({"success": False, "error": "Question generation timed out."}, status=504)
+    except LangflowError as e:
+        # e.detail is Langflow's actual error body -- check the Django
+        # console/logs (or this response, during debugging) for the real
+        # component-level failure reason instead of a generic 500.
+        return JsonResponse({
+            "success": False,
+            "error": f"Langflow error ({e.status_code})",
+            "detail": e.detail,
+        }, status=502)
+    except requests.RequestException as e:
+        return JsonResponse({"success": False, "error": str(e)}, status=502)
+    except (KeyError, IndexError):
+        return JsonResponse({"success": False, "error": "Unexpected response from Langflow."}, status=502)
+ 
+    if not question:
+        return JsonResponse({"success": False, "error": "Empty question returned."}, status=502)
+ 
+    return JsonResponse({"success": True, "question": question})
+ 
+ 
+# =====================================================================
+# EVALUATION
+# =====================================================================
+ 
+@require_POST
+def evaluate_interview(request):
+ 
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "error": "Invalid JSON body."}, status=400)
+ 
+    role = (data.get("role") or "").strip()
+    interview_data = data.get("interview_data", [])
+ 
+    if not role:
+        return JsonResponse({"success": False, "error": "Job role is required."}, status=400)
+ 
+    if not interview_data:
+        return JsonResponse({"success": False, "error": "No interview answers to evaluate."}, status=400)
+ 
+    qa_block = "\n\n".join(
+        f"Q{i + 1}: {item.get('question', '')}\n"
+        f"A{i + 1}: {item.get('answer', '') or '(skipped -- no answer given)'}"
+        for i, item in enumerate(interview_data)
+    )
+ 
+    input_text = (
+        f"Role: {role}\n\n"
+        f"Interview transcript:\n{qa_block}\n"
+    )
+ 
+    try:
+        raw_text = call_langflow(LANGFLOW_EVALUATE_FLOW_ID, input_text, timeout=90)
+    except requests.Timeout:
+        return JsonResponse({"success": False, "error": "Evaluation timed out."}, status=504)
+    except LangflowError as e:
+        return JsonResponse({
+            "success": False,
+            "error": f"Langflow error ({e.status_code})",
+            "detail": e.detail,
+        }, status=502)
+    except requests.RequestException as e:
+        return JsonResponse({"success": False, "error": str(e)}, status=502)
+    except (KeyError, IndexError):
+        return JsonResponse({"success": False, "error": "Unexpected response from Langflow."}, status=502)
+ 
+    try:
+        parsed = json.loads(raw_text)
+    except json.JSONDecodeError:
+        return JsonResponse({
+            "success": False,
+            "error": "Invalid JSON returned from Langflow.",
+            "raw_output": raw_text,
+        }, status=502)
+ 
+    # Defensive: json.loads() succeeds on ANY valid JSON, not just objects --
+    # a bare number, string, or list all parse fine but have no .get(). If the
+    # flow ever returns something that isn't a JSON object (e.g. just "1"),
+    # fail loudly with the raw output visible instead of silently building a
+    # near-empty report.
+    if not isinstance(parsed, dict):
+        return JsonResponse({
+            "success": False,
+            "error": "Langflow did not return a JSON object as expected.",
+            "raw_output": raw_text,
+        }, status=502)
+ 
+    # normalize so renderReport() in interview.js always has what it expects.
+    # "success": True is required here -- evaluateInterview() in interview.js
+    # checks `!response.ok || !data.success` before rendering the report, so
+    # a response missing this field gets treated as a failure even when the
+    # evaluation itself worked fine.
+    return JsonResponse({
+        "success": True,
+        "overall_score": parsed.get("overall_score", parsed.get("score", 0)),
+        "strengths": parsed.get("strengths", []),
+        "improvements": parsed.get("improvements", []),
+        "reviews": parsed.get("reviews", []),
+        "study_plan": parsed.get("study_plan", []),
+    })
+#-------------------------------------------------------------------------------------------------
+
+
+from pathlib import Path
+import tempfile
+import time
+
+from django.http import JsonResponse
+from django.shortcuts import render
+from django.views.decorators.http import require_POST
+
+from .ai_agent.runner import run_agent
+
+
+def ai_agent_page(request):
+    """
+    Render the AI Agent page.
+    """
+    return render(request, "ai_agent.html")
+
+
+@require_POST
+def run_ai_agent(request):
+    """
+    Receives:
+        - Resume PDF
+        - Job Description
+        - Recruiter Email
+
+    Executes the AI Agent and returns the generated JSON.
+    """
+
+    try:
+        resume = request.FILES.get("resume")
+        job_description = request.POST.get("job_description", "").strip()
+        recruiter_email = request.POST.get("recruiter_email", "").strip()
+
+        if not resume:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "Resume PDF is required.",
+                },
+                status=400,
+            )
+
+        if not job_description:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "Job description is required.",
+                },
+                status=400,
+            )
+
+        start_time = time.perf_counter()
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_pdf:
+            for chunk in resume.chunks():
+                temp_pdf.write(chunk)
+
+            resume_path = Path(temp_pdf.name)
+
+        result = run_agent(
+            resume_path=resume_path,
+            job_description=job_description,
+            recruiter_email=recruiter_email,
+        )
+
+        execution_time = round(time.perf_counter() - start_time, 2)
+
+        return JsonResponse(
+            {
+                "success": True,
+                "execution_time": execution_time,
+                **result,
+            }
+        )
+
+    except Exception as e:
+        return JsonResponse(
+            {
+                "success": False,
+                "error": str(e),
+            },
+            status=500,
+        )

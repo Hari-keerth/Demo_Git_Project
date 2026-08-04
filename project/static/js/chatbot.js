@@ -1,251 +1,265 @@
+document.addEventListener("DOMContentLoaded", () => {
 
+    const chatbot = document.getElementById("chatbot");
 
+    if (!chatbot) return;
 
-/*==========================================
-        CHAT WIDGET
-==========================================*/
+    /* ==========================================================
+       ELEMENTS
+    ========================================================== */
 
-// Floating Chat Button
-const chatButton = document.getElementById("chat-button");
+    const chatButton = chatbot.querySelector("#chat-button");
+    const chatWindow = chatbot.querySelector(".chat-window");
+    const closeButton = chatbot.querySelector("#close-chat");
+    const sendButton = chatbot.querySelector(".chat-send");
+    const questionInput = chatbot.querySelector("#question");
+    const chatBody = chatbot.querySelector(".chat-body");
+    const welcomeSection = chatbot.querySelector("#welcome-section");
 
-// Chat Window
-const chatWidget = document.getElementById("chat-widget");
+    /* ==========================================================
+       OPEN CHAT
+    ========================================================== */
 
-// Close Button
-const closeButton = document.getElementById("close-chat");
+    function openChat() {
 
-// Ask Button
-const askButton = document.getElementById("askBtn");
+        chatbot.classList.add("show");
 
-// Input Box
-const questionInput = document.getElementById("question");
+        questionInput.focus();
 
-// Chat Area
-const chatArea = document.getElementById("chatArea");
+    }
 
-// Welcome Section
-const welcomeSection = document.getElementById("welcome-section");
+    /* ==========================================================
+       CLOSE CHAT
+    ========================================================== */
 
+    function closeChat() {
 
-/*==========================================
-        OPEN CHAT
-==========================================*/
+        chatbot.classList.remove("show");
 
-chatButton.addEventListener("click", function () {
+    }
 
-    chatWidget.style.display = "flex";
+    /* ==========================================================
+       EVENTS
+    ========================================================== */
 
-    // Automatically place cursor in input box
-    questionInput.focus();
+    chatButton.addEventListener("click", openChat);
 
-});
+    closeButton.addEventListener("click", closeChat);
 
+    /* ==========================================================
+       SCROLL
+    ========================================================== */
 
-/*==========================================
-        CLOSE CHAT
-==========================================*/
+    function scrollBottom() {
 
-closeButton.addEventListener("click", function () {
+        chatBody.scrollTop = chatBody.scrollHeight;
 
-    chatWidget.style.display = "none";
+    }
 
-});
+    /* ==========================================================
+       USER MESSAGE
+    ========================================================== */
 
+    function addUserMessage(message) {
 
-/*==========================================
-        SCROLL TO BOTTOM
-==========================================*/
+        const div = document.createElement("div");
 
-function scrollToBottom() {
+        div.className = "user-message";
 
-    chatArea.scrollTo({
+        div.textContent = message;
 
-        top: chatArea.scrollHeight,
+        chatBody.appendChild(div);
 
-        behavior: "smooth"
+        scrollBottom();
 
-    });
+    }
 
-}
+    /* ==========================================================
+       AI MESSAGE
+    ========================================================== */
 
-/*==========================================
-        TYPEWRITER EFFECT
-==========================================*/
+    function addAIMessage(html) {
 
-function typeWriter(element, text, speed = 15) {
+        const div = document.createElement("div");
 
-    let index = 0;
-    let currentText = "";
+        div.className = "ai-message";
 
-    function type() {
+        div.innerHTML = marked.parse(html);
 
-        if (index < text.length) {
+        chatBody.appendChild(div);
 
-            currentText += text.charAt(index);
+        scrollBottom();
 
-            element.innerHTML = marked.parse(currentText);
+    }
 
-            index++;
+    /* ==========================================================
+       TYPING
+    ========================================================== */
 
-            scrollToBottom();
+    function showTyping() {
 
-            setTimeout(type, speed);
+        const typing = document.createElement("div");
+
+        typing.className = "ai-message";
+
+        typing.id = "typing-indicator";
+
+        typing.innerHTML = `
+            <div class="typing">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        `;
+
+        chatBody.appendChild(typing);
+
+        scrollBottom();
+
+    }
+
+    function hideTyping() {
+
+        const typing = chatbot.querySelector("#typing-indicator");
+
+        if (typing) {
+
+            typing.remove();
 
         }
 
     }
 
-    type();
+    /* ==========================================================
+       TYPEWRITER
+    ========================================================== */
 
-}
+    async function typeWriter(element, text, speed = 12) {
 
+        let output = "";
 
-/*==========================================
-        SEND MESSAGE
-==========================================*/
+        for (const char of text) {
 
-function sendMessage() {
+            output += char;
 
-    const question = questionInput.value.trim();
+            element.innerHTML = marked.parse(output);
 
-    if (question === "") {
+            scrollBottom();
 
-        return;
+            await new Promise(resolve => setTimeout(resolve, speed));
 
-    }
-
-    // Hide welcome section after first message
-    if (welcomeSection) {
-
-        welcomeSection.style.display = "none";
+        }
 
     }
 
-    // Disable Send Button
-    askButton.disabled = true;
+    /* ==========================================================
+       SEND
+    ========================================================== */
 
-    // User Message
-    chatArea.innerHTML += `
-        <div class="user-message">
-            ${question}
-        </div>
-    `;
+    async function sendMessage() {
 
-    // Loading Message
-    chatArea.innerHTML += `
-        <div class="ai-message" id="loading">
-            <div class = 'typing'>
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </div>
-    `;
+        const question = questionInput.value.trim();
 
-    scrollToBottom();
+        if (!question) return;
 
-    // Clear Input
-    questionInput.value = "";
+        if (welcomeSection) {
 
-    fetch(`/ask_ai/?question=${encodeURIComponent(question)}`)
+            welcomeSection.style.display = "none";
 
-        .then(response => response.json())
+        }
 
-        .then(data => {
+        addUserMessage(question);
 
-            // Enable Button
-            askButton.disabled = false;
+        questionInput.value = "";
 
-            // Remove Loading
-            const loading = document.getElementById("loading");
+        sendButton.disabled = true;
 
-            if (loading) {
+        sendButton.classList.add("loading");
 
-                loading.remove();
+        showTyping();
 
-            }
+        try {
 
-            // create empty AI message
-            const aiMessage = document.createElement("div");
-            aiMessage.className = "ai-message";
-            chatArea.appendChild(aiMessage);
+            const response = await fetch(
 
-            // Small delay before typing starst
+                `/ask_ai/?question=${encodeURIComponent(question)}`
 
-            setTimeout(function(){
+            );
 
-                typeWriter(aiMessage, data.response);
-            }, 500);
+            const data = await response.json();
 
-            scrollToBottom();
+            hideTyping();
 
-            // Focus back to input
-            questionInput.focus();
+            const ai = document.createElement("div");
 
-        })
+            ai.className = "ai-message";
 
-        .catch(error => {
+            chatBody.appendChild(ai);
 
-            askButton.disabled = false;
+            await typeWriter(ai, data.response);
 
-            const loading = document.getElementById("loading");
+        }
 
-            if (loading) {
+        catch (error) {
 
-                loading.remove();
+            hideTyping();
 
-            }
+            addAIMessage(
 
-            chatArea.innerHTML += `
-                <div class="ai-message">
-                    ❌ Something went wrong. Please try again.
-                </div>
-            `;
+                "❌ Something went wrong. Please try again."
 
-            scrollToBottom();
-
-            questionInput.focus();
+            );
 
             console.error(error);
 
-        });
+        }
 
-}
+        finally {
 
+            sendButton.disabled = false;
 
-/*==========================================
-        SEND BUTTON
-==========================================*/
+            sendButton.classList.remove("loading");
 
-askButton.addEventListener("click", sendMessage);
+            questionInput.focus();
 
-
-/*==========================================
-        ENTER KEY
-==========================================*/
-
-questionInput.addEventListener("keydown", function (event) {
-
-    if (event.key === "Enter") {
-
-        event.preventDefault();
-        sendMessage();
+        }
 
     }
 
-});
+    /* ==========================================================
+       BUTTON
+    ========================================================== */
 
+    sendButton.addEventListener("click", sendMessage);
 
-/*==========================================
-        ESC KEY CLOSES CHAT
-==========================================*/
+    /* ==========================================================
+       ENTER
+    ========================================================== */
 
-document.addEventListener("keydown", function(event){
+    questionInput.addEventListener("keydown", e => {
 
-    if(event.key === "Escape"){
+        if (e.key === "Enter") {
 
-        chatWidget.style.display = "none";
+            e.preventDefault();
 
-    }
+            sendMessage();
+
+        }
+
+    });
+
+    /* ==========================================================
+       ESC
+    ========================================================== */
+
+    document.addEventListener("keydown", e => {
+
+        if (e.key === "Escape") {
+
+            closeChat();
+
+        }
+
+    });
 
 });
