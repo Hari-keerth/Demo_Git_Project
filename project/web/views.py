@@ -69,6 +69,7 @@ from .forms import (
     CreateUserForm,
     LoginForm,
     ProfileForm,
+    RegisterProfileForm,
 )
 
 
@@ -159,7 +160,7 @@ def dashboard(request):
 def register(request):
     if request.method == "POST":
         user_form = CreateUserForm(request.POST)
-        profile_form = ProfileForm(request.POST)
+        profile_form = RegisterProfileForm(request.POST)
         
         role = request.POST.get('role', 'candidate')
         
@@ -213,13 +214,12 @@ def register(request):
                 return redirect('login')
     else:
         user_form = CreateUserForm()
-        profile_form = ProfileForm()
+        profile_form = RegisterProfileForm() 
 
     return render(request, 'register.html', {
         'user_form': user_form,
         'profile_form': profile_form
     })
-
 
 #-- login a user
 
@@ -1772,57 +1772,68 @@ def clear_chat(request):
 
 @login_required
 def dashboard_all_jobs_view(request):
-    profile, created = Profile.objects.get_or_create(user=request.user)
-    
-    # SECURITY FIX: Stop recruiters from seeing the candidate view!
+    profile_obj, _ = Profile.objects.get_or_create(user=request.user)
+
     if request.user.is_staff:
         return redirect('recruiter_dashboard')
 
-    # -------------------------------------------------------------
-    # 1. CALCULATE PROFILE COMPLETION & JOBS APPLIED METRICS
-    # -------------------------------------------------------------
     user = request.user
-    total_fields = 4
-    completed_fields = 0
 
-    if user.first_name and user.last_name:
-        completed_fields += 1
-    if user.email:
-        completed_fields += 1
-    if getattr(profile, 'bio', None) or getattr(profile, 'phone', None) or getattr(profile, 'headline', None):
-        completed_fields += 1
-    if getattr(profile, 'resume', None) or getattr(profile, 'skills', None):
-        completed_fields += 1
+    # ==========================================================
+    # CHECK USER SKILL PROFILE
+    # ==========================================================
+    skill_profile = UserSkillProfile.objects.filter(profile=profile_obj).first()
+    has_skills = False
+
+    if skill_profile:
+        user_skills = (
+            skill_profile.technical_skills +
+            skill_profile.frameworks +
+            skill_profile.tools +
+            skill_profile.databases +
+            skill_profile.cloud_skills +
+            skill_profile.soft_skills
+        )
+        if user_skills:
+            has_skills = True
+
+    # ==========================================================
+    # CALCULATE PROFILE COMPLETION (8 FIELDS)
+    # ==========================================================
+    total_fields = 8
+    completed_fields = sum([
+        bool(user.first_name and user.last_name),
+        bool(user.email),
+        bool(profile_obj.phone),
+        bool(profile_obj.city and profile_obj.country),
+        bool(profile_obj.address),
+        bool(profile_obj.profile_picture),
+        bool(profile_obj.age),
+        bool(has_skills),
+    ])
 
     profile_completion = int((completed_fields / total_fields) * 100)
-
-    # Fetch total jobs applied by this candidate
     applied_count = Application.objects.filter(applicant=user).count()
 
-    # -------------------------------------------------------------
-    # 2. JOB SEARCH & QUERY LOGIC
-    # -------------------------------------------------------------
+    # ==========================================================
+    # JOB SEARCH & RECRUITER LISTINGS
+    # ==========================================================
     query = request.GET.get('q', '').strip()
     location_query = request.GET.get('location', '').strip()
-
     search_query = query if query else "Python Developer"
 
-    # db recruiters job
     db_jobs = RecruiterJob.objects.all().order_by('-created_at')
 
     if query:
         db_jobs = db_jobs.filter(
-            Q(title__icontains=query) | 
+            Q(title__icontains=query) |
             Q(company_name__icontains=query) |
             Q(description__icontains=query)
         )
-    
-    if location_query:
-        db_jobs = db_jobs.filter(
-            Q(location__icontains=location_query)
-        )
 
-    # Limit results to 5 if no search filter was applied
+    if location_query:
+        db_jobs = db_jobs.filter(Q(location__icontains=location_query))
+
     if not query and not location_query:
         db_jobs = db_jobs[:5]
 
@@ -1854,20 +1865,21 @@ def dashboard_all_jobs_view(request):
     except Exception as e:
         print(f"API Error: {e}")
         cleaned_adzuna_jobs = []
-    
-    # Combine listings
+
     combined_job_listings = local_recruiter_jobs + cleaned_adzuna_jobs
 
-    # -------------------------------------------------------------
-    # 3. PASS TO CONTEXT
-    # -------------------------------------------------------------
+    # Evaluate matching positions count based on single has_skills evaluation
+    matching_positions_count = len(combined_job_listings) if has_skills else 0
+
     context = {
-        'profile': profile,
+        'profile': profile_obj,
         'adzuna_jobs': combined_job_listings,
+        'matching_positions_count': matching_positions_count,
+        'has_skills': has_skills,
         'current_query': query,
         'current_location': location_query,
-        'applied_count': applied_count,              
-        'profile_completion': profile_completion,  
+        'applied_count': applied_count,
+        'profile_completion': profile_completion,
     }
     return render(request, 'dashboard.html', context)
 
@@ -1960,7 +1972,7 @@ def post_job_view(request):
 
     return render(request, 'post_job.html')
 
-login_required
+@login_required
 def recruiter_dashboard_view(request):
     # Security Check: Redirect non-recruiters back to candidate dashboard
     if not request.user.is_staff:
@@ -1971,13 +1983,12 @@ def recruiter_dashboard_view(request):
         app_count=Count('applications')
     ).order_by('-created_at')
 
-    total_jobs = my_jobs.count()
-    total_applications_count = sum(job.app_count for job in my_jobs)
+   
     
     context = {
         'my_jobs': my_jobs,
-        'total_jobs': total_jobs,
-        'total_applications_count': total_applications_count
+        'total_jobs': my_jobs.count(),
+        'total_applications_count': sum(job.app_count for job in my_jobs)
     }
     return render(request, 'recruiter_dashboard.html', context)
 

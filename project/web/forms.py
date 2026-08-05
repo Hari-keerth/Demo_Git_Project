@@ -1,41 +1,120 @@
-from django.contrib.auth.forms import UserCreationForm , AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
-from django.forms.widgets import PasswordInput,TextInput
-
+from django.forms.widgets import PasswordInput, TextInput
 from django import forms
 from .models import Profile
-# register/create a user
 
+
+# -----------------------------
+# Register User Form
+# -----------------------------
 class CreateUserForm(UserCreationForm):
 
     class Meta:
-
         model = User
-        fields = ['username', 'password1', 'password2']
+        fields = ["username", "password1", "password2"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["username"].widget.attrs.update({
+            "placeholder": "Enter Username",
+            "class": "form-control"
+        })
+
+        self.fields["password1"].widget.attrs.update({
+            "placeholder": "Enter Password",
+            "class": "form-control"
+        })
+
+        self.fields["password2"].widget.attrs.update({
+            "placeholder": "Confirm Password",
+            "class": "form-control"
+        })
 
 
-# login a user
+# -----------------------------
+# Register Profile Form
+# (Used ONLY during registration)
+# -----------------------------
+class RegisterProfileForm(forms.ModelForm):
+
+    class Meta:
+        model = Profile
+        fields = [
+            "first_name",
+            "last_name",
+            "email",
+            "phone",
+            "age",
+            "address",
+            "city",
+            "country",
+        ]
+
+        widgets = {
+            "first_name": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Enter First Name"
+            }),
+            "last_name": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Enter Last Name"
+            }),
+            "email": forms.EmailInput(attrs={
+                "class": "form-control",
+                "placeholder": "Enter Email"
+            }),
+            "phone": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Enter Phone Number"
+            }),
+            "age": forms.NumberInput(attrs={
+                "class": "form-control",
+                "placeholder": "Enter Age"
+            }),
+            "address": forms.Textarea(attrs={
+                "class": "form-control",
+                "rows": 3,
+                "placeholder": "Enter Address"
+            }),
+            "city": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Enter City"
+            }),
+            "country": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Enter Country"
+            }),
+        }
+
+
+# -----------------------------
+# Login Form
+# -----------------------------
 class LoginForm(AuthenticationForm):
 
     username = forms.CharField(
-        widget=TextInput(
-            attrs={
-                "class": "email",
-                "placeholder": "Enter Username",
-                "autocomplete": "off",
-            }
-        )
+        widget=TextInput(attrs={
+            "class": "email",
+            "placeholder": "Enter Username",
+            "autocomplete": "off",
+        })
     )
 
     password = forms.CharField(
-        widget=PasswordInput(
-            attrs={
-                "class": "password",
-                "placeholder": "Enter Password",
-                "autocomplete": "off",
-            }
-        )
+        widget=PasswordInput(attrs={
+            "class": "password",
+            "placeholder": "Enter Password",
+            "autocomplete": "off",
+        })
     )
+
+
+# -----------------------------
+# Full Profile Form
+# (Used ONLY in profile page)
+# -----------------------------
 class ProfileForm(forms.ModelForm):
 
     class Meta:
@@ -57,6 +136,7 @@ class ProfileForm(forms.ModelForm):
             "profile_picture",
         ]
 
+        # Keep all your existing widgets here
         widgets = {
             'first_name': forms.TextInput(attrs={
                 'class': 'form-control',

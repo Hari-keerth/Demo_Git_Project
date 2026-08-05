@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="{% static 'css/recruiter_dashboard.css' %}">
 </head>
 <body>
-
+    {% csrf_token %}
     <div class="wrapper">
         <!-- Dedicated Recruiter Sidebar Include -->
         {% include 'recruiter_sidebar.html' %}
