@@ -1,0 +1,550 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>CareerGrowza | AI Mock Interview</title>
+
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="128x128"
+      href="{% static 'images/favicon/CareerGrowza_Favicon.png' %}"
+    />
+
+    <link
+      rel="shortcut icon"
+      href="{% static 'images/favicon/favicon.ico' %}"
+    />
+
+    <link rel="stylesheet"
+          href="{% static 'css/common.css' %}">
+
+    <link rel="stylesheet"
+          href="{% static 'css/layout.css' %}">
+
+    <link rel="stylesheet"
+          href="{% static 'css/sidebar.css' %}">
+
+    <link rel="stylesheet"
+          href="{% static 'css/mock_interview.css' %}">
+
+    <link rel="stylesheet"
+          href="{% static 'css/chatbot.css' %}">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+    />
+
+</head>
+
+<body>
+
+{% csrf_token %}
+
+{% include "chatbot.html" %}
+
+{% include "navbar.html" with active_page="interview" %}
+
+<main class="main-content">
+
+    <div class="interview-wrapper">
+
+        <div class="interview-page">
+
+            <!-- ==========================================
+                 PAGE HEADER
+            =========================================== -->
+
+            <header class="page-header">
+
+                <div class="page-header-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+
+                <div class="page-header-text">
+
+                    <h1 class="page-title">
+                        AI Mock Interview
+                    </h1>
+
+                    <p class="page-subtitle">
+                        Practice AI-powered technical interviews
+                        with instant AI feedback.
+                    </p>
+
+                </div>
+
+            </header>
+
+            <!-- ==========================================
+                 TOP STATISTICS
+            =========================================== -->
+
+            <section class="stats-grid">
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+
+                    <div class="stat-body">
+                        <div class="stat-label">Time Remaining</div>
+                        <div id="timer" class="stat-value">30:00</div>
+                    </div>
+
+                </div>
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">
+                        <i class="fas fa-signal"></i>
+                    </div>
+
+                    <div class="stat-body">
+                        <div class="stat-label">Difficulty</div>
+                        <div id="difficultyText" class="stat-value">Medium</div>
+                    </div>
+
+                </div>
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+
+                    <div class="stat-body">
+                        <div class="stat-label">Progress</div>
+                        <div id="progressText" class="stat-value">0 / 10</div>
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- ==========================================
+                 INTERVIEW SETUP CARD
+            =========================================== -->
+
+            <section id="setupSection" class="setup-card">
+
+                <div class="card-header">
+                    <i class="fas fa-sliders-h"></i>
+                    <h2>Interview Setup</h2>
+                </div>
+
+                <div class="card-body">
+
+                    <div class="setup-grid">
+
+                        <!-- ==================
+                             ROLE SEARCH
+                        =================== -->
+
+                        <div class="input-field">
+
+                            <label for="jobRole">Job Role</label>
+
+                            <div class="search-box" id="roleSearchBox">
+
+                                <i class="fas fa-search search-icon"></i>
+
+                                <input
+                                    type="text"
+                                    id="jobRole"
+                                    autocomplete="off"
+                                    placeholder="Search a job role..."
+                                    value="Python Developer">
+
+                                <div id="roleSearchResults" class="search-results hidden">
+                                    <!-- populated by interview.js -->
+                                </div>
+
+                            </div>
+
+                            <p class="field-note">
+                                Start typing to search, then use
+                                &uarr;/&darr; and Enter, or click a result.
+                            </p>
+
+                        </div>
+
+                        <!-- ==================
+                             DIFFICULTY
+                        =================== -->
+
+                        <div class="input-field">
+
+                            <label for="difficulty">Difficulty</label>
+
+                            <select id="difficulty" class="modern-select">
+                                <option>Easy</option>
+                                <option selected>Medium</option>
+                                <option>Hard</option>
+                            </select>
+
+                        </div>
+
+                        <!-- ==================
+                             QUESTION COUNT
+                        =================== -->
+
+                        <div class="input-field">
+
+                            <label for="totalQuestions">Total Questions</label>
+
+                            <select id="totalQuestions" class="modern-select">
+                                <option>5</option>
+                                <option selected>10</option>
+                                <option>15</option>
+                                <option>20</option>
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                    <div class="button-group">
+
+                        <button id="startInterview" class="primary-btn">
+                            <i class="fas fa-rocket"></i>
+                            Start Interview
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- ==========================================
+                 INTERVIEW SECTION
+            =========================================== -->
+
+            <section
+                id="interviewSection"
+                class="interview-layout"
+                style="display:none;">
+
+                <!-- ==============================
+                     QUESTION CARD (left column)
+                =============================== -->
+
+                <div class="question-card">
+
+                    <!-- Question Header -->
+
+                    <div class="question-header">
+
+                        <div class="question-info">
+
+                            <div id="questionNo" class="question-number">
+                                Question 1 of 10
+                            </div>
+
+                            <div class="question-title">
+                                Technical Interview
+                            </div>
+
+                            <div class="question-meta">
+                                <span id="difficultyBadge" class="badge badge-primary">
+                                    Medium
+                                </span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="progress-wrapper">
+
+                        <div class="progress-header">
+                            <span>Interview Progress</span>
+                            <span id="progressPercent">0%</span>
+                        </div>
+
+                        <div class="progress-bar">
+                            <div id="progressFill" class="progress-fill"></div>
+                        </div>
+
+                    </div>
+
+                    <!-- Question -->
+
+                    <div class="question-box">
+                        <div class="question-text">
+                            <h2 id="question">Loading Question...</h2>
+                        </div>
+                    </div>
+
+                    <!-- Controls -->
+
+                    <div class="controls-row">
+
+                        <button class="voice-btn" id="readQuestion" title="Read Question">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+
+                        <button class="voice-btn listen" id="startRecording" title="Start Recording">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+
+                        <button class="voice-btn stop" id="stopRecording" title="Stop Recording">
+                            <i class="fas fa-stop"></i>
+                        </button>
+
+                    </div>
+
+                    <!-- Answer -->
+
+                    <div class="answer-section">
+
+                        <div class="answer-title">
+                            <i class="fas fa-keyboard"></i>
+                            <h3>Your Answer</h3>
+                        </div>
+
+                        <textarea
+                            id="answer"
+                            class="answer-box"
+                            placeholder="Explain your answer in detail..."></textarea>
+
+                        <div class="word-counter">
+                            <span id="wordCount">0 Words</span>
+                        </div>
+
+                        <div class="interview-buttons">
+
+                            <button id="skipBtn" class="outline-btn">
+                                Skip
+                            </button>
+
+                            <button id="nextBtn" class="primary-btn">
+                                Submit &amp; Next
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- ==============================
+                     SIDEBAR (right column)
+                =============================== -->
+
+                <aside class="interview-sidebar">
+
+                    <!-- Interview Info -->
+
+                    <div class="sidebar-card">
+
+                        <h3>Interview Details</h3>
+
+                        <div class="info-list">
+
+                            <div class="info-item">
+                                <span class="info-label">Role</span>
+                                <span id="roleText" class="info-value">Python Developer</span>
+                            </div>
+
+                            <div class="info-item">
+                                <span class="info-label">Difficulty</span>
+                                <span id="sidebarDifficulty" class="info-value">Medium</span>
+                            </div>
+
+                            <div class="info-item">
+                                <span class="info-label">Questions</span>
+                                <span id="sidebarQuestions" class="info-value">1 / 10</span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Live Score -->
+
+                    <div class="sidebar-card">
+
+                        <h3>Estimated Score</h3>
+
+                        <div class="live-score">
+                            <div id="liveScore" class="live-circle">--</div>
+                            <div class="live-label">Updates after each answer</div>
+                        </div>
+
+                    </div>
+
+                    <!-- AI Tips -->
+
+                    <div class="sidebar-card">
+
+                        <h3>AI Tips</h3>
+
+                        <div class="ai-tips">
+
+                            <div class="tip">
+                                <i class="fas fa-lightbulb"></i>
+                                <p>Explain your reasoning clearly.</p>
+                            </div>
+
+                            <div class="tip">
+                                <i class="fas fa-bullseye"></i>
+                                <p>Mention practical examples whenever possible.</p>
+                            </div>
+
+                            <div class="tip">
+                                <i class="fas fa-bolt"></i>
+                                <p>Keep your answer structured and concise.</p>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Question Tracker -->
+
+                    <div class="sidebar-card tracker-card">
+
+                        <h3>Question Tracker</h3>
+
+                        <div id="questionTracker" class="question-list"></div>
+
+                    </div>
+
+                </aside>
+
+            </section>
+
+            <!-- ==========================================
+                 REPORT SECTION
+            =========================================== -->
+
+            <section
+                id="reportSection"
+                class="report-section"
+                style="display:none;">
+
+                <div class="report-header">
+
+                    <div class="report-title">
+                        <h1><i class="fas fa-trophy"></i> Interview Completed</h1>
+                        <p>AI Performance Analysis</p>
+                    </div>
+
+                </div>
+
+                <!-- Overall Score -->
+
+                <div class="report-card score-card">
+
+                    <div id="overallScore" class="score-circle">0</div>
+
+                    <div class="score-details">
+                        <h2>Overall Performance</h2>
+                        <p>Your AI interview summary will appear here.</p>
+                    </div>
+
+                </div>
+
+                <!-- Strengths + Improvements -->
+
+                <div class="report-grid">
+
+                    <div class="report-card analysis-card strength-box">
+                        <h3><i class="fas fa-circle-check"></i> Strengths</h3>
+                        <ul id="strengthList"></ul>
+                    </div>
+
+                    <div class="report-card analysis-card improvement-box">
+                        <h3><i class="fas fa-chart-line"></i> Areas to Improve</h3>
+                        <ul id="improvementList"></ul>
+                    </div>
+
+                </div>
+
+                <!-- Question Review -->
+
+                <div class="report-card review-card">
+
+                    <div class="review-header">
+                        <h2>Question Review</h2>
+                    </div>
+
+                    <div class="table-scroll">
+
+                        <table class="review-table">
+
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Score</th>
+                                    <th>Feedback</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="reviewTable"></tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+                <!-- Study Plan -->
+
+                <div class="report-card study-card">
+                    <h2><i class="fas fa-book"></i> AI Study Plan</h2>
+                    <ul id="recommendationList"></ul>
+                </div>
+
+                <!-- Actions -->
+
+                <div class="report-actions">
+
+                    <button id="downloadReport" class="primary-btn">
+                        <i class="fas fa-file-pdf"></i>
+                        Download PDF
+                    </button>
+
+                    <button id="retakeInterview" class="outline-btn">
+                        <i class="fas fa-rotate-right"></i>
+                        Retake Interview
+                    </button>
+
+                    <button class="outline-btn" onclick="window.location.href='/dashboard/'">
+                        <i class="fas fa-house"></i>
+                        Dashboard
+                    </button>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </div>
+
+</main>
+
+<script src="{% static 'js/sidebar.js' %}"></script>
+<script src="{% static 'js/theme.js' %}"></script>
+<script src="{% static 'js/interview.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="{% static 'js/chatbot.js' %}"></script>
+
+</body>
+</html>

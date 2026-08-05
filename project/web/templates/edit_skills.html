@@ -1,0 +1,151 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>CareerGrowza | Edit Skills</title>
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="128x128"
+      href="{% static 'images/favicon/CareerGrowza_Favicon.png' %}"
+    />
+    <link
+      rel="shortcut icon"
+      href="{% static 'images/favicon/favicon.ico' %}"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+    />
+
+    <link rel="stylesheet" href="{% static 'css/common.css' %}" />
+
+    <link rel="stylesheet" href="{% static 'css/layout.css' %}" />
+
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}" />
+
+    <link rel="stylesheet" href="{% static 'css/profile.css' %}" />
+
+    <link rel="stylesheet" href="{% static 'css/edit_skills.css' %}" />
+  </head>
+
+  <body>
+    {% include "navbar.html" with active_page="profile" %}
+
+    <main class="main-content">
+      <div class="edit-wrapper">
+        <div class="edit-card">
+          <h1>
+            <i class="bx bx-edit"></i>
+
+            Edit Skills
+          </h1>
+
+          <p class="subtitle">
+            Review and update your extracted skills. Separate multiple skills
+            using commas.
+          </p>
+
+          <form method="POST">
+            {% csrf_token %}
+
+            <div class="skills-grid">
+              <div class="skill-card">
+                <h3>
+                  <i class="bx bx-chip"></i>
+
+                  Technical Skills
+                </h3>
+
+                <textarea name="technical_skills" rows="6">
+{{ skills.technical_skills|join:", " }}</textarea
+                >
+              </div>
+
+              <div class="skill-card">
+                <h3>
+                  <i class="bx bx-layer"></i>
+
+                  Frameworks
+                </h3>
+
+                <textarea name="frameworks" rows="6">
+{{ skills.frameworks|join:", " }}</textarea
+                >
+              </div>
+
+              <div class="skill-card">
+                <h3>
+                  <i class="bx bx-wrench"></i>
+
+                  Tools
+                </h3>
+
+                <textarea name="tools" rows="6">
+{{ skills.tools|join:", " }}</textarea
+                >
+              </div>
+
+              <div class="skill-card">
+                <h3>
+                  <i class="bx bx-data"></i>
+
+                  Databases
+                </h3>
+
+                <textarea name="databases" rows="6">
+{{ skills.databases|join:", " }}</textarea
+                >
+              </div>
+
+              <div class="skill-card">
+                <h3>
+                  <i class="bx bx-cloud"></i>
+
+                  Cloud Skills
+                </h3>
+
+                <textarea name="cloud_skills" rows="6">
+{{ skills.cloud_skills|join:", " }}</textarea
+                >
+              </div>
+
+              <div class="skill-card">
+                <h3>
+                  <i class="bx bx-group"></i>
+
+                  Soft Skills
+                </h3>
+
+                <textarea name="soft_skills" rows="6">
+{{ skills.soft_skills|join:", " }}</textarea
+                >
+              </div>
+            </div>
+
+            <div class="button-group">
+              <a href="{% url 'profile' %}" class="cancel-btn">
+                <i class="bx bx-arrow-back"></i>
+
+                Cancel
+              </a>
+
+              <button type="submit" class="save-btn">
+                <i class="bx bx-save"></i>
+
+                Save Skills
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+
+    <script src="{% static 'js/sidebar.js' %}"></script>
+  </body>
+</html>

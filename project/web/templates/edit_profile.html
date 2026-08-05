@@ -1,0 +1,124 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>CareerGrowza | Edit Profile</title>
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="128x128"
+      href="{% static 'images/favicon/CareerGrowza_Favicon.png' %}"
+    />
+    <link
+      rel="shortcut icon"
+      href="{% static 'images/favicon/favicon.ico' %}"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+    />
+
+    <link rel="stylesheet" href="{% static 'css/common.css' %}" />
+
+    <link rel="stylesheet" href="{% static 'css/layout.css' %}" />
+
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}" />
+
+    <link rel="stylesheet" href="{% static 'css/profile.css' %}" />
+
+    <link rel="stylesheet" href="{% static 'css/edit_profile.css' %}" />
+  </head>
+
+  <body>
+    {% include "navbar.html" with active_page="profile" %}
+
+    <main class="main-content">
+      <div class="edit-wrapper">
+        <div class="edit-card">
+          <h1>
+            <i class="bx bx-edit"></i>
+
+            Edit Profile
+          </h1>
+
+          <p class="subtitle">Update your personal information.</p>
+
+          <form method="POST">
+            {% csrf_token %}
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label> First Name </label>
+
+                {{ form.first_name }}
+              </div>
+
+              <div class="form-group">
+                <label> Last Name </label>
+
+                {{ form.last_name }}
+              </div>
+
+              <div class="form-group">
+                <label> Email </label>
+
+                {{ form.email }}
+              </div>
+
+              <div class="form-group">
+                <label> Phone </label>
+
+                {{ form.phone }}
+              </div>
+
+              <div class="form-group">
+                <label> Age </label>
+
+                {{ form.age }}
+              </div>
+
+              <div class="form-group">
+                <label> City </label>
+
+                {{ form.city }}
+              </div>
+
+              <div class="form-group full-width">
+                <label> Address </label>
+
+                {{ form.address }}
+              </div>
+
+              <div class="form-group">
+                <label> Country </label>
+
+                {{ form.country }}
+              </div>
+            </div>
+
+            <div class="button-group">
+              <a href="{% url 'profile' %}" class="cancel-btn">
+                <i class="bx bx-arrow-back"></i>
+
+                Cancel
+              </a>
+
+              <button type="submit" class="save-btn">
+                <i class="bx bx-save"></i>
+
+                Save Profile
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+
+    <script src="{% static 'js/sidebar.js' %}"></script>
+  </body>
+</html>

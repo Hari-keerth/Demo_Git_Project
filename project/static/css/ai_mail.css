@@ -1,0 +1,1166 @@
+/* =====================================================================
+   CareerGrowza AI Email Agent — ai_mail.css
+   Matches ai_email.html exactly (agent-card / upload-card / output-card /
+   info-card / score-grid / skill-group taxonomy). Dark = default theme,
+   light theme overrides via [data-theme="light"] / .light-theme.
+===================================================================== */
+
+
+/* =====================================================================
+   1. ROOT VARIABLES
+===================================================================== */
+
+:root{
+    --bg:#0f172a;
+    --surface:#1e293b;
+    --surface-2:#263449;
+    --card:rgba(30,41,59,.96);
+    --border:rgba(255,255,255,.08);
+    --track:#111827;
+    --scrollbar-thumb:#4c1d95;
+
+    --primary:#7c3aed;
+    --primary-light:#8b5cf6;
+    --primary-rgb:124,58,237;
+
+    --success:#22c55e;
+    --success-rgb:34,197,94;
+    --warning:#f59e0b;
+    --warning-rgb:245,158,11;
+    --danger:#ef4444;
+    --danger-rgb:239,68,68;
+    --info:#3b82f6;
+
+    --text:#ffffff;
+    --text-light:#cbd5e1;
+    --text-muted:#94a3b8;
+
+    --neutral-fill:#334155;
+    --neutral-text:#e2e8f0;
+
+    --radius:18px;
+    --radius-md:16px;
+    --radius-sm:12px;
+    --shadow:0 12px 30px rgba(0,0,0,.30);
+    --shadow-hover:0 20px 45px rgba(0,0,0,.35);
+    --transition:.30s ease;
+
+    --sidebar-width:260px;
+}
+
+:root[data-theme="light"],
+.light-theme{
+    --bg:#f4f5fb;
+    --surface:#ffffff;
+    --surface-2:#f1f3f9;
+    --card:rgba(255,255,255,.97);
+    --border:rgba(15,23,42,.08);
+    --track:#e2e8f0;
+    --scrollbar-thumb:#c4b5fd;
+
+    --text:#0f172a;
+    --text-light:#334155;
+    --text-muted:#64748b;
+
+    --neutral-fill:#e2e8f0;
+    --neutral-text:#334155;
+
+    --shadow:0 12px 30px rgba(15,23,42,.08);
+    --shadow-hover:0 20px 45px rgba(15,23,42,.12);
+}
+
+
+/* =====================================================================
+   2. RESET / BASE
+===================================================================== */
+
+*{ margin:0; padding:0; box-sizing:border-box; }
+
+html{ scroll-behavior:smooth; }
+
+body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:"DM Sans", sans-serif;
+    min-height:100vh;
+    transition:background var(--transition), color var(--transition);
+}
+
+a{ text-decoration:none; color:inherit; }
+
+::selection{ background:var(--primary); color:#fff; }
+
+h1{ font-size:32px; font-weight:700; }
+h2{ font-size:22px; font-weight:700; }
+h3{ font-size:17px; font-weight:600; }
+
+p{ color:var(--text-light); line-height:1.7; }
+
+::-webkit-scrollbar{ width:8px; }
+::-webkit-scrollbar-track{ background:var(--track); }
+::-webkit-scrollbar-thumb{ background:var(--scrollbar-thumb); border-radius:30px; }
+::-webkit-scrollbar-thumb:hover{ background:var(--primary); }
+
+
+/* =====================================================================
+   3. PAGE WRAPPER  (main.main-content > .ai-wrapper > .ai-page)
+===================================================================== */
+
+.main-content{
+    margin-left:var(--sidebar-width);
+    min-height:100vh;
+}
+
+.ai-wrapper{
+    padding:30px;
+}
+
+.ai-page{
+    display:flex;
+    flex-direction:column;
+    gap:24px;
+    max-width:1720px;
+    margin:0 auto;
+}
+
+
+/* =====================================================================
+   4. AI HEADER
+===================================================================== */
+
+.ai-header{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    backdrop-filter:blur(18px);
+    padding:26px 30px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:20px;
+    flex-wrap:wrap;
+    animation:fadeUp .45s ease;
+}
+
+.ai-header-content h1{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:8px;
+}
+
+.ai-header-content h1 i{
+    color:var(--primary-light);
+    font-size:30px;
+}
+
+.ai-header-content p{
+    color:var(--text-muted);
+    font-size:14px;
+    max-width:640px;
+}
+
+.ai-status{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 18px;
+    border-radius:999px;
+    background:rgba(var(--success-rgb),.12);
+    color:var(--success);
+    font-weight:600;
+    font-size:14px;
+    white-space:nowrap;
+}
+
+.ai-status i{ font-size:18px; }
+
+
+/* =====================================================================
+   5. AGENT LAYOUT  (.agent-left | .agent-right)
+===================================================================== */
+
+.agent-layout{
+    display:grid;
+    align-items:start;
+    gap:24px;
+    grid-template-columns:minmax(480px, 1.6fr) minmax(400px, 1fr);
+}
+
+.agent-left,
+.agent-right{
+    display:flex;
+    flex-direction:column;
+    gap:24px;
+    min-width:0;
+}
+
+
+/* =====================================================================
+   6. AGENT CARD  (shared card shell, reused everywhere)
+===================================================================== */
+
+.agent-card,
+.output-card,
+.info-card,
+.status-card,
+.download-section,
+.json-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius-md);
+    box-shadow:var(--shadow);
+    backdrop-filter:blur(18px);
+    padding:28px;
+    transition:var(--transition);
+    animation:fadeUp .45s ease;
+}
+
+.agent-card:hover,
+.output-card:hover{
+    transform:translateY(-3px);
+    box-shadow:var(--shadow-hover);
+}
+
+.agent-card-header{
+    margin-bottom:22px;
+}
+
+.agent-card-title{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:8px;
+}
+
+.agent-card-title i{
+    color:var(--primary-light);
+    font-size:26px;
+}
+
+.agent-card-subtitle{
+    color:var(--text-muted);
+    font-size:14px;
+}
+
+
+/* =====================================================================
+   7. FORM (#agentForm)
+===================================================================== */
+
+#agentForm{
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+}
+
+.form-group{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.form-group label{
+    font-size:14px;
+    font-weight:600;
+    color:var(--text-light);
+}
+
+/* Shared surface for every editable input/textarea */
+input,
+textarea,
+.editable-field{
+    width:100%;
+    background:var(--surface-2);
+    color:var(--text);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:15px 18px;
+    font-size:15px;
+    line-height:1.7;
+    font-family:inherit;
+    transition:var(--transition);
+}
+
+input::placeholder,
+textarea::placeholder{ color:var(--text-muted); }
+
+input:focus,
+textarea:focus{
+    outline:none;
+    border-color:var(--primary);
+    box-shadow:0 0 0 4px rgba(var(--primary-rgb),.18);
+}
+
+.editable-field:hover{ border-color:rgba(var(--primary-rgb),.45); }
+
+.input-error{
+    border-color:var(--danger) !important;
+    box-shadow:0 0 0 4px rgba(var(--danger-rgb),.15);
+}
+.input-success{ border-color:var(--success) !important; }
+
+.validation-message{
+    font-size:13px;
+    color:var(--danger);
+    margin-top:5px;
+}
+
+
+/* =====================================================================
+   8. RESUME UPLOAD
+===================================================================== */
+
+.upload-card{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+}
+
+.upload-box{
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    gap:6px;
+    padding:36px 20px;
+    border:2px dashed var(--border);
+    border-radius:var(--radius-md);
+    background:var(--surface-2);
+    cursor:pointer;
+    transition:var(--transition);
+}
+
+.upload-box:hover{
+    border-color:var(--primary);
+    background:rgba(var(--primary-rgb),.06);
+}
+
+.upload-box input[type="file"]{
+    position:absolute;
+    inset:0;
+    opacity:0;
+    cursor:pointer;
+    width:100%;
+    height:100%;
+    padding:0;
+    border:none;
+}
+
+.upload-icon{
+    font-size:36px;
+    color:var(--primary-light);
+    margin-bottom:6px;
+}
+
+.upload-title{
+    font-size:16px;
+    font-weight:700;
+    color:var(--text);
+}
+
+.upload-subtitle{
+    font-size:13px;
+    color:var(--text-muted);
+}
+
+.upload-box small{
+    color:var(--text-muted);
+    font-size:12px;
+    margin-top:4px;
+}
+
+.file-preview{
+    font-size:13px;
+    color:var(--text-light);
+    padding:10px 14px;
+    border-radius:10px;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+}
+
+
+/* =====================================================================
+   9. JOB DESCRIPTION / RECRUITER EMAIL
+===================================================================== */
+
+.job-card,
+.email-section{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.job-card label,
+.email-section label{
+    font-size:14px;
+    font-weight:600;
+    color:var(--text-light);
+}
+
+#jobDescription{
+    resize:vertical;
+    min-height:320px;
+}
+
+
+/* =====================================================================
+   10. AGENT ACTIONS  (Generate / Send / Generate & Send)
+===================================================================== */
+
+.agent-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:16px;
+}
+
+.agent-actions button{
+    flex:1;
+    min-width:150px;
+    border:none;
+    border-radius:14px;
+    padding:16px;
+    cursor:pointer;
+    font-size:15px;
+    font-weight:600;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    transition:var(--transition);
+}
+
+.agent-actions button i{ font-size:18px; }
+.agent-actions button:hover i{ animation:pulse .6s; }
+.agent-actions button:active{ transform:scale(.98); }
+
+.agent-actions button:disabled{
+    opacity:.55;
+    cursor:not-allowed;
+    transform:none;
+    box-shadow:none;
+}
+
+button.loading{ pointer-events:none; opacity:.75; }
+
+#generateBtn{ background:linear-gradient(135deg, #6d28d9, #8b5cf6); }
+#generateBtn:hover{
+    transform:translateY(-3px);
+    box-shadow:0 14px 28px rgba(var(--primary-rgb),.35);
+}
+
+#sendBtn{ background:linear-gradient(135deg, #0f9d58, #22c55e); }
+#sendBtn:hover{
+    transform:translateY(-3px);
+    box-shadow:0 14px 28px rgba(var(--success-rgb),.35);
+}
+
+#generateSendBtn{ background:linear-gradient(135deg, var(--primary), var(--info)); }
+#generateSendBtn:hover{
+    transform:translateY(-3px);
+    box-shadow:0 14px 28px rgba(59,130,246,.35);
+}
+
+
+/* =====================================================================
+   11. OUTPUT CARDS  (Generated Email / Cover Letter)
+===================================================================== */
+
+.output-card{
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+}
+
+.output-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:14px;
+    padding-bottom:18px;
+    border-bottom:1px solid var(--border);
+}
+
+.output-header h2{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-size:22px;
+}
+
+.output-header h2 i{
+    color:var(--primary-light);
+    font-size:26px;
+}
+
+.output-toolbar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+}
+
+.output-toolbar button{
+    border:none;
+    background:linear-gradient(135deg, var(--primary), var(--primary-light));
+    color:#fff;
+    padding:10px 16px;
+    border-radius:12px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:13px;
+    font-weight:600;
+    transition:var(--transition);
+}
+
+.output-toolbar button:hover{
+    transform:translateY(-3px);
+    box-shadow:0 10px 22px rgba(var(--primary-rgb),.30);
+}
+
+.output-toolbar button.success{
+    background:linear-gradient(135deg, #16a34a, #22c55e);
+}
+
+.output-body{
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+}
+
+#subject{ font-size:16px; font-weight:600; }
+
+#emailBody{
+    min-height:260px;
+    color:var(--text-light);
+    resize:vertical;
+    line-height:1.8;
+}
+
+.cover-editor{ display:flex; flex-direction:column; }
+
+#coverLetter{
+    min-height:420px;
+    color:var(--text-light);
+    resize:vertical;
+    line-height:1.9;
+}
+
+.output-footer{
+    color:var(--text-muted);
+    font-size:13px;
+}
+
+#subject::selection,
+#emailBody::selection,
+#coverLetter::selection{
+    background:var(--primary);
+    color:#fff;
+}
+
+
+/* =====================================================================
+   12. TIMELINE
+===================================================================== */
+
+.agent-timeline h3{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:16px;
+}
+
+.agent-timeline h3 i{ color:var(--primary-light); }
+
+#progressList{
+    list-style:none;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    margin-bottom:22px;
+}
+
+.agent-step{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:14px 16px;
+    border-radius:var(--radius-sm);
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    transition:var(--transition);
+}
+
+.agent-step:hover{ transform:translateX(6px); }
+
+.agent-step i{
+    width:34px;
+    height:34px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:50%;
+    background:rgba(255,255,255,.05);
+    font-size:18px;
+}
+
+.agent-step.waiting{ opacity:.65; }
+.agent-step.waiting i{ color:var(--text-muted); }
+
+.agent-step.active{ border-color:var(--warning); background:rgba(var(--warning-rgb),.08); }
+.agent-step.active i{ color:var(--warning); animation:pulse 1s infinite; }
+
+.agent-step.completed{ border-color:var(--success); background:rgba(var(--success-rgb),.08); }
+.agent-step.completed i{ color:var(--success); }
+
+.agent-step.failed{ border-color:var(--danger); background:rgba(var(--danger-rgb),.08); }
+.agent-step.failed i{ color:var(--danger); }
+
+
+/* =====================================================================
+   13. OVERALL PROGRESS
+===================================================================== */
+
+.progress-track{
+    margin-bottom:22px;
+}
+
+.progress{
+    width:100%;
+    height:10px;
+    border-radius:20px;
+    overflow:hidden;
+    background:var(--track);
+}
+
+.progress-fill{
+    width:0%;
+    height:100%;
+    border-radius:20px;
+    background:linear-gradient(90deg, var(--primary), var(--primary-light));
+    transition:width .4s ease;
+}
+
+.progress-footer{
+    display:flex;
+    justify-content:flex-end;
+    margin-top:10px;
+}
+
+.progress-text{
+    font-weight:700;
+    color:var(--primary-light);
+}
+
+
+/* =====================================================================
+   14. METRICS
+===================================================================== */
+
+.metric-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+    margin-bottom:22px;
+}
+
+.metric-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-sm);
+    padding:18px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    animation:slideLeft .5s ease;
+}
+
+.metric-icon{
+    width:48px;
+    height:48px;
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:50%;
+    background:rgba(var(--primary-rgb),.12);
+}
+
+.metric-icon i{ color:var(--primary-light); font-size:22px; }
+
+.metric-content span{
+    display:block;
+    font-size:12px;
+    color:var(--text-muted);
+}
+
+.metric-content h2{
+    margin-top:4px;
+    font-size:22px;
+}
+
+.decision{ font-size:16px !important; padding:2px 0; }
+.decision.waiting{ color:var(--neutral-text); }
+.decision.success{ color:var(--success); }
+.decision.failed{ color:var(--danger); }
+
+
+/* =====================================================================
+   15. STATUS ROW / SUMMARY
+===================================================================== */
+
+.agent-summary{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    padding:18px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-sm);
+    margin-bottom:22px;
+}
+
+.summary-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.summary-item label{ color:var(--text-muted); font-size:14px; }
+.summary-item strong{ color:var(--text); }
+
+
+/* =====================================================================
+   16. INFO CARDS  (Company Summary / AI Strategy)
+===================================================================== */
+
+.info-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-sm);
+    padding:18px;
+    margin-bottom:22px;
+}
+
+.info-card:last-of-type{ margin-bottom:22px; }
+
+.info-card h3{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:12px;
+}
+
+.info-card h3 i{ color:var(--primary-light); }
+
+#companySummary,
+#strategy{
+    line-height:1.8;
+    color:var(--text-light);
+}
+
+
+/* =====================================================================
+   17. AGENT LOG
+===================================================================== */
+
+.agent-log{ margin-top:4px; }
+
+.log-box{
+    background:var(--track);
+    border:1px solid var(--border);
+    border-radius:var(--radius-sm);
+    overflow:hidden;
+}
+
+.agent-log-header{
+    padding:16px 18px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    border-bottom:1px solid var(--border);
+}
+
+.agent-log-header i{ color:var(--primary-light); }
+
+.agent-log-body{
+    height:220px;
+    overflow-y:auto;
+    padding:16px;
+    font-size:14px;
+    line-height:1.7;
+    white-space:pre-wrap;
+    color:var(--text-light);
+}
+
+.log-success{ color:var(--success); }
+.log-warning{ color:var(--warning); }
+.log-error{ color:var(--danger); }
+.log-info{ color:var(--info); }
+
+
+/* =====================================================================
+   18. ATS ANALYSIS
+===================================================================== */
+
+.analysis-section{
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+}
+
+.score-grid{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:16px;
+}
+
+.score-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-sm);
+    padding:18px;
+}
+
+.score-card label{
+    display:block;
+    color:var(--text-muted);
+    font-size:13px;
+    margin-bottom:10px;
+}
+
+#atsProgress{ background:linear-gradient(90deg, var(--success), #16a34a); }
+
+#atsPercentage{
+    margin-top:12px;
+    text-align:center;
+    font-size:28px;
+    font-weight:700;
+    color:var(--success);
+}
+
+
+/* =====================================================================
+   19. SKILLS
+===================================================================== */
+
+.skill-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+}
+
+.skill-group{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-sm);
+    padding:18px;
+}
+
+.skill-group h3{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:14px;
+    font-size:15px;
+}
+
+.skill-tag-list{
+    list-style:none;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+}
+
+.skill-tag-list li{
+    padding:8px 12px;
+    border-radius:999px;
+    font-size:13px;
+    background:var(--surface-2);
+    color:var(--text-light);
+}
+
+#matchedSkills li{
+    background:rgba(var(--success-rgb),.10);
+    color:var(--success);
+}
+
+#missingSkills li{
+    background:rgba(var(--danger-rgb),.10);
+    color:var(--danger);
+}
+
+#matchedSkills li.empty-state,
+#missingSkills li.empty-state{
+    background:transparent;
+    color:var(--text-muted);
+    font-style:italic;
+    padding-left:0;
+}
+
+
+/* =====================================================================
+   20. APPLICATION STATUS
+===================================================================== */
+
+.status-card h3{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:16px;
+}
+
+.status-card h3 i{ color:var(--primary-light); }
+
+#application_status{
+    padding:14px;
+    border-radius:var(--radius-sm);
+    text-align:center;
+    font-weight:600;
+}
+
+.status-waiting{ background:var(--neutral-fill); color:var(--neutral-text); }
+.status-success{ background:rgba(var(--success-rgb),.15); color:var(--success); }
+.status-failed{ background:rgba(var(--danger-rgb),.15); color:var(--danger); }
+
+
+/* =====================================================================
+   21. DOWNLOADS
+===================================================================== */
+
+.download-section h3{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:18px;
+}
+
+.download-section h3 i{ color:var(--primary-light); }
+
+.download-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+}
+
+.download-card{
+    border:1px solid var(--border);
+    background:var(--surface);
+    border-radius:var(--radius-sm);
+    padding:22px 14px;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    text-align:center;
+    color:var(--text);
+    font-size:14px;
+    font-weight:600;
+    transition:var(--transition);
+}
+
+.download-card i{
+    font-size:26px;
+    color:var(--primary-light);
+}
+
+.download-card:hover{
+    transform:translateY(-3px);
+    border-color:var(--primary);
+    box-shadow:0 10px 22px rgba(var(--primary-rgb),.25);
+}
+
+
+/* =====================================================================
+   22. JSON VIEWER
+===================================================================== */
+
+.json-toolbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:12px;
+    margin-bottom:16px;
+}
+
+.json-toolbar h3{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.json-toolbar h3 i{ color:var(--primary-light); }
+
+.json-actions{ display:flex; gap:10px; }
+
+.json-actions button{
+    border:none;
+    border-radius:10px;
+    padding:10px 14px;
+    cursor:pointer;
+    background:var(--surface-2);
+    color:var(--text);
+    transition:var(--transition);
+}
+
+.json-actions button:hover{ background:var(--primary); color:#fff; }
+
+#rawJson{
+    background:var(--track);
+    border-radius:var(--radius-sm);
+    padding:16px;
+    min-height:160px;
+    max-height:320px;
+    overflow:auto;
+    font-size:13px;
+    line-height:1.7;
+    color:var(--text-light);
+    white-space:pre-wrap;
+    word-break:break-word;
+}
+
+.hidden{ display:none; }
+
+
+/* =====================================================================
+   23. LOADING OVERLAY
+===================================================================== */
+
+.loading-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.65);
+    backdrop-filter:blur(4px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:999;
+}
+
+.loading-overlay.hidden{ display:none; }
+
+.loading-box{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius-md);
+    padding:32px 40px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:16px;
+    box-shadow:var(--shadow-hover);
+}
+
+.loading-box p{ color:var(--text-light); font-weight:600; }
+
+
+/* =====================================================================
+   24. EMPTY STATE
+===================================================================== */
+
+.empty-state{
+    color:var(--text-muted);
+    font-style:italic;
+    font-size:13px;
+}
+
+
+/* =====================================================================
+   25. ANIMATIONS
+===================================================================== */
+
+@keyframes fadeUp{
+    from{ opacity:0; transform:translateY(20px); }
+    to{ opacity:1; transform:translateY(0); }
+}
+
+@keyframes slideLeft{
+    from{ opacity:0; transform:translateX(20px); }
+    to{ opacity:1; transform:translateX(0); }
+}
+
+@keyframes pulse{
+    0%{ transform:scale(1); }
+    50%{ transform:scale(1.08); }
+    100%{ transform:scale(1); }
+}
+
+@keyframes spin{
+    from{ transform:rotate(0deg); }
+    to{ transform:rotate(360deg); }
+}
+
+.spinner{
+    width:22px;
+    height:22px;
+    border:3px solid rgba(255,255,255,.2);
+    border-top:3px solid var(--primary-light);
+    border-radius:50%;
+    animation:spin .8s linear infinite;
+}
+
+
+/* =====================================================================
+   26. RESPONSIVE
+===================================================================== */
+
+@media (max-width:1400px){
+    .agent-layout{
+        grid-template-columns:minmax(420px, 1.5fr) minmax(360px, 1fr);
+    }
+}
+
+@media (max-width:1200px){
+    .agent-layout{ grid-template-columns:1fr; }
+}
+
+@media (max-width:992px){
+    .main-content{ margin-left:0; }
+    .ai-wrapper{ padding:20px; }
+    .metric-grid{ grid-template-columns:1fr; }
+    .skill-grid{ grid-template-columns:1fr; }
+    .download-grid{ grid-template-columns:1fr; }
+}
+
+@media (max-width:768px){
+    .ai-header{ flex-direction:column; align-items:flex-start; }
+    .agent-actions{ flex-direction:column; }
+    .output-toolbar{ flex-wrap:wrap; justify-content:flex-start; }
+    .summary-item{ flex-direction:column; align-items:flex-start; gap:6px; }
+}
+
+@media (max-width:576px){
+    .ai-header-content h1{ font-size:22px; }
+    .output-header{ flex-direction:column; align-items:flex-start; }
+    #subject, #emailBody, #coverLetter{ font-size:14px; }
+    .agent-actions button{ width:100%; }
+}
+
+
+/* =====================================================================
+   27. ACCESSIBILITY / PRINT
+===================================================================== */
+
+button:focus,
+input:focus,
+textarea:focus{ outline:none; }
+
+@media print{
+    .agent-actions,
+    .output-toolbar,
+    .download-section,
+    .json-card,
+    .agent-right{
+        display:none !important;
+    }
+    body{ background:#fff; color:#000; }
+}

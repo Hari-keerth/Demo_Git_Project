@@ -1,0 +1,95 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CareerGrowza | Live Jobs</title>
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="128x128"
+      href="{% static 'images/favicon/CareerGrowza_Favicon.png' %}"
+    />
+    <link
+      rel="shortcut icon"
+      href="{% static 'images/favicon/favicon.ico' %}"
+    />
+    <!-- Tailwind CSS CDN for easy styling -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  </head>
+  <body class="bg-gray-50 text-gray-800 font-sans">
+    <div class="max-w-6xl mx-auto px-4 py-8">
+      <header class="mb-8 border-b border-gray-200 pb-5">
+        <h1 class="text-3xl font-extrabold text-blue-600">Live Jobs For You</h1>
+        <p class="text-gray-500 mt-2">
+          Showing latest job openings matching your profile.
+        </p>
+      </header>
+
+      {% if adzuna_jobs %}
+      <div class="grid gap-6 md:grid-cols-2">
+        {% for job in adzuna_jobs %}
+        <div
+          class="bg-white rounded-xl shadow-xs border border-gray-100 p-6 hover:shadow-md transition-shadow"
+        >
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <h2 class="text-xl font-bold text-gray-900">{{ job.title }}</h2>
+              <p class="text-md text-gray-600 font-medium">{{ job.company }}</p>
+            </div>
+            <span
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800"
+            >
+              {{ job.category }}
+            </span>
+          </div>
+
+          <div
+            class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500 mb-4"
+          >
+            <span> {{ job.location }}</span>
+            {% if job.salary_min %}
+            <span> {{ job.salary_min }} - {{ job.salary_max }}</span>
+            {% endif %} {% if job.contract_time %}
+            <span class="capitalize"> {{ job.contract_time}}</span>
+            {% endif %}
+          </div>
+
+          <p class="text-gray-600 text-sm line-clamp-3 mb-4">
+            {{ job.description }}
+          </p>
+
+          <!-- Extracted Skills -->
+          <div>
+            <span
+              class="text-xs font-bold uppercase tracking-wider text-gray-400 block mb-2"
+              >Detected Skills:</span
+            >
+            <div class="flex flex-wrap gap-1.5">
+              {% for skill in job.skills %}
+              <span
+                class="bg-gray-100 text-gray-700 text-xs px-2.5 py-1 rounded-md font-medium"
+              >
+                {{ skill }}
+              </span>
+              {% empty %}
+              <span class="text-xs italic text-gray-400"
+                >No specific skills listed.</span
+              >
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div
+        class="text-center py-12 bg-white rounded-xl border border-gray-200 shadow-xs"
+      >
+        <p class="text-gray-500 text-lg">No jobs found at the moment.</p>
+      </div>
+      {% endif %}
+    </div>
+  </body>
+</html>

@@ -1,0 +1,74 @@
+<div id="chatbot">
+
+    <!-- Floating Button -->
+    <button id="chat-button" type="button" aria-label="Open AI Assistant">
+        <i class="bx bx-message-rounded-dots"></i>
+    </button>
+
+    <!-- Chat Window -->
+    <div class="chat-window">
+
+        <!-- Header -->
+        <div class="chat-header">
+
+            <div class="header-left">
+
+                <div class="assistant-avatar">
+                    <i class="bx bx-bot"></i>
+                </div>
+
+                <div class="header-text">
+                    <h3>AI Job Assistant</h3>
+                    <span class="status">
+                        <span class="status-dot"></span>
+                        Online
+                    </span>
+                </div>
+
+            </div>
+
+            <button id="close-chat" type="button">
+                <i class="bx bx-x"></i>
+            </button>
+
+        </div>
+
+        <!-- Welcome -->
+        <div id="welcome-section">
+
+            <h3>Hello 👋</h3>
+
+            <p>
+                I'm your CareerGrowza AI Assistant.
+                Ask me anything about resumes, interviews,
+                careers or jobs.
+            </p>
+
+        </div>
+
+        <!-- Chat Messages -->
+        <div class="chat-body"></div>
+
+        <!-- Input -->
+        <div class="chat-input">
+
+            <input
+                id="question"
+                type="text"
+                placeholder="Ask anything..."
+                autocomplete="off"
+            >
+
+            <button
+                class="chat-send"
+                type="button"
+                aria-label="Send"
+            >
+                <i class="bx bx-send"></i>
+            </button>
+
+        </div>
+
+    </div>
+
+</div>

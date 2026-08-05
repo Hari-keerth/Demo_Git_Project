@@ -1,0 +1,154 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>CareerGrowza | Verify OTP</title>
+
+    <link rel="icon" href="{% static 'images/favicon/favicon.ico' %}" />
+
+    <link rel="stylesheet" href="{% static 'css/common.css' %}" />
+
+    <link rel="stylesheet" href="{% static 'css/layout.css' %}" />
+
+    <link rel="stylesheet" href="{% static 'css/login.css' %}" />
+
+    <link rel="stylesheet" href="{% static 'css/password.css' %}" />
+
+    <link rel="stylesheet" href="{% static 'css/index.css' %}" />
+
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body class="auth-body">
+    <div class="wrapper">
+      <form method="POST">
+        {% csrf_token %}
+
+        <div class="login-header">
+          <div class="login-icon">
+            <i class="bx bx-shield-quarter"></i>
+          </div>
+
+          <h2>Verify OTP</h2>
+
+          <p class="subtitle">
+            Enter the 6-digit verification code sent to your email.
+          </p>
+        </div>
+
+        {% if messages %} {% for message in messages %}
+
+        <div class="message {{ message.tags }}">{{ message }}</div>
+
+        {% endfor %} {% endif %}
+
+        <div class="otp-wrapper">
+          {% for i in "123456" %}
+
+          <input
+            type="text"
+            maxlength="1"
+            name="otp{{ i }}"
+            class="otp-input"
+            required
+          />
+
+          {% endfor %}
+        </div>
+
+        <div class="otp-actions">
+          <p>
+            OTP expires in
+
+            <span id="timer"> 05:00 </span>
+          </p>
+
+          <a href="{% url 'resend_otp' %}" id="resend"> Resend OTP </a>
+        </div>
+
+        <button>
+          Verify OTP
+
+          <i class="bx bx-check"></i>
+        </button>
+      </form>
+    </div>
+
+    <script>
+      const otp = document.querySelectorAll('.otp-input');
+
+      otp.forEach((box, index) => {
+        box.addEventListener('input', () => {
+          box.value = box.value.replace(/[^0-9]/g, '');
+
+          if (box.value && index < 5) otp[index + 1].focus();
+        });
+
+        box.addEventListener('keydown', (e) => {
+          if (e.key === 'Backspace' && box.value === '' && index > 0) {
+            otp[index - 1].focus();
+          }
+        });
+      });
+
+      document
+        .querySelector('.otp-wrapper')
+
+        .addEventListener('paste', (e) => {
+          e.preventDefault();
+
+          let data = e.clipboardData
+
+            .getData('text')
+
+            .replace(/\D/g, '')
+
+            .substring(0, 6);
+
+          otp.forEach((b, i) => {
+            b.value = data[i] || '';
+          });
+        });
+
+      let time = 300;
+
+      let timer = document.getElementById('timer');
+
+      let resend = document.getElementById('resend');
+
+      resend.style.pointerEvents = 'none';
+
+      resend.style.opacity = '.5';
+
+      let interval = setInterval(() => {
+        time--;
+
+        let m = Math.floor(time / 60);
+
+        let s = time % 60;
+
+        timer.innerHTML =
+          String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+
+        if (time <= 240) {
+          resend.style.pointerEvents = 'auto';
+
+          resend.style.opacity = '1';
+        }
+
+        if (time <= 0) {
+          clearInterval(interval);
+
+          timer.innerHTML = 'Expired';
+        }
+      }, 1000);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,306 @@
+/* ================= Topbar ================= */
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:10px;
+    gap:20px;
+}
+.topbar h1{
+    font-size:36px;
+    color:var(--text);
+    margin-bottom:8px;
+    font-weight:700;
+}
+.dashboard-subtitle{
+    color:var(--text-light);
+    font-size:16px;
+    font-weight:500;
+    margin:0;
+}
+.topbar-profile{
+    display:flex;
+    align-items:center;
+    gap:15px;
+}
+.job-category-badge{
+    background:rgba(99,102,241,.10);
+    color:#6366f1;
+    padding:6px 14px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:700;
+    white-space:nowrap;
+}
+
+/* ================= Stat Cards ================= */
+.cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+    gap:25px;
+}
+.card{
+    background:var(--glass);
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+    border:1px solid var(--glass-border);
+    border-radius:22px;
+    padding:28px;
+    box-shadow:0 15px 35px rgba(80,90,180,.08);
+    transition:.3s;
+}
+.card:hover{
+    transform:translateY(-6px);
+    box-shadow:0 22px 45px rgba(80,90,180,.15);
+}
+.card i{
+    font-size:34px;
+    color:#6366f1;
+    margin-bottom:18px;
+}
+.card h3{
+    color:var(--text-light);
+    font-size:15px;
+    margin-bottom:10px;
+}
+.card h2{
+    font-size:30px;
+    margin:0;
+    color:var(--text);
+}
+
+/* ================= Search Section ================= */
+.search-section{
+    background:var(--card);
+    padding:30px;
+    border-radius:22px;
+    margin-bottom:20px;
+    box-shadow:0 10px 25px rgba(0,0,0,.06);
+}
+.section-title{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:24px;
+    margin-bottom:10px;
+    color:var(--text);
+}
+.section-description{
+    color:var(--text-light);
+    margin-bottom:25px;
+    font-size:15px;
+}
+.search-form{
+    display:flex;
+    gap:15px;
+    align-items:center;
+}
+.search-box{
+    flex:1;
+    display:flex;
+    align-items:center;
+    background:var(--surface-2);
+    border:2px solid var(--border);
+    border-radius:16px;
+    padding:0 18px;
+    transition:.3s;
+}
+.search-box:focus-within{
+    border-color:#6366f1;
+    box-shadow:0 0 0 5px rgba(99,102,241,.15);
+}
+.search-box i{
+    font-size:22px;
+    color:#6366f1;
+    margin-right:12px;
+}
+.search-input{
+    flex:1;
+    border:none;
+    outline:none;
+    background:transparent;
+    padding:16px 0;
+    font-size:16px;
+    color:var(--text);
+}
+.search-btn{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:#6366f1;
+    color:#fff;
+    padding:16px 30px;
+    border:none;
+    border-radius:16px;
+    font-size:16px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.3s;
+}
+.search-btn:hover{
+    background:#4f46e5;
+    transform:translateY(-2px);
+    box-shadow:0 12px 25px rgba(99,102,241,.25);
+}
+
+/* ================= Job Card ================= */
+.job-card{
+    background:var(--card);
+    border-radius:24px;
+    padding:28px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    box-shadow:0 12px 30px rgba(0,0,0,.08);
+    transition:.3s;
+    height:100%;
+}
+.job-card:hover{
+    transform:translateY(-6px);
+    box-shadow:0 20px 40px rgba(99,102,241,.18);
+}
+.job-header{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:18px;
+    margin-bottom:20px;
+}
+.job-title{
+    font-size:22px;
+    font-weight:700;
+    color:var(--text);
+    margin-bottom:5px;
+    text-align:left;
+    line-height:1.35;
+}
+.company-name{
+    font-size:15px;
+    color:#6366f1;
+    font-weight:600;
+}
+.job-type{
+    background:rgba(99,102,241,.10);
+    color:#6366f1;
+    padding:6px 14px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:700;
+    white-space:nowrap;
+}
+.job-meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:15px;
+    margin:15px 0;
+    font-size:14px;
+    color:var(--text-light);
+}
+.job-meta span{
+    display:flex;
+    align-items:center;
+    gap:6px;
+}
+.job-desc{
+    color:var(--text-light);
+    font-size:14px;
+    line-height:1.6;
+    margin-bottom:20px;
+}
+
+.skills-box{
+    margin-bottom:20px;
+}
+.skills-title{
+    font-size:11px;
+    font-weight:700;
+    color:var(--text-light);
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    display:block;
+    margin-bottom:8px;
+}
+.skills-tags{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+}
+.skill-tag{
+    background:var(--hover);
+    color:var(--text);
+    padding:7px 12px;
+    border-radius:12px;
+    font-size:12px;
+    font-weight:600;
+}
+.no-skills{
+    font-size:13px;
+    color:#999;
+}
+
+.job-footer{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:20px;
+    padding-top:15px;
+    border-top:1px solid var(--border);
+}
+.source{
+    font-size:13px;
+    color:#999;
+}
+.apply-btn{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:#6366f1;
+    color:#fff;
+    padding:10px 20px;
+    border-radius:14px;
+    text-decoration:none;
+    font-size:14px;
+    font-weight:600;
+    transition:.3s;
+}
+.apply-btn:hover{
+    background:#4f46e5;
+    transform:translateY(-2px);
+}
+
+.no-jobs-box{
+    text-align:center;
+    padding:50px;
+    background:var(--card);
+    border-radius:22px;
+    backdrop-filter:blur(20px);
+    border:1px solid var(--border);
+}
+
+/* ==========================================================
+   DARK MODE SUPPORT
+========================================================== */
+[data-theme="dark"] .card,
+[data-theme="dark"] .job-card,
+[data-theme="dark"] .search-section,
+[data-theme="dark"] .no-jobs-box{
+    background:var(--card);
+    color:var(--text);
+    border-color:var(--border);
+}
+[data-theme="dark"] .search-box{
+    background:var(--input-bg);
+    border-color:var(--border);
+}
+[data-theme="dark"] .search-input{
+    color:var(--text);
+}
+[data-theme="dark"] .skill-tag,
+[data-theme="dark"] .job-type,
+[data-theme="dark"] .job-category-badge{
+    background:rgba(99,102,241,.18);
+    color:#a5b4fc;
+}
+[data-theme="dark"] .job-footer{
+    border-top:1px solid var(--border);
+}
