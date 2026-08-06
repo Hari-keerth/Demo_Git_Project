@@ -1,165 +1,155 @@
-<!doctype html>
+{% load static %}
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Post a New Job | Career Growza</title>
-    <!-- Bootstrap CSS for styling -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <style>
-      body {
-        background-color: #f4f7f6;
-      }
-      .form-container {
-        background: #ffffff;
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-        padding: 40px;
-        margin-top: 50px;
-        margin-bottom: 50px;
-      }
-      .btn-custom {
-        background-color: #0d6efd;
-        color: white;
-        font-weight: 600;
-        padding: 10px 25px;
-        border-radius: 6px;
-      }
-      .btn-custom:hover {
-        background-color: #0b5ed7;
-        color: white;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-7">
-          <div class="form-container">
-            <h2 class="text-center mb-4 font-weight-bold" style="color: #333">
-              📢 Post a New Job Opportunity
-            </h2>
-            <p class="text-muted text-center mb-5">
-              Fill in the details below to publish your open position to job
-              seekers.
-            </p>
 
-            <form method="POST" action="{% url 'post_job' %}">
-              {% csrf_token %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareerGrowza | Post a New Job</title>
+    
+    <link rel="icon" type="image/png" sizes="128x128" href="{% static 'images/favicon/CareerGrowza_Favicon.png' %}">
+    <link rel="shortcut icon" href="{% static 'images/favicon/favicon.ico' %}">
 
-              <!-- Job Title -->
-              <div class="mb-3">
-                <label for="title" class="form-label font-weight-bold"
-                  >Job Title *</label
-                >
-                <input
-                  type="text"
-                  class="form-control"
-                  id="title"
-                  name="title"
-                  placeholder="e.g. Senior Python Developer"
-                  required
-                />
-              </div>
+    <!-- Boxicons -->
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+    
+    <!-- Base App Styles -->
+    <link rel="stylesheet" href="{% static 'css/common.css' %}">
+    <link rel="stylesheet" href="{% static 'css/layout.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+    
+    <!-- Page Specific CSS -->
+    <link rel="stylesheet" href="{% static 'css/post_job.css' %}?v=1">
+</head>
 
-              <!-- Company Name -->
-              <div class="mb-3">
-                <label for="company" class="form-label">Company Name *</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="company"
-                  name="company"
-                  placeholder="e.g. Growza Tech Solutions"
-                  required
-                />
-              </div>
+<body>
 
-              <!-- Job Location -->
-              <div class="mb-3">
-                <label for="location" class="form-label">Location *</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="location"
-                  name="location"
-                  placeholder="e.g. Kochi, Kerala (Hybrid)"
-                  required
-                />
-              </div>
+{% include "recruiter_sidebar.html" with active_page="post_job" %}
 
-              <!-- Redirect URL (External Application) -->
-              <div class="mb-3">
-                <label for="redirect_url" class="form-label"
-                  >External Application Link (Optional)</label
-                >
-                <input
-                  type="url"
-                  class="form-control"
-                  id="redirect_url"
-                  name="redirect_url"
-                  placeholder="https://company.com/apply"
-                />
-                <small class="text-muted"
-                  >Direct applicants to your company careers page
-                  instead.</small
-                >
-              </div>
+<main class="main-content">
 
-              <!-- Required Skills (Comma separated) -->
-              <div class="mb-3">
-                <label for="required_skills" class="form-label"
-                  >Required Skills *</label
-                >
-                <input
-                  type="text"
-                  class="form-control"
-                  id="required_skills"
-                  name="required_skills"
-                  placeholder="e.g. Python, Django, PostgreSQL, Git"
-                  required
-                />
-                <small class="text-muted">Separate skills with commas.</small>
-              </div>
+    <div class="post-job-container">
 
-              <!-- Job Description -->
-              <div class="mb-4">
-                <label for="description" class="form-label"
-                  >Detailed Job Description *</label
-                >
-                <textarea
-                  class="form-control"
-                  id="description"
-                  name="description"
-                  rows="6"
-                  placeholder="Describe the responsibilities, requirements, and benefits of this position..."
-                  required
-                ></textarea>
-              </div>
-
-              <!-- Action Buttons -->
-              <div
-                class="d-flex justify-content-between align-items-center mt-4"
-              >
-                <a
-                  href="{% url 'recruiter_dashboard' %}"
-                  class="btn btn-outline-secondary"
-                  >Back to Dashboard</a
-                >
-                <button type="submit" class="btn btn-custom">
-                  Publish Job Post
-                </button>
-              </div>
-            </form>
-          </div>
+        <!-- Top Header Card -->
+        <div class="post-job-header">
+            <div class="header-text">
+                <h2><i class='bx bx-plus-circle'></i> Post a New Job Opportunity</h2>
+                <p>Fill in the details below to publish your open position to job seekers.</p>
+            </div>
+            <a href="{% url 'recruiter_dashboard' %}" class="btn-secondary-link">
+                <i class='bx bx-arrow-back'></i> Back to Dashboard
+            </a>
         </div>
-      </div>
+
+        <!-- Form Card Shell -->
+        <div class="dash-card form-card">
+            <form method="POST" action="{% url 'post_job' %}" class="job-form">
+                {% csrf_token %}
+
+                <!-- Section: Key Details -->
+                <div class="form-section-title">
+                    <i class='bx bx-briefcase'></i> Key Role Details
+                </div>
+
+                <div class="form-grid-2">
+                    <!-- Job Title -->
+                    <div class="form-group">
+                        <label for="title">Job Title <span class="required">*</span></label>
+                        <div class="input-with-icon">
+                            <i class='bx bx-user-voice'></i>
+                            <input type="text" id="title" name="title" placeholder="e.g. Senior Python Developer" required>
+                        </div>
+                    </div>
+
+                    <!-- Company Name -->
+                    <div class="form-group">
+                        <label for="company_name">Company Name <span class="required">*</span></label>
+                        <div class="input-with-icon">
+                            <i class='bx bx-building-house'></i>
+                            <input type="text" id="company_name" name="company_name" placeholder="e.g. Growza Tech Solutions" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-grid-3">
+                    <!-- Location -->
+                    <div class="form-group">
+                        <label for="location">Location <span class="required">*</span></label>
+                        <div class="input-with-icon">
+                            <i class='bx bx-map-pin'></i>
+                            <input type="text" id="location" name="location" placeholder="e.g. Kochi, Kerala (Hybrid)" required>
+                        </div>
+                    </div>
+
+                    <!-- Salary -->
+                    <div class="form-group">
+                        <label for="salary">Salary Range <span class="optional">(Optional)</span></label>
+                        <div class="input-with-icon">
+                            <i class='bx bx-rupee'></i>
+                            <input type="text" id="salary" name="salary" placeholder="e.g. ₹8,00,000 - ₹12,00,000 PA">
+                        </div>
+                    </div>
+
+                    <!-- Experience -->
+                    <div class="form-group">
+                        <label for="experience_required">Experience Required <span class="optional">(Optional)</span></label>
+                        <div class="input-with-icon">
+                            <i class='bx bx-time-five'></i>
+                            <input type="text" id="experience_required" name="experience_required" placeholder="e.g. 3-5 Years">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section: Application & Requirements -->
+                <div class="form-section-title mt-24">
+                    <i class='bx bx-list-check'></i> Requirements & Link
+                </div>
+
+                <!-- External URL -->
+                <div class="form-group">
+                    <label for="redirect_url">External Application Link <span class="optional">(Optional)</span></label>
+                    <div class="input-with-icon">
+                        <i class='bx bx-link-external'></i>
+                        <input type="url" id="redirect_url" name="redirect_url" placeholder="https://company.com/careers/apply">
+                    </div>
+                    <small class="help-text">Direct applicants to your external company page instead of in-app submission.</small>
+                </div>
+
+                <!-- Required Skills -->
+                <div class="form-group">
+                    <label for="required_skills">Required Skills <span class="required">*</span></label>
+                    <div class="input-with-icon">
+                        <i class='bx bx-code-alt'></i>
+                        <input type="text" id="required_skills" name="required_skills" placeholder="e.g. Python, Django, PostgreSQL, Git" required>
+                    </div>
+                    <small class="help-text">Separate individual technical skills with commas.</small>
+                </div>
+
+                <!-- Description -->
+                <div class="form-group">
+                    <label for="description">Detailed Job Description <span class="required">*</span></label>
+                    <textarea id="description" name="description" rows="6" placeholder="Describe the key responsibilities, qualifications, and benefits..." required></textarea>
+                </div>
+
+                <!-- Form Action Footer -->
+                <div class="form-actions">
+                    <a href="{% url 'recruiter_dashboard' %}" class="btn-cancel">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn-submit">
+                        <i class='bx bx-paper-plane'></i> Publish Job Post
+                    </button>
+                </div>
+
+            </form>
+        </div>
+
     </div>
 
-    <!-- Bootstrap Bundle JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  </body>
+</main>
+
+<script src="{% static 'js/sidebar.js' %}"></script>
+<script src="{% static 'js/theme.js' %}"></script>
+
+</body>
 </html>

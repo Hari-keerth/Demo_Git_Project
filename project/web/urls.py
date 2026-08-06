@@ -108,19 +108,6 @@ urlpatterns = [
     ),
 
 
-    #----ATS-----
-
-    path(
-        "resume-analyzer",
-        views.resume_analyzer,
-        name="resume-analyzer"),
-    
-    path(
-        "calculate-ats/",
-        views.calculate_ats_score,
-        name="calculate_ats"
-    ),
-
     # -------- Profile --------
 
     path(
@@ -265,34 +252,66 @@ urlpatterns = [
     ),
 
     #---------------
+    #---------------------------------sravan------------------------------------------------
 
     # -----------------------------
     # Mock Interview Page
     # -----------------------------
+    # Page
+    path("interview/", views.mock_interview_page, name="mock_interview"),
+
+    # AI endpoints
+    path("interview/question/", views.generate_interview_question, name="interview_question"),
+    path("interview/evaluate/", views.evaluate_interview, name="interview_evaluate"),
+
+
     path(
-        "mock-interview/",
-        views.mock_interview,
-        name="mock_interview",
+        "ai_agent/",
+        views.ai_agent_page,
+        name="ai_agent",
     ),
 
-    # -----------------------------
-    # Generate AI Question
-    # -----------------------------
     path(
-        "interview/question/",
-        views.interview_question,
-        name="interview_question",
+        "ai-agent/run/",
+        views.run_ai_agent,
+        name="run_ai_agent",
+    ),
+    
+    path(
+        'recruiter/company-profile/', 
+        views.company_profile_view, 
+        name='company_profile'
+
     ),
 
-    # -----------------------------
-    # Evaluate Interview
-    # -----------------------------
     path(
-        "interview/evaluate/",
-        views.interview_evaluate,
-        name="interview_evaluate",
+        'recruiter/applicants/', 
+        views.recruiter_applicants_view, 
+        name='recruiter_applicants'
+
     ),
 
+    path(
+        'recruiter/applicant/<int:app_id>/update-status/', 
+        views.update_applicant_status_view, 
+        name='update_applicant_status'
 
+    ),
+
+    #---resume---
+
+    path(
+            "resume-analyzer/",
+            views.resume_analyzer,
+            name="resume_analyzer",
+        ),
+
+    path(
+        "calculate-ats/",
+        views.calculate_ats,
+        name="calculate_ats",
+    ),
+
+    
 ]
 

@@ -1,72 +1,61 @@
-from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
+import json
+import requests
+from django.conf import settings
 
-model = SentenceTransformer("all-MiniLM-L6-v2")
+LANGFLOW_URL = "http://127.0.0.1:7860"
+FLOW_ID = "YOUR_FLOW_ID"
+APPLICATION_TOKEN = "YOUR_APPLICATION_TOKEN"  # if your API requires one
+
+import json
+import requests
 
 
-def calculate_ats(resume_json, jd_json):
+LANGFLOW_URL = "http://127.0.0.1:7860"
 
-    resume_skills = set(
-        skill.lower()
-        for skill in resume_json.get("technical_skills", [])
-    )
+import json
+import requests
 
-    jd_skills = set(
-        skill.lower()
-        for skill in jd_json.get("required_skills", [])
-    )
+LANGFLOW_URL = "http://127.0.0.1:7860"
 
-    matched = list(resume_skills & jd_skills)
-    missing = list(jd_skills - resume_skills)
+FLOW_ID = "7f17ac32-ca71-4eae-8279-f59187dd6d19"
 
-    if len(jd_skills) == 0:
-        keyword_score = 0
-    else:
-        keyword_score = (len(matched) / len(jd_skills)) * 100
 
-    resume_text = " ".join(resume_skills)
-    jd_text = " ".join(jd_skills)
+def analyze_resume(resume_text, job_description):
 
-    emb1 = model.encode([resume_text])
-    emb2 = model.encode([jd_text])
+    combined_input = f"""
+=========================
+RESUME
+=========================
 
-    semantic_score = cosine_similarity(emb1, emb2)[0][0] * 100
+{resume_text}
 
-    ats_score = round(
-        (keyword_score * 0.6) +
-        (semantic_score * 0.4),
-        2
-    )
+=========================
+JOB DESCRIPTION
+=========================
 
-    strengths = []
+{job_description}
+"""
 
-    if keyword_score > 70:
-        strengths.append("Strong skill match")
+    payload = {
 
-    if semantic_score > 70:
-        strengths.append("Good semantic relevance")
+        "input_value": combined_input,
 
-    improvements = []
+        "input_type": "chat",
 
-    if missing:
-        improvements.append("Learn missing technical skills")
-
-    if keyword_score < 60:
-        improvements.append("Increase keyword coverage")
-
-    return {
-
-        "ats_score": ats_score,
-
-        "matched_skills": matched,
-
-        "missing_skills": missing,
-
-        "recommended_skills": missing,
-
-        "strengths": strengths,
-
-        "improvements": improvements
+        "output_type": "chat"
 
     }
+
+    response = requests.post(
+
+        f"{LANGFLOW_URL}/api/v1/run/{FLOW_ID}",
+
+        json=payload,
+
+        timeout=180
+
+    )
+
+    response.raise_for_status()
+
+    return response.json()

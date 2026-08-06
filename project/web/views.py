@@ -29,7 +29,7 @@ from django.contrib.auth.models import auth
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.core.mail import EmailMessage
-from django.db.models import Q
+from django.db.models import Q,Count , Sum
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
@@ -69,6 +69,7 @@ from .forms import (
     CreateUserForm,
     LoginForm,
     ProfileForm,
+    RegisterProfileForm,
 )
 
 
@@ -101,9 +102,7 @@ from .services.gmail_service import (
 # Local App: Resume & ATS Utilities
 # ==========================================================
 
-from .utils.ats_engine import calculate_ats
 from .utils.groq_parser import (
-    parse_job_description,
     parse_resume,
 )
 from .utils.pdf_parser import extract_resume_text
@@ -159,7 +158,7 @@ def dashboard(request):
 def register(request):
     if request.method == "POST":
         user_form = CreateUserForm(request.POST)
-        profile_form = ProfileForm(request.POST)
+        profile_form = RegisterProfileForm(request.POST)
         
         role = request.POST.get('role', 'candidate')
         
@@ -213,13 +212,12 @@ def register(request):
                 return redirect('login')
     else:
         user_form = CreateUserForm()
-        profile_form = ProfileForm()
+        profile_form = RegisterProfileForm() 
 
     return render(request, 'register.html', {
         'user_form': user_form,
         'profile_form': profile_form
     })
-
 
 #-- login a user
 
@@ -388,66 +386,34 @@ def profile(request):
 
 @login_required
 def edit_profile(request):
-
-    profile = Profile.objects.get(user=request.user)
+    profile_obj = Profile.objects.get(user=request.user)
 
     if request.method == "POST":
         action = request.POST.get("action")
 
-        # Handle Delete Action
         if action == "delete":
-            if profile.image:
-                profile.image.delete(save=False)
-                profile.image = None
-                profile.save()
+            if profile_obj.profile_picture:
+                profile_obj.profile_picture.delete(save=False)
+                profile_obj.profile_picture = None
+                profile_obj.save()
                 messages.success(request, "Profile picture deleted.")
             return redirect("profile")
 
-        form = ProfileForm(
-
-            request.POST,
-
-            request.FILES,
-
-            instance=profile
-
-        )
-
+        form = ProfileForm(request.POST, request.FILES, instance=profile_obj)
         if form.is_valid():
-
             form.save()
+            user = request.user
+            user.first_name = form.cleaned_data.get('first_name', user.first_name)
+            user.last_name = form.cleaned_data.get('last_name', user.last_name)
+            user.email = form.cleaned_data.get('email', user.email)
+            user.save()
 
-            messages.success(
-
-                request,
-
-                "Profile updated successfully."
-
-            )
-
+            messages.success(request, "Profile updated successfully.")
             return redirect("profile")
-
     else:
+        form = ProfileForm(instance=profile_obj)
 
-        form = ProfileForm(
-
-            instance=profile
-
-        )
-
-    return render(
-
-        request,
-
-        "edit_profile.html",
-
-        {
-
-            "form": form
-
-        }
-
-    )
+    return render(request, "edit_profile.html", {"form": form, "profile": profile_obj})
 
 #-----chatbot---
 
@@ -623,467 +589,50 @@ def save_user_skills(user, resume_json):
     )
 
 
-@require_POST
-@login_required
-def calculate_ats_score(request):
-
-    resume = request.FILES.get("resume")
-    job_description = request.POST.get("job_description")
-
-
-    # -----------------------------
-    # Validation
-    # -----------------------------
-
-    if not resume:
-        return JsonResponse({
-
-            "success": False,
-
-            "message": "Resume not uploaded."
-
-        })
-
-
-    if not job_description:
-
-        return JsonResponse({
-
-            "success": False,
-
-            "message": "Job Description missing."
-
-        })
-
-
-
-    try:
-
-
-        # -----------------------------
-        # Step 1
-        # Extract Resume Text
-        # -----------------------------
-
-        resume_text = extract_resume_text(
-            resume
-        )
-
-
-
-        # -----------------------------
-        # Step 2
-        # Groq Resume Parsing
-        # -----------------------------
-
-        resume_json = parse_resume(
-            resume_text
-        )
-
-
-
-        # -----------------------------
-        # Step 3
-        # Groq Job Description Parsing
-        # -----------------------------
-
-        jd_json = parse_job_description(
-            job_description
-        )
-
-
-
-        # -----------------------------
-        # Step 4
-        # ATS Calculation
-        # -----------------------------
-
-        result = calculate_ats(
-
-            resume_json,
-
-            jd_json
-
-        )
-
-
-
-        # -----------------------------
-        # Convert numpy values
-        # -----------------------------
-
-        def convert_numpy(obj):
-
-            import numpy as np
-
-
-            if isinstance(obj, np.generic):
-
-                return obj.item()
-
-
-
-            elif isinstance(obj, dict):
-
-                return {
-
-                    key: convert_numpy(value)
-
-                    for key, value in obj.items()
-
-                }
-
-
-
-            elif isinstance(obj, list):
-
-                return [
-
-                    convert_numpy(item)
-
-                    for item in obj
-
-                ]
-
-
-            return obj
-
-
-
-        result = convert_numpy(
-            result
-        )
-
-
-
-        # -----------------------------
-        # Save User Skills
-        # -----------------------------
-
-
-        save_user_skills(
-            request.user,
-            resume_json
-        )
-
-
-
-
-        # -----------------------------
-        # Save ATS Result
-        # -----------------------------
-
-
-        ATSResult.objects.create(
-
-
-            user=request.user,
-
-
-            resume=resume,
-
-
-            job_description=job_description,
-
-
-            resume_json=resume_json,
-
-
-            jd_json=jd_json,
-
-
-            ats_score=result.get(
-
-                "ats_score",
-
-                0
-
-            ),
-
-
-
-            matched_skills=result.get(
-
-                "matched_skills",
-
-                []
-
-            ),
-
-
-
-            missing_skills=result.get(
-
-                "missing_skills",
-
-                []
-
-            ),
-
-
-
-            recommended_skills=result.get(
-
-                "recommended_skills",
-
-                []
-
-            ),
-
-
-
-            strengths=result.get(
-
-                "strengths",
-
-                []
-
-            ),
-
-
-
-            improvements=result.get(
-
-                "improvements",
-
-                []
-
-            )
-
-
-        )
-
-
-
-
-        # -----------------------------
-        # Send Response to HTML
-        # -----------------------------
-
-
-        return JsonResponse({
-
-
-            "success": True,
-
-
-            "ats_score":
-
-                result.get(
-
-                    "ats_score",
-
-                    0
-
-                ),
-
-
-
-            "matched_skills":
-
-                result.get(
-
-                    "matched_skills",
-
-                    []
-
-                ),
-
-
-
-            "missing_skills":
-
-                result.get(
-
-                    "missing_skills",
-
-                    []
-
-                ),
-
-
-
-            "recommended_skills":
-
-                result.get(
-
-                    "recommended_skills",
-
-                    []
-
-                ),
-
-
-
-            "strengths":
-
-                result.get(
-
-                    "strengths",
-
-                    []
-
-                ),
-
-
-
-            "improvements":
-
-                result.get(
-
-                    "improvements",
-
-                    []
-
-                )
-
-        })
-
-
-
-    except Exception as e:
-
-
-        return JsonResponse({
-
-
-            "success": False,
-
-
-            "error": str(e)
-
-
-        }, status=500)
-
 
 @login_required
 @require_POST
 def extract_skills(request):
-
     resume = request.FILES.get("resume")
-
     if not resume:
-
-        messages.error(
-            request,
-            "Please upload a resume."
-        )
-
+        messages.error(request, "Please upload a resume.")
         return redirect("profile")
 
     try:
-
-        resume_text = extract_resume_text(
-            resume
-        )
-
-        resume_json = parse_resume(
-            resume_text
-        )
-
-        save_user_skills(
-            request.user,
-            resume_json
-        )
-
-        messages.success(
-            request,
-            "Skills extracted successfully."
-        )
-
+        resume_text = extract_resume_text(resume)
+        resume_json = parse_resume(resume_text)
+        save_user_skills(request.user, resume_json)
+        messages.success(request, "Skills extracted successfully.")
     except Exception as e:
-
-        messages.error(
-            request,
-            str(e)
-        )
+        messages.error(request, f"Failed to extract skills: {str(e)}")
 
     return redirect("profile")
 
 
+
+
 @login_required
 def edit_skills(request):
-
-    profile = Profile.objects.get(user=request.user)
-
-    skill_profile, created = UserSkillProfile.objects.get_or_create(
-        profile=profile
-    )
+    profile_obj = Profile.objects.get(user=request.user)
+    skill_profile, _ = UserSkillProfile.objects.get_or_create(profile=profile_obj)
 
     if request.method == "POST":
+        def parse_skills(key):
+            raw = request.POST.get(key, "")
+            return [s.strip() for s in raw.split(",") if s.strip()]
 
-        skill_profile.technical_skills = [
-            skill.strip()
-            for skill in request.POST.get(
-                "technical_skills",
-                ""
-            ).split(",")
-            if skill.strip()
-        ]
-
-        skill_profile.frameworks = [
-            skill.strip()
-            for skill in request.POST.get(
-                "frameworks",
-                ""
-            ).split(",")
-            if skill.strip()
-        ]
-
-        skill_profile.tools = [
-            skill.strip()
-            for skill in request.POST.get(
-                "tools",
-                ""
-            ).split(",")
-            if skill.strip()
-        ]
-
-        skill_profile.databases = [
-            skill.strip()
-            for skill in request.POST.get(
-                "databases",
-                ""
-            ).split(",")
-            if skill.strip()
-        ]
-
-        skill_profile.cloud_skills = [
-            skill.strip()
-            for skill in request.POST.get(
-                "cloud_skills",
-                ""
-            ).split(",")
-            if skill.strip()
-        ]
-
-        skill_profile.soft_skills = [
-            skill.strip()
-            for skill in request.POST.get(
-                "soft_skills",
-                ""
-            ).split(",")
-            if skill.strip()
-        ]
-
+        skill_profile.technical_skills = parse_skills("technical_skills")
+        skill_profile.frameworks = parse_skills("frameworks")
+        skill_profile.tools = parse_skills("tools")
+        skill_profile.databases = parse_skills("databases")
+        skill_profile.cloud_skills = parse_skills("cloud_skills")
+        skill_profile.soft_skills = parse_skills("soft_skills")
         skill_profile.save()
 
-        messages.success(
-            request,
-            "Skills updated successfully."
-        )
-
+        messages.success(request, "Skills updated successfully.")
         return redirect("profile")
 
-    context = {
-        "skills": skill_profile
-    }
-
-    return render(
-        request,
-        "edit_skills.html",
-        context
-    )
+    return render(request, "edit_skills.html", {"skills": skill_profile})
 
 
 # ==========================================================
@@ -1184,7 +733,7 @@ def generate_documents(request):
     """
 
             headers = {
-                "x-api-key": "sk-7IUtrMADNCiy2i5f_2Xqb8XW6VXPChN6QxPT9ybLITk"
+                "x-api-key": "sk-vgfNFkS5PwNGGsSUaH8DY4BOb6aBpPar98cW8356VTA"
             }
 
             response = requests.post(
@@ -1889,57 +1438,68 @@ def clear_chat(request):
 
 @login_required
 def dashboard_all_jobs_view(request):
-    profile, created = Profile.objects.get_or_create(user=request.user)
-    
-    # SECURITY FIX: Stop recruiters from seeing the candidate view!
+    profile_obj, _ = Profile.objects.get_or_create(user=request.user)
+
     if request.user.is_staff:
         return redirect('recruiter_dashboard')
 
-    # -------------------------------------------------------------
-    # 1. CALCULATE PROFILE COMPLETION & JOBS APPLIED METRICS
-    # -------------------------------------------------------------
     user = request.user
-    total_fields = 4
-    completed_fields = 0
 
-    if user.first_name and user.last_name:
-        completed_fields += 1
-    if user.email:
-        completed_fields += 1
-    if getattr(profile, 'bio', None) or getattr(profile, 'phone', None) or getattr(profile, 'headline', None):
-        completed_fields += 1
-    if getattr(profile, 'resume', None) or getattr(profile, 'skills', None):
-        completed_fields += 1
+    # ==========================================================
+    # CHECK USER SKILL PROFILE
+    # ==========================================================
+    skill_profile = UserSkillProfile.objects.filter(profile=profile_obj).first()
+    has_skills = False
+
+    if skill_profile:
+        user_skills = (
+            skill_profile.technical_skills +
+            skill_profile.frameworks +
+            skill_profile.tools +
+            skill_profile.databases +
+            skill_profile.cloud_skills +
+            skill_profile.soft_skills
+        )
+        if user_skills:
+            has_skills = True
+
+    # ==========================================================
+    # CALCULATE PROFILE COMPLETION (8 FIELDS)
+    # ==========================================================
+    total_fields = 8
+    completed_fields = sum([
+        bool(user.first_name and user.last_name),
+        bool(user.email),
+        bool(profile_obj.phone),
+        bool(profile_obj.city and profile_obj.country),
+        bool(profile_obj.address),
+        bool(profile_obj.profile_picture),
+        bool(profile_obj.age),
+        bool(has_skills),
+    ])
 
     profile_completion = int((completed_fields / total_fields) * 100)
-
-    # Fetch total jobs applied by this candidate
     applied_count = Application.objects.filter(applicant=user).count()
 
-    # -------------------------------------------------------------
-    # 2. JOB SEARCH & QUERY LOGIC
-    # -------------------------------------------------------------
+    # ==========================================================
+    # JOB SEARCH & RECRUITER LISTINGS
+    # ==========================================================
     query = request.GET.get('q', '').strip()
     location_query = request.GET.get('location', '').strip()
-
     search_query = query if query else "Python Developer"
 
-    # db recruiters job
     db_jobs = RecruiterJob.objects.all().order_by('-created_at')
 
     if query:
         db_jobs = db_jobs.filter(
-            Q(title__icontains=query) | 
+            Q(title__icontains=query) |
             Q(company_name__icontains=query) |
             Q(description__icontains=query)
         )
-    
-    if location_query:
-        db_jobs = db_jobs.filter(
-            Q(location__icontains=location_query)
-        )
 
-    # Limit results to 5 if no search filter was applied
+    if location_query:
+        db_jobs = db_jobs.filter(Q(location__icontains=location_query))
+
     if not query and not location_query:
         db_jobs = db_jobs[:5]
 
@@ -1971,20 +1531,21 @@ def dashboard_all_jobs_view(request):
     except Exception as e:
         print(f"API Error: {e}")
         cleaned_adzuna_jobs = []
-    
-    # Combine listings
+
     combined_job_listings = local_recruiter_jobs + cleaned_adzuna_jobs
 
-    # -------------------------------------------------------------
-    # 3. PASS TO CONTEXT
-    # -------------------------------------------------------------
+    # Evaluate matching positions count based on single has_skills evaluation
+    matching_positions_count = len(combined_job_listings) if has_skills else 0
+
     context = {
-        'profile': profile,
+        'profile': profile_obj,
         'adzuna_jobs': combined_job_listings,
+        'matching_positions_count': matching_positions_count,
+        'has_skills': has_skills,
         'current_query': query,
         'current_location': location_query,
-        'applied_count': applied_count,              
-        'profile_completion': profile_completion,  
+        'applied_count': applied_count,
+        'profile_completion': profile_completion,
     }
     return render(request, 'dashboard.html', context)
 
@@ -2077,7 +1638,6 @@ def post_job_view(request):
 
     return render(request, 'post_job.html')
 
-
 @login_required
 def recruiter_dashboard_view(request):
     # Security Check: Redirect non-recruiters back to candidate dashboard
@@ -2085,14 +1645,18 @@ def recruiter_dashboard_view(request):
         return redirect('dashboard')
         
     # Fetch all jobs posted by this specific recruiter[cite: 1]
-    my_jobs = RecruiterJob.objects.filter(recruiter=request.user).order_by('-created_at')
+    my_jobs = RecruiterJob.objects.filter(recruiter=request.user).annotate(
+        app_count=Count('applications')
+    ).order_by('-created_at')
+
+   
     
     context = {
         'my_jobs': my_jobs,
-        'total_jobs': my_jobs.count()
+        'total_jobs': my_jobs.count(),
+        'total_applications_count': sum(job.app_count for job in my_jobs)
     }
     return render(request, 'recruiter_dashboard.html', context)
-
 
 @login_required
 def edit_job_view(request, job_id):
@@ -2106,12 +1670,15 @@ def edit_job_view(request, job_id):
 
     if request.method == 'POST':
         job.title = request.POST.get('title')
-        job.company = request.POST.get('company')
+        job.company_name = request.POST.get('company_name')
         job.location = request.POST.get('location')
+        job.salary_range = request.POST.get('salary_range')
+        job.experience = request.POST.get('experience')
+        job.external_link = request.POST.get('external_link')
         job.description = request.POST.get('description')
         job.redirect_url = request.POST.get('redirect_url') or None
         
-        raw_skills = request.POST.get('required_skills', '')
+        raw_skills = request.POST.get('skills', '')
         job.required_skills = [skill.strip() for skill in raw_skills.split(',') if skill.strip()]
         
         job.save()
@@ -2122,8 +1689,6 @@ def edit_job_view(request, job_id):
     skills_string = ", ".join(job.required_skills) if job.required_skills else ""
     
     return render(request, 'edit_job.html', {'job': job, 'skills_string': skills_string})
-
-
 @login_required
 def delete_job_view(request, job_id):
     job = get_object_or_404(RecruiterJob, id=job_id)
@@ -2200,7 +1765,7 @@ def apply_job_view(request, job_id):
 # views.py
 
 
-@login_required
+login_required
 def job_applications_view(request, job_id):
     # Security: Ensure only staff/recruiters can access
     if not request.user.is_staff:
@@ -2224,74 +1789,16 @@ def job_applications_view(request, job_id):
     }
     return render(request, 'job_applications.html', context)
 
-
 @login_required
 def applied_jobs_view(request):
     # Fetch all job applications for the logged-in candidate
-    applications = Application.objects.filter(applicant=request.user).order_by('-applied_at')
+    applications = Application.objects.filter(applicant=request.user).select_related('job').order_by('-applied_at')
     
     context = {
         'applications': applications,
         'active_page': 'applied_jobs'
     }
     return render(request, 'applied_jobs.html', context)
-
-
-#---------mock_test----
-
-from .langflow import generate_question
-
-def mock_interview(request):
-    return render(request, "mock_interview.html")
-
-
-def interview_question(request):
-    return JsonResponse({
-        "question": "What is Python?"
-    })
-
-import json
-
-from django.http import JsonResponse
-from django.shortcuts import render
-from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_exempt
-
-from .langflow import generate_question, evaluate_interview
-
-
-def mock_interview(request):
-    return render(request, "mock_interview.html")
-
-
-@require_POST
-@csrf_exempt
-def interview_question(request):
-
-    try:
-        body = json.loads(request.body)
-
-        role = body.get("role")
-        difficulty = body.get("difficulty")
-        asked_questions = body.get("asked_questions", [])
-
-        question = generate_question(
-            role=role,
-            difficulty=difficulty,
-            asked_questions=asked_questions,
-        )
-
-        return JsonResponse({
-            "success": True,
-            "question": question
-        })
-
-    except Exception as e:
-        return JsonResponse({
-            "success": False,
-            "error": str(e)
-        }, status=500)
-
 
 @require_POST
 @csrf_exempt
@@ -2327,3 +1834,473 @@ def interview_evaluate(request):
             "error": str(e)
         }, status=500)
 
+#company Profile
+
+
+@login_required
+def company_profile_view(request):
+    if not request.user.is_staff:
+        return redirect('dashboard')
+    
+    # Get or create the Profile instance for the HR Manager / Recruiter
+    profile, created = Profile.objects.get_or_create(user=request.user)
+    
+    # Fetch existing company_name from recruiter's posted jobs
+    latest_job = RecruiterJob.objects.filter(recruiter=request.user).order_by('-created_at').first()
+    company_name = latest_job.company_name if latest_job else ""
+
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            
+            # Update User instance (HR Manager details)
+            request.user.first_name = form.cleaned_data.get('first_name')
+            request.user.last_name = form.cleaned_data.get('last_name')
+            request.user.email = form.cleaned_data.get('email')
+            request.user.save()
+
+            # Sync Company Name across job listings
+            new_company_name = request.POST.get('company_name')
+            if new_company_name:
+                RecruiterJob.objects.filter(recruiter=request.user).update(company_name=new_company_name)
+
+            messages.success(request, 'Company & HR Manager Profile updated successfully!')
+            return redirect('company_profile')
+    else:
+        form = ProfileForm(instance=profile)
+
+    context = {
+        'form': form,
+        'profile': profile,
+        'company_name': company_name,
+    }
+    return render(request, 'company_profile.html', context)
+
+@login_required
+def recruiter_applicants_view(request):
+    my_jobs = RecruiterJob.objects.filter(recruiter=request.user).order_by('-created_at')
+    selected_job_id = request.GET.get('job_id')
+    selected_status = request.GET.get('status')
+    
+    # Query applications for this recruiter
+    applications = Application.objects.filter(job__recruiter=request.user).order_by('-applied_at')
+
+    selected_job = None
+    if selected_job_id:
+        applications = applications.filter(job__id=selected_job_id)
+        selected_job = my_jobs.filter(id=selected_job_id).first()
+
+    if selected_status:
+        applications = applications.filter(status=selected_status)
+
+    context = {
+        'my_jobs': my_jobs,
+        'applications': applications,
+        'selected_job_id': selected_job_id,
+        'selected_job': selected_job,
+        'selected_status': selected_status,
+    }
+    return render(request, 'recruiter_applicants.html', context)
+
+
+@login_required
+def update_applicant_status_view(request, app_id):
+    application = get_object_or_404(Application, id=app_id, job__recruiter=request.user)
+    
+    if request.method == 'POST':
+        new_status = request.POST.get('status')
+        if new_status:
+            application.status = new_status
+            application.save()
+            messages.success(request, f"Application status updated to {new_status}.")
+            
+    return redirect(request.META.get('HTTP_REFERER', 'recruiter_applicants'))
+
+
+#---------------------------------sravan------------------------------------------------
+
+#---------mock_test----
+
+import json
+import requests
+from django.conf import settings
+from django.http import JsonResponse
+from django.shortcuts import render
+from django.views.decorators.http import require_POST
+
+# =====================================================================
+# CONFIG — swap these two flow IDs for your actual Langflow flow IDs
+# =====================================================================
+
+LANGFLOW_BASE_URL = "http://localhost:7860/api/v1/run"
+LANGFLOW_QUESTION_FLOW_ID = "52b22b25-40b1-4df5-8395-c7d4c8438904"
+LANGFLOW_EVALUATE_FLOW_ID = "82f52dc1-d94c-410e-b599-ffcd66fa8b03"
+
+# Move this to an environment variable / Django setting before deploying —
+# do not leave API keys hardcoded in source.
+LANGFLOW_API_KEY = "sk-vpYUZw85P4Y8BefM1lsCpfosfjXWOeH70zxjK4zb6-g"
+
+
+class LangflowError(Exception):
+    """
+    Raised when Langflow itself returns a non-2xx response. Carries the
+    actual response body, since Langflow puts the real failure reason
+    there (a bad/missing API key on one of the flow's components, a
+    misconfigured model, a Structured Output schema mismatch, etc.) --
+    response.raise_for_status() alone only gives you a generic
+    "500 Server Error ... for url: ..." with none of that detail.
+    """
+ 
+    def __init__(self, status_code, detail):
+        self.status_code = status_code
+        self.detail = detail
+        super().__init__(f"Langflow returned {status_code}: {detail}")
+ 
+ 
+def call_langflow(flow_id, input_text, timeout=60):
+    """
+    Shared helper for calling a Langflow flow and pulling the text
+    response out of its output shape. Raises LangflowError (with the
+    real error body attached) on a non-2xx response, or a
+    requests.RequestException on network-level failures (timeout,
+    connection refused, etc). Callers are expected to catch both and
+    convert to a JsonResponse.
+    """
+ 
+    response = requests.post(
+        f"{LANGFLOW_BASE_URL}/{flow_id}",
+        headers={"x-api-key": LANGFLOW_API_KEY},
+        json={
+            "input_value": input_text,
+            "output_type": "chat",
+            "input_type": "chat",
+        },
+        timeout=timeout,
+    )
+ 
+    if not response.ok:
+        try:
+            detail = response.json()
+        except ValueError:
+            detail = response.text
+        raise LangflowError(response.status_code, detail)
+ 
+    result = response.json()
+ 
+    return result["outputs"][0]["outputs"][0]["results"]["message"]["text"]
+ 
+ 
+# =====================================================================
+# PAGE
+# =====================================================================
+ 
+def mock_interview_page(request):
+    return render(request, "mock_interview.html")
+ 
+ 
+# =====================================================================
+# QUESTION GENERATION
+# =====================================================================
+ 
+@require_POST
+def generate_interview_question(request):
+ 
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "error": "Invalid JSON body."}, status=400)
+ 
+    role = (data.get("role") or "").strip()
+    difficulty = (data.get("difficulty") or "").strip()
+    total_questions = data.get("total_questions")
+    asked_questions = data.get("asked_questions", [])
+ 
+    if not role:
+        return JsonResponse({"success": False, "error": "Job role is required."}, status=400)
+ 
+    if not difficulty:
+        return JsonResponse({"success": False, "error": "Difficulty is required."}, status=400)
+ 
+    # ---- server-side cap enforcement (fixes the overshoot bug for real) ----
+    try:
+        total_questions = int(total_questions)
+    except (TypeError, ValueError):
+        return JsonResponse({"success": False, "error": "total_questions is required."}, status=400)
+ 
+    if len(asked_questions) >= total_questions:
+        return JsonResponse({
+            "success": False,
+            "error": "Question limit reached for this interview.",
+        }, status=400)
+ 
+    # ---- build the prompt input ----
+    if asked_questions:
+        asked_block = "\n".join(f"{i + 1}. {q}" for i, q in enumerate(asked_questions))
+    else:
+        asked_block = "(none yet -- this is the first question)"
+ 
+    input_text = (
+        f"Role: {role}\n"
+        f"Difficulty: {difficulty}\n"
+        f"Already Asked:\n{asked_block}\n"
+    )
+ 
+    try:
+        question = call_langflow(LANGFLOW_QUESTION_FLOW_ID, input_text).strip()
+    except requests.Timeout:
+        return JsonResponse({"success": False, "error": "Question generation timed out."}, status=504)
+    except LangflowError as e:
+        # e.detail is Langflow's actual error body -- check the Django
+        # console/logs (or this response, during debugging) for the real
+        # component-level failure reason instead of a generic 500.
+        return JsonResponse({
+            "success": False,
+            "error": f"Langflow error ({e.status_code})",
+            "detail": e.detail,
+        }, status=502)
+    except requests.RequestException as e:
+        return JsonResponse({"success": False, "error": str(e)}, status=502)
+    except (KeyError, IndexError):
+        return JsonResponse({"success": False, "error": "Unexpected response from Langflow."}, status=502)
+ 
+    if not question:
+        return JsonResponse({"success": False, "error": "Empty question returned."}, status=502)
+ 
+    return JsonResponse({"success": True, "question": question})
+ 
+ 
+# =====================================================================
+# EVALUATION
+# =====================================================================
+ 
+@require_POST
+def evaluate_interview(request):
+ 
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "error": "Invalid JSON body."}, status=400)
+ 
+    role = (data.get("role") or "").strip()
+    interview_data = data.get("interview_data", [])
+ 
+    if not role:
+        return JsonResponse({"success": False, "error": "Job role is required."}, status=400)
+ 
+    if not interview_data:
+        return JsonResponse({"success": False, "error": "No interview answers to evaluate."}, status=400)
+ 
+    qa_block = "\n\n".join(
+        f"Q{i + 1}: {item.get('question', '')}\n"
+        f"A{i + 1}: {item.get('answer', '') or '(skipped -- no answer given)'}"
+        for i, item in enumerate(interview_data)
+    )
+ 
+    input_text = (
+        f"Role: {role}\n\n"
+        f"Interview transcript:\n{qa_block}\n"
+    )
+ 
+    try:
+        raw_text = call_langflow(LANGFLOW_EVALUATE_FLOW_ID, input_text, timeout=90)
+    except requests.Timeout:
+        return JsonResponse({"success": False, "error": "Evaluation timed out."}, status=504)
+    except LangflowError as e:
+        return JsonResponse({
+            "success": False,
+            "error": f"Langflow error ({e.status_code})",
+            "detail": e.detail,
+        }, status=502)
+    except requests.RequestException as e:
+        return JsonResponse({"success": False, "error": str(e)}, status=502)
+    except (KeyError, IndexError):
+        return JsonResponse({"success": False, "error": "Unexpected response from Langflow."}, status=502)
+ 
+    try:
+        parsed = json.loads(raw_text)
+    except json.JSONDecodeError:
+        return JsonResponse({
+            "success": False,
+            "error": "Invalid JSON returned from Langflow.",
+            "raw_output": raw_text,
+        }, status=502)
+ 
+    # Defensive: json.loads() succeeds on ANY valid JSON, not just objects --
+    # a bare number, string, or list all parse fine but have no .get(). If the
+    # flow ever returns something that isn't a JSON object (e.g. just "1"),
+    # fail loudly with the raw output visible instead of silently building a
+    # near-empty report.
+    if not isinstance(parsed, dict):
+        return JsonResponse({
+            "success": False,
+            "error": "Langflow did not return a JSON object as expected.",
+            "raw_output": raw_text,
+        }, status=502)
+ 
+    # normalize so renderReport() in interview.js always has what it expects.
+    # "success": True is required here -- evaluateInterview() in interview.js
+    # checks `!response.ok || !data.success` before rendering the report, so
+    # a response missing this field gets treated as a failure even when the
+    # evaluation itself worked fine.
+    return JsonResponse({
+        "success": True,
+        "overall_score": parsed.get("overall_score", parsed.get("score", 0)),
+        "strengths": parsed.get("strengths", []),
+        "improvements": parsed.get("improvements", []),
+        "reviews": parsed.get("reviews", []),
+        "study_plan": parsed.get("study_plan", []),
+    })
+#-------------------------------------------------------------------------------------------------
+
+
+from pathlib import Path
+import tempfile
+import time
+
+from django.http import JsonResponse
+from django.shortcuts import render
+from django.views.decorators.http import require_POST
+
+from .ai_agent.runner import run_agent
+
+
+def ai_agent_page(request):
+    """
+    Render the AI Agent page.
+    """
+    return render(request, "ai_agent.html")
+
+
+@require_POST
+def run_ai_agent(request):
+    """
+    Receives:
+        - Resume PDF
+        - Job Description
+        - Recruiter Email
+
+    Executes the AI Agent and returns the generated JSON.
+    """
+
+    try:
+        resume = request.FILES.get("resume")
+        job_description = request.POST.get("job_description", "").strip()
+        recruiter_email = request.POST.get("recruiter_email", "").strip()
+
+        if not resume:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "Resume PDF is required.",
+                },
+                status=400,
+            )
+
+        if not job_description:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "Job description is required.",
+                },
+                status=400,
+            )
+
+        start_time = time.perf_counter()
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_pdf:
+            for chunk in resume.chunks():
+                temp_pdf.write(chunk)
+
+            resume_path = Path(temp_pdf.name)
+
+        result = run_agent(
+            resume_path=resume_path,
+            job_description=job_description,
+            recruiter_email=recruiter_email,
+        )
+
+        execution_time = round(time.perf_counter() - start_time, 2)
+
+        return JsonResponse(
+            {
+                "success": True,
+                "execution_time": execution_time,
+                **result,
+            }
+        )
+
+    except Exception as e:
+        return JsonResponse(
+            {
+                "success": False,
+                "error": str(e),
+            },
+            status=500,
+        )
+
+#__________________________ATS________________________________
+
+from .langflow import analyze_resume
+
+@login_required
+@require_POST
+def calculate_ats(request):
+
+    resume = request.FILES.get("resume")
+    job_description = request.POST.get("job_description")
+
+    if not resume:
+        return JsonResponse({
+            "success": False,
+            "message": "Resume not uploaded."
+        })
+
+    if not job_description:
+        return JsonResponse({
+            "success": False,
+            "message": "Job Description missing."
+        })
+
+    try:
+
+        resume_text = extract_resume_text(resume)
+
+        result = analyze_resume(
+            resume_text,
+            job_description
+        )
+
+        ATSResult.objects.create(
+            user=request.user,
+            resume=resume,
+            job_description=job_description,
+
+            resume_json={},
+            jd_json={},
+
+            ats_score=result.get("ats_score", 0),
+
+            matched_skills=result.get("matched_skills", []),
+
+            missing_skills=result.get("missing_skills", []),
+
+            recommended_skills=result.get("recommended_skills", []),
+
+            strengths=result.get("strengths", []),
+
+            improvements=result.get("improvements", [])
+        )
+
+        result["success"] = True
+
+        return JsonResponse(result)
+
+    except Exception as e:
+
+        return JsonResponse({
+            "success": False,
+            "error": str(e)
+        }, status=500)
+
+    

@@ -1,23 +1,49 @@
-// ===============================
-// Show Selected File Name
-// ===============================
+// =========================================
+// DOM Elements
+// =========================================
 
-function updateFileName(input) {
+const fileInput = document.getElementById("resume");
+const fileName = document.getElementById("file-name");
 
-    const fileName = document.getElementById("file-name");
+const loading = document.getElementById("loading");
+const resultSection = document.getElementById("ats-result");
 
-    if (input.files.length > 0) {
-        fileName.innerHTML = input.files[0].name;
-    } else {
-        fileName.innerHTML = "No file selected";
+const scoreElement = document.getElementById("ats-score");
+
+const matchedSkillsContainer =
+    document.getElementById("matched-skills");
+
+const missingSkillsContainer =
+    document.getElementById("missing-skills");
+
+const recommendedSkillsContainer =
+    document.getElementById("recommended-skills");
+
+
+// =========================================
+// File Upload
+// =========================================
+
+fileInput.addEventListener("change", () => {
+
+    if (fileInput.files.length > 0) {
+
+        fileName.textContent = fileInput.files[0].name;
+
     }
 
-}
+    else {
+
+        fileName.textContent = "No file selected";
+
+    }
+
+});
 
 
-// ===============================
-// Get CSRF Token
-// ===============================
+// =========================================
+// CSRF Token
+// =========================================
 
 function getCSRFToken() {
 
@@ -28,27 +54,148 @@ function getCSRFToken() {
 }
 
 
-// ===============================
-// Calculate ATS Score
-// ===============================
+// =========================================
+// Skill Chip
+// =========================================
 
-function calculate_ats_score() {
+function createSkillChip(skill) {
 
-    const resume =
-        document.getElementById("resume").files[0];
+    const chip = document.createElement("span");
 
-    const jobDescription =
-        document.getElementById("job_description").value;
+    chip.className = "skill-chip";
 
-    if (!resume) {
+    chip.textContent = skill;
 
-        alert("Please upload your Resume.");
+    return chip;
+
+}
+
+
+// =========================================
+// Display Skills
+// =========================================
+
+function displaySkills(container, skills) {
+
+    container.innerHTML = "";
+
+    if (!skills || skills.length === 0) {
+
+        container.innerHTML =
+            "<span class='skill-chip'>No Skills Found</span>";
 
         return;
 
     }
 
-    if (jobDescription.trim() === "") {
+    skills.forEach(skill => {
+
+        container.appendChild(
+            createSkillChip(skill)
+        );
+
+    });
+
+}
+
+
+// =========================================
+// Display Bullet List
+// =========================================
+
+function displayList(elementId, items) {
+
+    const container = document.getElementById(elementId);
+
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    if (!items || items.length === 0) {
+
+        container.innerHTML = "<li>-</li>";
+
+        return;
+
+    }
+
+    items.forEach(item => {
+
+        const li = document.createElement("li");
+
+        li.textContent = item;
+
+        container.appendChild(li);
+
+    });
+
+}
+
+
+// =========================================
+// Display Text
+// =========================================
+
+function displayText(elementId, text) {
+
+    const element = document.getElementById(elementId);
+
+    if (!element) return;
+
+    element.textContent = text || "-";
+
+}
+
+
+// =========================================
+// Animate Score
+// =========================================
+
+function animateScore(target) {
+
+    let current = 0;
+
+    scoreElement.textContent = "0%";
+
+    const timer = setInterval(() => {
+
+        current++;
+
+        scoreElement.textContent = current + "%";
+
+        if (current >= target) {
+
+            clearInterval(timer);
+
+        }
+
+    }, 15);
+
+}
+
+
+// =========================================
+// Calculate ATS Score
+// =========================================
+
+async function calculate_ats_score() {
+
+    const resume = fileInput.files[0];
+
+    const jobDescription =
+        document.getElementById("job_description")
+        .value
+        .trim();
+
+    if (!resume) {
+
+        alert("Please upload your resume.");
+
+        return;
+
+    }
+
+    if (!jobDescription) {
 
         alert("Please paste the Job Description.");
 
@@ -62,224 +209,188 @@ function calculate_ats_score() {
 
     formData.append("job_description", jobDescription);
 
+    loading.style.display = "block";
 
-    fetch("/calculate-ats/", {
+    resultSection.style.display = "none";
 
-        method: "POST",
+    try {
 
-        headers: {
+        const response = await fetch(
 
-            "X-CSRFToken": getCSRFToken()
+            "/calculate-ats/",
 
-        },
+            {
 
-        body: formData
+                method: "POST",
 
-    })
+                headers: {
 
-    .then(response => response.json())
+                    "X-CSRFToken": getCSRFToken()
 
-    .then(data => {
+                },
 
-        console.log(data);
+                body: formData
 
-        if (data.success) {
-
-            document.getElementById("loading").style.display = "none";
-
-            document.getElementById("ats-result").style.display = "block";
-
-            document.getElementById("ats-score").innerHTML =
-                Math.round(data.ats_score) + "%";
-
-
-            displaySkills(
-                document.getElementById("matched-skills"),
-                data.matched_skills
-            );
-
-            displaySkills(
-                document.getElementById("missing-skills"),
-                data.missing_skills
-            );
-
-            displaySkills(
-                document.getElementById("recommended-skills"),
-                data.recommended_skills
-            );
-
-            document.getElementById("ats-result").scrollIntoView({
-
-                behavior: "smooth"
-
-            });
-
-        }
-
-        else {
-
-            alert(data.message);
-
-        }
-
-    })
-
-    .catch(error => {
-
-        console.error(error);
-
-        alert("Error calculating ATS Score.");
-
-    });
-
-}
-
-// ===============================
-// Display Skills
-// ===============================
-
-function displaySkills(elementId, skills) {
-
-    const container = document.getElementById(elementId);
-
-    container.innerHTML = "";
-
-
-    if (!skills || skills.length === 0) {
-
-        container.innerHTML =
-
-            "<span class='skill-chip'>No Skills Found</span>";
-
-        return;
-
-    }
-
-
-    skills.forEach(skill => {
-
-        const chip = document.createElement("span");
-
-        chip.className = "skill-chip";
-
-        chip.innerHTML = skill;
-
-        container.appendChild(chip);
-
-    });
-
-}
-
-// ==========================
-// DOM Elements
-// ==========================
-
-const form = document.getElementById("atsForm");
-
-const fileInput = document.getElementById("resume");
-
-const fileName = document.getElementById("file-name");
-
-const loading = document.getElementById("loading");
-
-const resultSection = document.getElementById("ats-result");
-
-const scoreElement = document.getElementById("ats-score");
-
-const matchedSkills = document.getElementById("matched-skills");
-
-const missingSkills = document.getElementById("missing-skills");
-
-const recommendedSkills = document.getElementById("recommended-skills");
-
-// ==========================
-// Show Selected Resume Name
-// ==========================
-
-fileInput.addEventListener("change", () => {
-
-    if(fileInput.files.length){
-
-        fileName.textContent = fileInput.files[0].name;
-
-    }
-
-    else{
-
-        fileName.textContent = "No file selected";
-
-    }
-
-});
-
-// ==========================
-// Create Skill Chip
-// ==========================
-
-function createSkillChip(skill){
-
-    const chip = document.createElement("span");
-
-    chip.className = "skill-chip";
-
-    chip.textContent = skill;
-
-    return chip;
-
-}
-
-// ==========================
-// Display Skill List
-// ==========================
-
-function displaySkills(container,data){
-
-    container.innerHTML = "";
-
-    if(data.length === 0){
-
-        container.innerHTML =
-
-            "<span class='empty-chip'>No Skills Found</span>";
-
-        return;
-
-    }
-
-    data.forEach(skill=>{
-
-        container.appendChild(
-
-            createSkillChip(skill)
+            }
 
         );
 
-    });
+        const data = await response.json();
 
-}
+        loading.style.display = "none";
 
-// ==========================
-// Animate ATS Score
-// ==========================
+        console.log(data);
 
-function animateScore(target){
+        if (!data.success) {
 
-    let current = 0;
+            alert(
 
-    scoreElement.innerHTML = "0%";
+                data.error ||
 
-    const timer = setInterval(()=>{
+                data.message ||
 
-        current++;
+                "ATS Analysis Failed."
 
-        scoreElement.innerHTML = current + "%";
+            );
 
-        if(current >= target){
-
-            clearInterval(timer);
+            return;
 
         }
 
-    },15);
+        resultSection.style.display = "block";
+
+        animateScore(
+
+            Math.round(data.ats_score)
+
+        );
+
+        // Skills
+
+        displaySkills(
+
+            matchedSkillsContainer,
+
+            data.matched_skills
+
+        );
+
+        displaySkills(
+
+            missingSkillsContainer,
+
+            data.missing_skills
+
+        );
+
+        displaySkills(
+
+            recommendedSkillsContainer,
+
+            data.recommended_skills
+
+        );
+
+        // Lists
+
+        displayList(
+
+            "strengths-list",
+
+            data.strengths
+
+        );
+
+        displayList(
+
+            "improvement-list",
+
+            data.improvements
+
+        );
+
+        // Text Sections
+
+        displayText(
+
+            "overall-match",
+
+            data.overall_match
+
+        );
+
+        displayText(
+
+            "experience-analysis",
+
+            data.experience_analysis
+
+        );
+
+        displayText(
+
+            "project-analysis",
+
+            data.project_analysis
+
+        );
+
+        displayText(
+
+            "education-analysis",
+
+            data.education_analysis
+
+        );
+
+        displayText(
+
+            "resume-quality",
+
+            data.resume_quality
+
+        );
+
+        displayText(
+
+            "ats-compatibility",
+
+            data.ats_compatibility
+
+        );
+
+        displayText(
+
+            "summary",
+
+            data.summary
+
+        );
+
+        displayText(
+
+            "final-recommendation",
+
+            data.final_recommendation
+
+        );
+
+        resultSection.scrollIntoView({
+
+            behavior: "smooth"
+
+        });
+
+    }
+
+    catch (error) {
+
+        loading.style.display = "none";
+
+        console.error(error);
+
+        alert("Unable to analyze resume.");
+
+    }
 
 }

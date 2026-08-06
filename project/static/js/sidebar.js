@@ -1,42 +1,66 @@
-// =========================
-// Sidebar
-// =========================
+// ==========================================================
+// CareerGrowza Sidebar
+// ==========================================================
 
+const sidebar = document.querySelector(".sidebar");
+const overlay = document.querySelector(".sidebar-overlay");
+const menuButton = document.querySelector(".menu-toggle");
+
+// ==========================================================
+// Toggle Sidebar (Mobile Only)
+// ==========================================================
 
 function toggleSidebar() {
 
-    document
-        .querySelector(".sidebar")
-        .classList
-        .toggle("show");
+    if (window.innerWidth <= 768) {
 
-    document
-        .querySelector(".sidebar-overlay")
-        .classList
-        .toggle("show");
+        sidebar.classList.toggle("show");
+        overlay.classList.toggle("show");
+
+    }
 
 }
+
+// ==========================================================
+// Close Sidebar
+// ==========================================================
 
 function closeSidebar() {
 
-    document
-        .querySelector(".sidebar")
-        .classList
-        .remove("show");
-
-    document
-        .querySelector(".sidebar-overlay")
-        .classList
-        .remove("show");
+    sidebar.classList.remove("show");
+    overlay.classList.remove("show");
 
 }
 
-// Close sidebar when a menu item is clicked on mobile
+// ==========================================================
+// Menu Button
+// ==========================================================
+
+if (menuButton) {
+
+    menuButton.addEventListener("click", toggleSidebar);
+
+}
+
+// ==========================================================
+// Overlay Click
+// ==========================================================
+
+if (overlay) {
+
+    overlay.addEventListener("click", closeSidebar);
+
+}
+
+// ==========================================================
+// Close Sidebar after clicking a link (Mobile)
+// ==========================================================
+
 document.querySelectorAll(".sidebar a").forEach(link => {
 
     link.addEventListener("click", () => {
 
-        if(window.innerWidth <= 768){
+        if (window.innerWidth <= 768) {
 
             closeSidebar();
 
@@ -46,13 +70,40 @@ document.querySelectorAll(".sidebar a").forEach(link => {
 
 });
 
-// Close sidebar if screen becomes desktop
-window.addEventListener("resize", () => {
+// ==========================================================
+// ESC Key
+// ==========================================================
 
-    if(window.innerWidth > 768){
+document.addEventListener("keydown", (event) => {
+
+    if (event.key === "Escape") {
 
         closeSidebar();
 
     }
+
+});
+
+// ==========================================================
+// Window Resize
+// ==========================================================
+
+window.addEventListener("resize", () => {
+
+    if (window.innerWidth > 768) {
+
+        closeSidebar();
+
+    }
+
+});
+
+// ==========================================================
+// Initial State
+// ==========================================================
+
+window.addEventListener("load", () => {
+
+    closeSidebar();
 
 });

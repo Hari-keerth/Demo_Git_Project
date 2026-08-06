@@ -1,124 +1,226 @@
 {% load static %}
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CareerGrowza | Edit Profile</title>
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="128x128"
-      href="{% static 'images/favicon/CareerGrowza_Favicon.png' %}"
-    />
-    <link
-      rel="shortcut icon"
-      href="{% static 'images/favicon/favicon.ico' %}"
-    />
+    <link rel="icon" type="image/png" sizes="128x128" href="{% static 'images/favicon/CareerGrowza_Favicon.png' %}">
+    <link rel="shortcut icon" href="{% static 'images/favicon/favicon.ico' %}">
 
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
-    />
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+    <link rel="stylesheet" href="{% static 'css/common.css' %}">
+    <link rel="stylesheet" href="{% static 'css/layout.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/edit_profile.css' %}?v=2">
+</head>
 
-    <link rel="stylesheet" href="{% static 'css/common.css' %}" />
+<body>
 
-    <link rel="stylesheet" href="{% static 'css/layout.css' %}" />
+{% include "navbar.html" with active_page="profile" %}
 
-    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}" />
-
-    <link rel="stylesheet" href="{% static 'css/profile.css' %}" />
-
-    <link rel="stylesheet" href="{% static 'css/edit_profile.css' %}" />
-  </head>
-
-  <body>
-    {% include "navbar.html" with active_page="profile" %}
-
-    <main class="main-content">
-      <div class="edit-wrapper">
+<main class="main-content">
+    <div class="edit-wrapper">
         <div class="edit-card">
-          <h1>
-            <i class="bx bx-edit"></i>
-
-            Edit Profile
-          </h1>
-
-          <p class="subtitle">Update your personal information.</p>
-
-          <form method="POST">
-            {% csrf_token %}
-
-            <div class="form-grid">
-              <div class="form-group">
-                <label> First Name </label>
-
-                {{ form.first_name }}
-              </div>
-
-              <div class="form-group">
-                <label> Last Name </label>
-
-                {{ form.last_name }}
-              </div>
-
-              <div class="form-group">
-                <label> Email </label>
-
-                {{ form.email }}
-              </div>
-
-              <div class="form-group">
-                <label> Phone </label>
-
-                {{ form.phone }}
-              </div>
-
-              <div class="form-group">
-                <label> Age </label>
-
-                {{ form.age }}
-              </div>
-
-              <div class="form-group">
-                <label> City </label>
-
-                {{ form.city }}
-              </div>
-
-              <div class="form-group full-width">
-                <label> Address </label>
-
-                {{ form.address }}
-              </div>
-
-              <div class="form-group">
-                <label> Country </label>
-
-                {{ form.country }}
-              </div>
+            
+            <!-- Hero Blue Banner -->
+            <div class="profile-hero-banner">
+                <div class="banner-content">
+                    <h1><i class='bx bx-user-pin'></i> Edit Profile</h1>
+                    <p>Enhance your career profile to stand out to top recruiters and hiring managers.</p>
+                </div>
             </div>
 
-            <div class="button-group">
-              <a href="{% url 'profile' %}" class="cancel-btn">
-                <i class="bx bx-arrow-back"></i>
+            <form method="POST" enctype="multipart/form-data" id="editProfileForm">
+                {% csrf_token %}
 
-                Cancel
-              </a>
+                <!-- Profile Picture Section -->
+                <div class="section-block">
+                    <h3 class="section-title"><i class='bx bx-image-add'></i> Profile Picture</h3>
+                    <div class="form-group full-width">
+                        {% if profile.profile_picture %}
+                            <div class="current-photo-card">
+                                <div class="photo-info">
+                                    <img src="{{ profile.profile_picture.url }}" alt="Current Profile Picture">
+                                    <div>
+                                        <p class="photo-title">Current Photo Saved</p>
+                                        <p class="photo-sub">Upload a new image below to replace it.</p>
+                                    </div>
+                                </div>
+                                <button type="submit" name="action" value="delete" class="btn-remove-photo">
+                                    <i class='bx bx-trash'></i> Remove Photo
+                                </button>
+                            </div>
+                        {% endif %}
+                        {{ form.profile_picture }}
+                    </div>
+                </div>
 
-              <button type="submit" class="save-btn">
-                <i class="bx bx-save"></i>
+                <!-- Personal Information Section -->
+                <div class="section-block">
+                    <h3 class="section-title"><i class='bx bx-user'></i> Personal Details</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label><i class='bx bx-user'></i> First Name</label>
+                            {{ form.first_name }}
+                        </div>
 
-                Save Profile
-              </button>
-            </div>
-          </form>
+                        <div class="form-group">
+                            <label><i class='bx bx-user'></i> Last Name</label>
+                            {{ form.last_name }}
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class='bx bx-envelope'></i> Email Address</label>
+                            {{ form.email }}
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class='bx bx-phone'></i> Phone Number</label>
+                            {{ form.phone }}
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class='bx bx-calendar'></i> Age</label>
+                            {{ form.age }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Professional & Experience Section -->
+                <div class="section-block">
+                    <h3 class="section-title"><i class='bx bx-briefcase'></i> Professional Details</h3>
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label><i class='bx bx-badge-check'></i> Headline / Current Title</label>
+                            {{ form.headline }}
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class='bx bx-book-reader'></i> Highest Education</label>
+                            {{ form.education }}
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class='bx bx-bar-chart-alt-2'></i> Experience Status</label>
+                            {{ form.experience_level }}
+                        </div>
+
+                        <div class="form-group" id="yearsExperienceGroup">
+                            <label><i class='bx bx-time-five'></i> Years of Experience</label>
+                            {{ form.years_of_experience }}
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label><i class='bx bx-detail'></i> Professional Bio / Summary</label>
+                            {{ form.bio }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location Details Section -->
+                <div class="section-block">
+                    <h3 class="section-title"><i class='bx bx-map-pin'></i> Location Details</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label><i class='bx bx-building-house'></i> City</label>
+                            {{ form.city }}
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class='bx bx-globe'></i> Country</label>
+                            {{ form.country }}
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label><i class='bx bx-home-alt'></i> Full Address</label>
+                            {{ form.address }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Action Buttons -->
+                <div class="button-group">
+                    <button type="button" id="cancelEditBtn" class="cancel-btn">
+                        <i class='bx bx-arrow-back'></i> Cancel
+                    </button>
+                    <button type="submit" id="saveProfileBtn" class="save-btn">
+                        <i class='bx bx-save'></i> Save Profile
+                    </button>
+                </div>
+            </form>
         </div>
-      </div>
-    </main>
+    </div>
+</main>
 
-    <script src="{% static 'js/sidebar.js' %}"></script>
-  </body>
+<!-- Unsaved Changes Modal -->
+<div class="custom-modal-overlay" id="unsavedModal" style="display: none;">
+    <div class="custom-modal">
+        <div class="modal-icon"><i class='bx bx-error-circle'></i></div>
+        <h3>Discard unsaved changes?</h3>
+        <p>You have unsaved changes in your profile. Are you sure you want to leave without saving?</p>
+        <div class="modal-actions">
+            <button type="button" class="btn-secondary" id="modalStayBtn">Keep Editing</button>
+            <a href="{% url 'profile' %}" class="btn-danger">Discard Changes</a>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/sidebar.js' %}"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const form = document.getElementById("editProfileForm");
+        const cancelBtn = document.getElementById("cancelEditBtn");
+        const modal = document.getElementById("unsavedModal");
+        const modalStayBtn = document.getElementById("modalStayBtn");
+        const expLevelSelect = document.getElementById("id_experience_level");
+        const yearsGroup = document.getElementById("yearsExperienceGroup");
+        
+        let isFormDirty = false;
+
+        function toggleExperienceField() {
+            if (expLevelSelect && yearsGroup) {
+                if (expLevelSelect.value === "fresher") {
+                    yearsGroup.style.display = "none";
+                } else {
+                    yearsGroup.style.display = "flex";
+                }
+            }
+        }
+        toggleExperienceField();
+        if (expLevelSelect) {
+            expLevelSelect.addEventListener("change", toggleExperienceField);
+        }
+
+        form.addEventListener("change", () => isFormDirty = true);
+        form.addEventListener("input", () => isFormDirty = true);
+
+        cancelBtn.addEventListener("click", function(e) {
+            if (isFormDirty) {
+                e.preventDefault();
+                modal.style.display = "flex";
+            } else {
+                window.location.href = "{% url 'profile' %}";
+            }
+        });
+
+        modalStayBtn.addEventListener("click", function() {
+            modal.style.display = "none";
+        });
+
+        window.addEventListener("beforeunload", function(e) {
+            if (isFormDirty) {
+                e.preventDefault();
+                e.returnValue = "";
+            }
+        });
+
+        form.addEventListener("submit", function() {
+            isFormDirty = false;
+        });
+    });
+</script>
+
+</body>
 </html>

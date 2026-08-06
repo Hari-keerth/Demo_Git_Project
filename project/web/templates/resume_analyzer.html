@@ -1,166 +1,537 @@
 {% load static %}
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CareerGrowza | Resume Analyzer</title>
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>CareerGrowza | AI Resume Analyzer</title>
+
     <link
-      rel="icon"
-      type="image/png"
-      sizes="512x512"
-      href="{% static 'images/favicon/CareerGrowza_Favicon.png' %}"
-    />
+        rel="icon"
+        href="{% static 'images/favicon/CareerGrowza_Favicon.png' %}"
+    >
+
+    <link rel="stylesheet" href="{% static 'css/common.css' %}">
+    <link rel="stylesheet" href="{% static 'css/layout.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/resume_analyzer.css' %}">
+    <link rel="stylesheet" href="{% static 'css/chatbot.css' %}">
+
     <link
-      rel="shortcut icon"
-      href="{% static 'images/favicon/favicon.ico' %}"
-    />
+        href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+        rel="stylesheet"
+    >
 
-    <link rel="stylesheet" href="{% static 'css/common.css' %}" />
-    <link rel="stylesheet" href="{% static 'css/layout.css' %}" />
-    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}" />
-    <link rel="stylesheet" href="{% static 'css/resume_analyzer.css' %}" />
-    <link
-      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
-      rel="stylesheet"
-    />
-  </head>
+</head>
 
-  <body>
-    {% include "navbar.html" with active_page="resume-analyzer" %}
+<body>
 
-    <main class="main-content">
-      <div class="resume-container">
-        <div class="hero">
-          <div class="hero-icon">
-            <i class="bx bx-file"></i>
-          </div>
+{% include "chatbot.html" %}
 
-          <h1>AI Resume Analyzer</h1>
+{% include "navbar.html" with active_page="resume-analyzer" %}
 
-          <p>
-            Upload your resume, compare it with a Job Description, and receive
-            an AI-powered ATS score with actionable recommendations.
-          </p>
+<main class="main-content">
+
+<div class="resume-container">
+
+    <!-- HERO -->
+
+    <section class="hero">
+
+        <div class="hero-icon">
+
+            <i class='bx bx-file'></i>
+
         </div>
 
-        <form id="atsForm" enctype="multipart/form-data">
-          {% csrf_token %}
+        <h1>AI Resume Analyzer</h1>
 
-          <div class="analyzer-grid">
+        <p>
+
+            Upload your resume, compare it with a Job Description,
+            and receive a complete AI-powered ATS analysis with
+            recommendations, strengths, weaknesses and detailed insights.
+
+        </p>
+
+    </section>
+
+
+    <!-- FORM -->
+
+    <form
+        id="atsForm"
+        enctype="multipart/form-data"
+    >
+
+        {% csrf_token %}
+
+        <div class="analyzer-grid">
+
+            <!-- Resume Upload -->
+
             <div class="upload-card">
-              <h2>
-                <i class="bx bx-upload"></i>
-                Resume Upload
-              </h2>
 
-              <label for="resume" class="drop-zone">
-                <i class="bx bx-cloud-upload"></i>
+                <h2>
 
-                <h3>Drag & Drop Resume</h3>
+                    <i class='bx bx-upload'></i>
 
-                <p>or click to browse PDF</p>
+                    Resume Upload
 
-                <input
-                  type="file"
-                  id="resume"
-                  name="resume"
-                  accept=".pdf"
-                  required
-                />
+                </h2>
 
-                <span id="file-name"> No file selected </span>
-              </label>
+                <label
+                    class="drop-zone"
+                    for="resume"
+                >
+
+                    <i class='bx bx-cloud-upload'></i>
+
+                    <h3>
+
+                        Drag & Drop Resume
+
+                    </h3>
+
+                    <p>
+
+                        PDF Only
+
+                    </p>
+
+                    <input
+
+                        id="resume"
+
+                        name="resume"
+
+                        type="file"
+
+                        accept=".pdf"
+
+                        required
+
+                    >
+
+                    <span id="file-name">
+
+                        No file selected
+
+                    </span>
+
+                </label>
+
             </div>
+
+
+            <!-- JD -->
 
             <div class="jd-card">
-              <h2>
-                <i class="bx bx-briefcase"></i>
-                Job Description
-              </h2>
 
-              <textarea
-                id="job_description"
-                name="job_description"
-                placeholder="Paste the complete Job Description here..."
-                rows="18"
-                required
-              ></textarea>
+                <h2>
+
+                    <i class='bx bx-briefcase'></i>
+
+                    Job Description
+
+                </h2>
+
+                <textarea
+
+                    id="job_description"
+
+                    name="job_description"
+
+                    rows="18"
+
+                    placeholder="Paste complete Job Description..."
+
+                    required
+
+                ></textarea>
+
             </div>
-          </div>
 
-          <div class="analyze-section">
-            <button type="button" id="ats-btn" onclick="calculate_ats_score()">
-              <i class="bx bx-magic-wand"></i>
-
-              Analyze Resume
-            </button>
-          </div>
-        </form>
-
-        <div id="loading" style="display: none">
-          <div class="loading-card">
-            <i class="bx bx-loader-alt bx-spin"></i>
-
-            <h2>Analyzing Resume...</h2>
-
-            <p>Please wait while AI evaluates your resume.</p>
-          </div>
         </div>
 
-        <div id="ats-result" style="display: none">
-          <div class="result-header">
-            <h2>ATS Analysis Report</h2>
+
+        <div class="analyze-section">
+
+            <button
+
+                type="button"
+
+                id="ats-btn"
+
+                onclick="calculate_ats_score()"
+
+            >
+
+                <i class='bx bx-magic-wand'></i>
+
+                Analyze Resume
+
+            </button>
+
+        </div>
+
+    </form>
+
+
+    <!-- Loading -->
+
+    <div
+
+        id="loading"
+
+        style="display:none"
+
+    >
+
+        <div class="loading-card">
+
+            <i class='bx bx-loader-alt bx-spin'></i>
+
+            <h2>
+
+                AI is analyzing your resume...
+
+            </h2>
+
+            <p>
+
+                Please wait while CareerGrowza compares your resume with the Job Description.
+
+            </p>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- RESULT -->
+
+    <div
+
+        id="ats-result"
+
+        style="display:none"
+
+    >
+
+        <div class="result-header">
+
+            <div>
+
+                <h2>
+
+                    ATS Analysis Report
+
+                </h2>
+
+                <p id="overall-match"></p>
+
+            </div>
 
             <div class="score-circle">
-              <span id="ats-score">0%</span>
-            </div>
-          </div>
 
-          <div class="result-grid">
-            <div class="result-card">
-              <h3>Matched Skills</h3>
+                <span id="ats-score">
 
-              <div id="matched-skills" class="skills-container"></div>
+                    0%
+
+                </span>
+
             </div>
 
-            <div class="result-card">
-              <h3>Missing Skills</h3>
-
-              <div id="missing-skills" class="skills-container"></div>
-            </div>
-
-            <div class="result-card">
-              <h3>Recommended Skills</h3>
-
-              <div id="recommended-skills" class="skills-container"></div>
-            </div>
-
-            <div class="result-card">
-              <h3>Improvement Suggestions</h3>
-
-              <ul id="improvement-list">
-                <li>Add measurable achievements.</li>
-
-                <li>Include relevant projects.</li>
-
-                <li>Tailor the resume to the job description.</li>
-              </ul>
-            </div>
-          </div>
-
-          <div class="report-actions">
-            <button type="button">
-              <i class="bx bx-download"></i>
-
-              Download ATS Report
-            </button>
-          </div>
         </div>
-      </div>
-    </main>
+                <!-- Summary -->
 
-    <script src="{% static 'js/ats.js' %}"></script>
-    <script src="{% static 'js/sidebar.js' %}"></script>
-  </body>
+        <div class="result-grid">
+
+            <div class="result-card full-width">
+
+                <h3>
+
+                    <i class='bx bx-notepad'></i>
+
+                    Resume Summary
+
+                </h3>
+
+                <p id="summary">
+
+                    -
+
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- Skills -->
+
+        <div class="result-grid">
+
+            <div class="result-card">
+
+                <h3>
+
+                    <i class='bx bx-check-circle'></i>
+
+                    Matched Skills
+
+                </h3>
+
+                <div
+                    id="matched-skills"
+                    class="skills-container"
+                ></div>
+
+            </div>
+
+
+            <div class="result-card">
+
+                <h3>
+
+                    <i class='bx bx-x-circle'></i>
+
+                    Missing Skills
+
+                </h3>
+
+                <div
+                    id="missing-skills"
+                    class="skills-container"
+                ></div>
+
+            </div>
+
+
+            <div class="result-card">
+
+                <h3>
+
+                    <i class='bx bx-star'></i>
+
+                    Recommended Skills
+
+                </h3>
+
+                <div
+                    id="recommended-skills"
+                    class="skills-container"
+                ></div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Strengths & Improvements -->
+
+        <div class="result-grid">
+
+            <div class="result-card">
+
+                <h3>
+
+                    <i class='bx bx-like'></i>
+
+                    Resume Strengths
+
+                </h3>
+
+                <ul id="strength-list">
+
+                </ul>
+
+            </div>
+
+
+            <div class="result-card">
+
+                <h3>
+
+                    <i class='bx bx-bulb'></i>
+
+                    Improvement Suggestions
+
+                </h3>
+
+                <ul id="improvement-list">
+
+                </ul>
+
+            </div>
+
+        </div>
+                <!-- Detailed AI Analysis -->
+
+        <div class="result-grid">
+
+            <div class="result-card">
+
+                <h3>
+
+                    <i class='bx bx-briefcase-alt'></i>
+
+                    Experience Analysis
+
+                </h3>
+
+                <p id="experience-analysis">
+
+                    -
+
+                </p>
+
+            </div>
+
+
+            <div class="result-card">
+
+                <h3>
+
+                    <i class='bx bx-code-alt'></i>
+
+                    Project Analysis
+
+                </h3>
+
+                <p id="project-analysis">
+
+                    -
+
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="result-grid">
+
+            <div class="result-card">
+
+                <h3>
+
+                    <i class='bx bx-book-open'></i>
+
+                    Education Analysis
+
+                </h3>
+
+                <p id="education-analysis">
+
+                    -
+
+                </p>
+
+            </div>
+
+
+            <div class="result-card">
+
+                <h3>
+
+                    <i class='bx bx-file'></i>
+
+                    Resume Quality
+
+                </h3>
+
+                <p id="resume-quality">
+
+                    -
+
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="result-grid">
+
+            <div class="result-card">
+
+                <h3>
+
+                    <i class='bx bx-shield-quarter'></i>
+
+                    ATS Compatibility
+
+                </h3>
+
+                <p id="ats-compatibility">
+
+                    -
+
+                </p>
+
+            </div>
+
+
+            <div class="result-card">
+
+                <h3>
+
+                    <i class='bx bx-award'></i>
+
+                    Final Recommendation
+
+                </h3>
+
+                <p id="final-recommendation">
+
+                    -
+
+                </p>
+
+            </div>
+
+        </div>
+                <!-- Report Actions -->
+
+        <div class="report-actions">
+
+            <button
+                type="button"
+                id="download-report"
+            >
+
+                <i class='bx bx-download'></i>
+
+                Download ATS Report
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+</main>
+
+<script src="{% static 'js/ats.js' %}"></script>
+
+<script src="{% static 'js/sidebar.js' %}"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<script src="{% static 'js/chatbot.js' %}"></script>
+
+</body>
+
 </html>
